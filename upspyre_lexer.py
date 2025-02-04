@@ -105,13 +105,6 @@ def test_lexer(data):
 # Run lexer on a test string
 if __name__ == "__main__":
     test_code = """
-    start
-        x = 5;
-        y = 3.14;
-        show "Hello, World!";
-        if (x > 3) {
-            output x + y;
-        }
-    end
+    
     """
     test_lexer(test_code)
