@@ -54,10 +54,10 @@ The lexer scans the code and extracts tokens.
 ```sh
 python upspyre_lexer.py
 ```
-You can modify `test_code` inside `upspyre_lexer.py` to test different inputs.
+You can modify `test.up` and run the program using `test_lexer` to test different inputs.
 
 ### **3. Run the Parser**
-The parser checks if the Upspyre program follows the correct syntax.
+The parser checks if the Upspyre program follows the correct syntax. (CURRENTLY NOT YET WORKING)
 ```sh
 python upspyre_parser.py
 ```
@@ -82,17 +82,4 @@ start
 end
 ```
 
-### **Running an Upspyre Program**
-Modify `upspyre_parser.py` to read and parse `.up` files:
-```sh
-python upspyre_parser.py yourfile.up
-```
-
----
-
-## Roadmap & Future Features
-- Basic syntax validation (✔ Done)
-- Arithmetic & logical expressions (✔ Done)
-
----
 
