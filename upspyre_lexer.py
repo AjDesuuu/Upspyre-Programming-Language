@@ -4,7 +4,7 @@ import ply.lex as lex
 tokens = (
     'NUMBER', 'DECIMAL', 'TEXT', 'BINARY',
     'IDENTIFIER', 'ASSIGN', 'SEMI', 'LPAREN', 'RPAREN',
-    'LBRACE', 'RBRACE', 'COMMA', 'COLON',
+    'LBRACE', 'RBRACE', 'COMMA', 'COLON', 'RBRACKET', 'LBRACKET',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'EQUAL', 'NEQUAL', 'LT', 'GT', 'LE', 'GE',
     'AND', 'OR', 'NOT', 'CONVERT'
@@ -57,6 +57,8 @@ t_GE = r'>='
 t_AND = r'and'
 t_OR = r'or'
 t_NOT = r'not'
+t_RBRACKET = r'\]'
+t_LBRACKET = r'\['
 
 # Identifiers and literals
 def t_IDENTIFIER(t):
@@ -64,15 +66,18 @@ def t_IDENTIFIER(t):
     t.type = reserved.get(t.value, 'IDENTIFIER')  # Check for reserved words
     return t
 
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    return t
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
     t.value = float(t.value)
     return t
+
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)
+    return t
+
+
 
 def t_TEXT(t):
     r'\".*?\"'
