@@ -106,7 +106,26 @@ def t_BINARY(t):
 
 # Ignore whitespace
 t_ignore = ' \t\n'
-
+def t_MALFORMED_DECIMAL(t):
+    r'\d+\.\d+\.\d+'
+    print(f"Lexer Error: Malformed decimal '{t.value}' at line {t.lineno}")
+    t.lexer.skip(len(t.value))
+def t_UNTERMINATED_STRING(t):
+    r'\"([^"\n]*)$'
+    print(f"Lexer Error: Unterminated string starting at line {t.lineno}")
+    t.lexer.skip(len(t.value))
+def t_INVALID_IDENTIFIER(t):
+    r'\d+[a-zA-Z_][a-zA-Z0-9_]*'
+    print(f"Lexer Error: Invalid identifier '{t.value}' at line {t.lineno}")
+    t.lexer.skip(len(t.value))
+def t_UNEXPECTED_CHAR(t):
+    r'[@#$%^&|~`]'
+    print(f"Lexer Error: Unexpected character '{t.value}' at line {t.lineno}")
+    t.lexer.skip(1)
+def t_UNTERMINATED_COMMENT(t):
+    r'/\*[\s\S]*?(?!\*/)'
+    print(f"Lexer Error: Unterminated multi-line comment at line {t.lineno}")
+    t.lexer.skip(len(t.value))
 # Error handling
 def t_error(t):
     print(f"Illegal character '{t.value[0]}'")
