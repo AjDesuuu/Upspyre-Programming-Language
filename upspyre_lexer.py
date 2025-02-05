@@ -29,7 +29,11 @@ reserved = {
     'pair-map': 'PAIR_MAP',
     'get': 'GET',
     'show': 'SHOW',
-    'convertTo': 'CONVERT_TO'
+    'convertTo': 'CONVERT_TO',
+    'number': 'NUMBER_TYPE',
+    'decimal': 'DECIMAL_TYPE', 
+    'text': 'TEXT_TYPE',
+    'binary': 'BINARY_TYPE'
 }
 
 tokens += tuple(reserved.values())

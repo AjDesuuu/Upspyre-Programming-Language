@@ -38,3 +38,6 @@ build/
 *.pytest_cache
 coverage/
 .tox/
+
+parser.out
+parsetab.py
