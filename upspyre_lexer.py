@@ -78,7 +78,7 @@ def t_NUMBER(t):
     return t
 
 
-
+#Shubashuba
 def t_TEXT(t):
     r'\".*?\"'
     t.value = t.value[1:-1]  # Remove quotes
