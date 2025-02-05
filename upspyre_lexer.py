@@ -7,7 +7,7 @@ tokens = (
     'LBRACE', 'RBRACE', 'COMMA', 'COLON', 'RBRACKET', 'LBRACKET',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'EQUAL', 'NEQUAL', 'LT', 'GT', 'LE', 'GE',
-    'AND', 'OR', 'NOT', 'CONVERT'
+    'AND', 'OR', 'NOT', 'CONVERT','DOT'
 )
 
 # Reserved keywords
@@ -59,6 +59,7 @@ t_OR = r'or'
 t_NOT = r'not'
 t_RBRACKET = r'\]'
 t_LBRACKET = r'\['
+t_DOT = r'\.'
 
 # Identifiers and literals
 def t_IDENTIFIER(t):
