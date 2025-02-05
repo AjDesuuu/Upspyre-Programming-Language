@@ -1,6 +1,9 @@
 start
-    number x = 5;
+    number x = 5; //this is a comment
     y = 3.14;
+
+    /* This is also a comment
+    except it's a multi-line*/
 
     ____= 20;
     show "Hello World";

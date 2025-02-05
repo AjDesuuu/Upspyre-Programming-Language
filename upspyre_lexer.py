@@ -7,7 +7,7 @@ tokens = (
     'LBRACE', 'RBRACE', 'COMMA', 'COLON', 'RBRACKET', 'LBRACKET',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'EQUAL', 'NEQUAL', 'LT', 'GT', 'LE', 'GE',
-    'AND', 'OR', 'NOT', 'CONVERT','DOT'
+    'AND', 'OR', 'NOT', 'CONVERT','DOT','COMMENT'
 )
 
 # Reserved keywords
@@ -64,6 +64,16 @@ t_NOT = r'not'
 t_RBRACKET = r'\]'
 t_LBRACKET = r'\['
 t_DOT = r'\.'
+
+def t_SINGLE_LINE(t):
+    r'//[^\n]*'
+    t.type = 'COMMENT'
+    return t
+
+def t_MULTI_LINE(t):
+    r'/\*[\s\S]*?\*/'
+    t.type = 'COMMENT'
+    return t
 
 # Identifiers and literals
 def t_IDENTIFIER(t):
