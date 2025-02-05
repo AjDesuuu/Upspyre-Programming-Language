@@ -13,5 +13,5 @@ def test_lexer_from_file(filename):
 
 
 if __name__ == "__main__":
-    test_lexer_from_file("test.up")
+    test_lexer_from_file("test_code.up")
 
