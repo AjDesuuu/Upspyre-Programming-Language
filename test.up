@@ -1,7 +1,9 @@
 start
     x = 5;
     y = 3.14;
-    show "Hello, World!";
+
+    ____= 20;
+    show "Hello World";
     if (x > 3) {
         output x + y;
     }

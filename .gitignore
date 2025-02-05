@@ -1,0 +1,43 @@
+# Ignore .idea folder (JetBrains IDEs like PyCharm)
+.idea/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment files
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore compiled files
+*.out
+*.o
+
+# Ignore virtual environments
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Ignore test artifacts
+*.pytest_cache
+coverage/
+.tox/
