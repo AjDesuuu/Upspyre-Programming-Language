@@ -1,0 +1,70 @@
+<program> ::= "start" <stmt>* "end"
+<stmt> ::= <simple_stmt> | <compound_stmt>
+<simple_stmt> ::= (<expression_stmt> | <assignment_stmt> | <return_stmt>) ";"
+<compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <collection_stmt> | <choose_what_stmt>
+
+<expression_stmt> ::= <expression>
+<expression> ::= <term> | <expression> <add_op> <term>
+<term> ::= <factor> | <term> <multi_op> <factor>
+<factor> ::= <base>| <base> <exp_op> <factor>
+<base> ::= "(" <expression> ")" | <const> | <identifier>
+<const> ::= <number> | <decimal> | <text> | <binary> | <null>
+
+<bit_expr> ::= <bitor_expr>
+<bitor_expr> ::= <bitxor_expr> | (<bitor_expr> "|" <bitxor_expr) 
+<bitxor_expr> ::= <bitandr_expr> | (<bitxor_expr> "^" <bitand_expr) 
+<bitand_expr> ::= <bitshift_expr> | (<bitand_expr> "&" <bitshift_expr)
+<bitshift_expr> ::= <bitnot_expr> | (<bitshift_expr> <shift_op> <bitnot_expr>)
+<bitnot_expr> ::= "~" <bit_base>
+<bit_base> ::= "(" <bit_expr> ")" | <expression>
+
+<assignment_stmt> ::= <identifier> <assign_op> <expression>
+<return_stmt> ::= "output" <expression>
+<conditional_stmt> ::= "if" "(" <conditional_expr> ")" <block_stmt> ["otherwise" <block_stmt>]
+<block_stmt> ::= "{" <stmt>* "}"
+
+<conditional_expr> ::= <logicor_expr>
+<logicor_expr> ::= <logicand_expr>  | <logicor_expr> "or" < logicand_expr>
+<logicand_expr> ::= <logicnot_expr> | <logicand_expr> "and" <logicnot_expr>
+<logicnot_expr> ::= <relational_expr> | "not" <logicnot_expr>
+<relational_expr> ::= <bit_expr> <relational_op> <bit_expr> | "(" <conditional_expr> ")" | <const> | <identifier>
+
+<loop_stmt> ::= <for_loop> | <repeat_loop> | <repeat_until>
+<for_loop> ::= "for" "(" <assignment_stmt> ";" <conditional_expr> ";" <expression> ")" <block_stmt>
+<repeat_loop> ::= "repeat" "(" <conditional_expr> ")" <block_stmt>
+<repeat_until ::= "repeat" block_stmt "until" "(" <conditional_expr> ")"
+
+<func_decl> ::= "method" <identifier> "(" <param_list>? ")" <block_stmt>
+<param_list> ::= <identifier> ("," <identifier>)* 
+
+<func_call> ::= <identifier> "(" <arg_list>? ")"
+<arg_list> ::= <expression> (","<expression)*
+
+
+<choose_what_stmt> ::= "choose-what" "{" <pick_case> "}"
+<pick_case> ::= "pick" <expression> ":" <block_stmt>
+
+<collection_stmt> = <list_decl> | <list_access | <pair_map_decl | <list_access> | <pair_map_access>
+<list_decl> ::= "list-of" <data_type> <identifier> "=" "[" <expression> ("," <expression>)* "]" ";"
+<pair_map_decl> ::= "pair-map" "(" <data_type> : <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" ";"
+<pair_map_val> ::= <pair> ("," <pair> )*
+<pair> ::= "(" <expression> ":" <expression> ")"
+
+<list_access> ::= <identifier> "[" <const> "]"
+<pair_map_access> ::= <identifier> "[" <const> "]" <identifier> ".key" "["<const>"]"
+
+<data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
+<relational_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">="
+<add_op> ::= "+" | "-"
+<multi_op> ::= "*" | "/" | "%"
+<exp_op> ::= "**"
+<assign_op> ::= "="| "+=" | "-=" | "*="
+<shift_op> ::= "<<" | ">>"
+
+
+<identifier> ::= [a-zA-Z] [a-zA-Z0-9_]*
+<number> ::= [0-9]+
+<decimal> ::= [0-9] "." [0-9]+
+<text> ::= [a-zA-Z0-9_]*
+<binary> ::= "true" | "false"
+<none> ::= "null"
