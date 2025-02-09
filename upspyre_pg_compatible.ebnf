@@ -1,20 +1,19 @@
 <program> ::= "start" <stmt>* "end"
 <stmt> ::= <simple_stmt> | <compound_stmt>
-<simple_stmt> ::= (<expression_stmt> | <assignment_stmt> | <return_stmt> | <io_statement> | <conv_stmt> ) ";"
+<simple_stmt> ::= ( <assignment_stmt> | <return_stmt> | <io_statement> ) ";"
 <compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <collection_stmt> | <choose_what_stmt>
 
-<expression_stmt> ::= <expression>
 <expression> ::= <term> | <expression> <add_op> <term>
 <term> ::= <factor> | <term> <multi_op> <factor>
 <factor> ::= <base> | <base> <exp_op> <factor>
-<base> ::= "(" <expression> ")" | <const> | <identifier>
+<base> ::= "(" <expression> ")" | <const> | <identifier> | <conv_stmt>
 <const> ::= <number> | <decimal> | "\"" <text> "\"" | <binary> | <none>
 
 <bit_expr> ::= <bitor_expr>
-<bitor_expr> ::= <bitxor_expr> | (<bitor_expr> "|" <bitxor_expr>) 
-<bitxor_expr> ::= <bitand_expr> | (<bitxor_expr> "^" <bitand_expr>) 
-<bitand_expr> ::= <bitshift_expr> | (<bitand_expr> "&" <bitshift_expr>)
-<bitshift_expr> ::= <bitnot_expr> | (<bitshift_expr> <shift_op> <bitnot_expr>)
+<bitor_expr> ::= <bitxor_expr> | <bitor_expr> "|" <bitxor_expr>
+<bitxor_expr> ::= <bitand_expr> | <bitxor_expr> "^" <bitand_expr> 
+<bitand_expr> ::= <bitshift_expr> | <bitand_expr> "&" <bitshift_expr>
+<bitshift_expr> ::= <bitnot_expr> | <bitshift_expr> <shift_op> <bitnot_expr>
 <bitnot_expr> ::= "~" <bit_base>
 <bit_base> ::= "(" <bit_expr> ")" | <expression>
 
@@ -33,7 +32,7 @@
 <logicor_expr> ::= <logicand_expr>  | <logicor_expr> "or" <logicand_expr>
 <logicand_expr> ::= <logicnot_expr> | <logicand_expr> "and" <logicnot_expr>
 <logicnot_expr> ::= <relational_expr> | "not" <logicnot_expr>
-<relational_expr> ::= <bit_expr> <relational_op> <bit_expr> | "(" <conditional_expr> ")" | <const> | <identifier>
+<relational_expr> ::= <expression> <relational_op> <expression> | "(" <conditional_expr> ")" | <const> | <identifier>
 
 <loop_stmt> ::= <for_loop> | <repeat_loop> | <repeat_until>
 <for_loop> ::= "for" "(" <assignment_stmt> ";" <conditional_expr> ";" <expression> ")" <block_stmt>
