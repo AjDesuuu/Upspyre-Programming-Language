@@ -8,7 +8,7 @@
 <term> ::= <factor> | <term> <multi_op> <factor>
 <factor> ::= <base> | <base> <exp_op> <factor>
 <base> ::= "(" <expression> ")" | <const> | <identifier>
-<const> ::= <number> | <decimal> | "'" <text> "'" | <binary> | <none>
+<const> ::= <number> | <decimal> | "\"" <text> "\"" | <binary> | <none>
 
 <bit_expr> ::= <bitor_expr>
 <bitor_expr> ::= <bitxor_expr> | (<bitor_expr> "|" <bitxor_expr>) 
