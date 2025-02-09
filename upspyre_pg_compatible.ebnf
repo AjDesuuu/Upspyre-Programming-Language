@@ -1,18 +1,14 @@
 <program> ::= "start" <stmt>* "end"
 <stmt> ::= <simple_stmt> | <compound_stmt>
-<simple_stmt> ::= (<expression_stmt> | <assignment_stmt> | <return_stmt> | <io_statement>) ";"
+<simple_stmt> ::= (<expression_stmt> | <assignment_stmt> | <return_stmt> | <io_statement> | <conv_stmt> ) ";"
 <compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <collection_stmt> | <choose_what_stmt>
-
-<io_statement> ::= <output_stmt> | <input_stmt>
-<output_stmt> ::= "show" "(" <expression_stmt> ")"
-<input_stmt> ::= "get" <data_type> <const> "(" ")"
 
 <expression_stmt> ::= <expression>
 <expression> ::= <term> | <expression> <add_op> <term>
 <term> ::= <factor> | <term> <multi_op> <factor>
 <factor> ::= <base> | <base> <exp_op> <factor>
 <base> ::= "(" <expression> ")" | <const> | <identifier>
-<const> ::= <number> | <decimal> | <text> | <binary> | <none>
+<const> ::= <number> | <decimal> | "'" <text> "'" | <binary> | <none>
 
 <bit_expr> ::= <bitor_expr>
 <bitor_expr> ::= <bitxor_expr> | (<bitor_expr> "|" <bitxor_expr>) 
@@ -21,6 +17,12 @@
 <bitshift_expr> ::= <bitnot_expr> | (<bitshift_expr> <shift_op> <bitnot_expr>)
 <bitnot_expr> ::= "~" <bit_base>
 <bit_base> ::= "(" <bit_expr> ")" | <expression>
+
+<io_statement> ::= <output_stmt> | <input_stmt>
+<output_stmt> ::= "show" "(" <expression_stmt> ")"
+<input_stmt> ::= "get" <data_type> <const> "(" ")"
+
+<conv_stmt> ::= <identifier> "." "convertTo" "(" <data_type> ")"
 
 <assignment_stmt> ::= <identifier> <assign_op> <expression>
 <return_stmt> ::= "output" <expression>
