@@ -18,7 +18,7 @@
 <bit_base> ::= "(" <bit_expr> ")" | <expression>
 
 <io_statement> ::= <output_stmt> | <input_stmt>
-<output_stmt> ::= "show" "(" <expression_stmt> ")"
+<output_stmt> ::= "show" "(" <expression> ")"
 <input_stmt> ::= "get" <data_type> <const> "(" ")"
 
 <conv_stmt> ::= <identifier> "." "convertTo" "(" <data_type> ")"
