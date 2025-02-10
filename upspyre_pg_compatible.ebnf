@@ -55,11 +55,7 @@
 <pair_map_val> ::= <pair> ("," <pair> )*
 <pair> ::= "(" <expression> ":" <expression> ")"
 <collection_assign> ::= <collection_expr> <assign_op> <expr>
-
-<collection_expr> ::= <list_access> | <pair_map_access>
-<list_access> ::= <identifier> "[" <number> "]" 
-<pair_map_access> ::= <identifier> "[" <const> "]"
-
+<collection_expr> ::= <identifier> "[" <expresion> "]"
 <collection_method> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")"
 
 <data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
