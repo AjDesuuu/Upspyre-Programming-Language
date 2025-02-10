@@ -54,8 +54,8 @@
 <pair_map_decl> ::= "pair-map" "(" <data_type> ":" <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" 
 <pair_map_val> ::= <pair> ("," <pair> )*
 <pair> ::= "(" <expression> ":" <expression> ")"
-<collection_assign> ::= <collection_expr> <assign_op> <expr>
-<collection_expr> ::= <identifier> "[" <expresion> "]"
+<collection_assign> ::= <collection_expr> <assign_op> <expression>
+<collection_expr> ::= <identifier> "[" <expression> "]"
 <collection_method> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")"
 
 <data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
