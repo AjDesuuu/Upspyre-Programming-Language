@@ -56,7 +56,7 @@
 <pair> ::= "(" <expression> ":" <expression> ")"
 <collection_assign> ::= <collection_expr> <assign_op> <expression>
 <collection_expr> ::= <list_value> | <pair_map_value> | <pair_map_value>
-<list_value> ::= <identifier> "[" <expresion> "]"
+<list_value> ::= <identifier> "[" <expression> "]"
 <pair_map_value> ::= <identifier> ".value[" <expression> "]"
 <pair_map_key> ::= <identifier> ".key[" <expression> "]"
 <collection_method> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")"
