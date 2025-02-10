@@ -17,7 +17,7 @@
 <bitnot_expr> ::= "~" <bit_base>
 <bit_base> ::= "(" <bit_expr> ")" | <expression>
 
-<decl_statement> ::= <data_type> <identifier>
+<decl_stmt> ::= <data_type> <identifier>
 <io_statement> ::= <output_stmt> | <input_stmt>
 <output_stmt> ::= "show" "(" <expression> ")"
 <input_stmt> ::= "get" <data_type> <const> "(" ")"
