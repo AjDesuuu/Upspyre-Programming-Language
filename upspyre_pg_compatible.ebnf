@@ -23,6 +23,7 @@
 
 <conv_stmt> ::= <identifier> "." "convertTo" "(" <data_type> ")"
 
+
 <assignment_stmt> ::= <identifier> <assign_op> <expression>
 <return_stmt> ::= "output" <expression>
 <conditional_stmt> ::= "if" "(" <conditional_expr> ")" <block_stmt> ( "otherwise" <block_stmt>)*
@@ -49,14 +50,16 @@
 <choose_what_stmt> ::= "choose-what" "{" <pick_case> "}"
 <pick_case> ::= "pick" <expression> ":" <block_stmt>
 
-<collection_stmt> ::= <list_decl> | <list_access> | <pair_map_decl> | <list_access> | <pair_map_access>
+<collection_stmt> ::= <list_decl> | <list_access> | <pair_map_decl> | <list_access> | <pair_map_access> | <dot_stmt>
 <list_decl> ::= "list-of" <data_type> <identifier> "=" "[" <expression> ("," <expression>)* "]" ";"
 <pair_map_decl> ::= "pair-map" "(" <data_type> ":" <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" ";"
 <pair_map_val> ::= <pair> ("," <pair> )*
 <pair> ::= "(" <expression> ":" <expression> ")"
 
-<list_access> ::= <identifier> "[" <const> "]"
-<pair_map_access> ::= <identifier> "[" <const> "]" <identifier> "." "key" "[" <const> "]"
+<list_access> ::= <identifier> "[" <const> "]" ";"
+<pair_map_access> ::= <identifier> "[" <const> "]" <identifier> "." "key" "[" <const> "]" ";"
+<dot_stmt> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")" ";"
+
 
 <data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
 <relational_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">="
