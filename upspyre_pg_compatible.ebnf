@@ -19,7 +19,7 @@
 
 <io_statement> ::= <output_stmt> | <input_stmt>
 <output_stmt> ::= "show" "(" <expression> ")"
-<input_stmt> ::= "get" <data_type> <const> "(" ")"
+<input_stmt> ::= "get" <data_type> <identifier>
 
 <conv_stmt> ::= <identifier> "." "convertTo" "(" <data_type> ")"
 
@@ -30,9 +30,9 @@
 <block_stmt> ::= "{" <stmt>* "}"
 
 <conditional_expr> ::= <logicor_expr>
-<logicor_expr> ::= <logicand_expr>  | <logicor_expr> "or" <logicand_expr>
-<logicand_expr> ::= <logicnot_expr> | <logicand_expr> "and" <logicnot_expr>
-<logicnot_expr> ::= <relational_expr> | "not" <logicnot_expr>
+<logicor_expr> ::= <logicand_expr>  | <logicor_expr> "OR" <logicand_expr>
+<logicand_expr> ::= <logicnot_expr> | <logicand_expr> "AND" <logicnot_expr>
+<logicnot_expr> ::= <relational_expr> | "NOT" <logicnot_expr>
 <relational_expr> ::= <expression> <relational_op> <expression> | "(" <conditional_expr> ")" | <const> | <identifier>
 
 <loop_stmt> ::= <for_loop> | <repeat_loop> | <repeat_until>
