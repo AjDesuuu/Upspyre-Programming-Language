@@ -1,12 +1,12 @@
 <program> ::= "start" <stmt>* "end"
 <stmt> ::= <simple_stmt> | <compound_stmt>
-<simple_stmt> ::= ( <assignment_stmt> | <return_stmt> | <io_statement> ) ";"
-<compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <collection_stmt> | <choose_what_stmt>
+<simple_stmt> ::= ( <assignment_stmt> | <return_stmt> | <io_statement> | <collection_stmt> | <decl_stmt> ) ";"
+<compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <choose_what_stmt>
 
 <expression> ::= <term> | <expression> <add_op> <term>
 <term> ::= <factor> | <term> <multi_op> <factor>
 <factor> ::= <base> | <base> <exp_op> <factor>
-<base> ::= "(" <expression> ")" | <const> | <identifier> | <conv_stmt>
+<base> ::= "(" <expression> ")" | <const> | <identifier> | <conv_expr> | <collection_expr> | <collection_method>
 <const> ::= <number> | <decimal> | "\"" <text> "\"" | <binary> | <none>
 
 <bit_expr> ::= <bitor_expr>
@@ -17,12 +17,12 @@
 <bitnot_expr> ::= "~" <bit_base>
 <bit_base> ::= "(" <bit_expr> ")" | <expression>
 
+<decl_stmt> ::= <data_type> <identifier>
 <io_statement> ::= <output_stmt> | <input_stmt>
 <output_stmt> ::= "show" "(" <expression> ")"
 <input_stmt> ::= "get" <data_type> <identifier>
 
-<conv_stmt> ::= <identifier> "." "convertTo" "(" <data_type> ")"
-
+<conv_expr> ::= <identifier> "." "convertTo" "(" <data_type> ")"
 
 <assignment_stmt> ::= <identifier> <assign_op> <expression>
 <return_stmt> ::= "output" <expression>
@@ -46,20 +46,20 @@
 <func_call> ::= <identifier> "(" <arg_list>? ")"
 <arg_list> ::= <expression> ("," <expression>)*
 
-
-<choose_what_stmt> ::= "choose-what" "{" <pick_case> "}"
+<choose_what_stmt> ::= "choose-what" "{" <pick_case>* "}"
 <pick_case> ::= "pick" <expression> ":" <block_stmt>
 
-<collection_stmt> ::= <list_decl> | <list_access> | <pair_map_decl> | <list_access> | <pair_map_access> | <dot_stmt>
-<list_decl> ::= "list-of" <data_type> <identifier> "=" "[" <expression> ("," <expression>)* "]" ";"
-<pair_map_decl> ::= "pair-map" "(" <data_type> ":" <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" ";"
+<collection_stmt> ::= <list_decl> | <pair_map_decl> | <collection_assign>
+<list_decl> ::= "list-of" <data_type> <identifier> "=" "[" <expression> ("," <expression>)* "]"
+<pair_map_decl> ::= "pair-map" "(" <data_type> ":" <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" 
 <pair_map_val> ::= <pair> ("," <pair> )*
 <pair> ::= "(" <expression> ":" <expression> ")"
-
-<list_access> ::= <identifier> "[" <const> "]" ";"
-<pair_map_access> ::= <identifier> "[" <const> "]" <identifier> "." "key" "[" <const> "]" ";"
-<dot_stmt> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")" ";"
-
+<collection_assign> ::= <collection_expr> <assign_op> <expression>
+<collection_expr> ::= <list_value> | <pair_map_value> | <pair_map_value>
+<list_value> ::= <identifier> "[" <expression> "]"
+<pair_map_value> ::= <identifier> ".value[" <expression> "]"
+<pair_map_key> ::= <identifier> ".key[" <expression> "]"
+<collection_method> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")"
 
 <data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
 <relational_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">="
