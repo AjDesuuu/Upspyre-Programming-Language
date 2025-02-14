@@ -1,0 +1,8 @@
+start
+  if(x!=y){
+    show ("hello world");
+  }
+  number x = 42;
+  text msg = "Hello, World!";
+  show (msg);
+end
