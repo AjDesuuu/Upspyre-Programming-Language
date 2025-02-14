@@ -33,7 +33,9 @@ public class Lexer {
             Map.entry("or", TokenType.OR), Map.entry("not", TokenType.NOT),
             Map.entry("&", TokenType.BITWISE_AND), Map.entry("|", TokenType.BITWISE_OR),
             Map.entry("^", TokenType.BITWISE_XOR), Map.entry("~", TokenType.BITWISE_NOT),
-            Map.entry("<<", TokenType.LSHIFT), Map.entry(">>", TokenType.RSHIFT), Map.entry("//", TokenType.FLOOR_DIV)
+            Map.entry("<<", TokenType.LSHIFT), Map.entry(">>", TokenType.RSHIFT), 
+            Map.entry("//", TokenType.FLOOR_DIV), Map.entry("+=", TokenType.PLUS_ASSIGN),
+            Map.entry("-=", TokenType.MINUS_ASSIGN), Map.entry("*=", TokenType.MULT_ASSIGN)
     );
 
     private static final Map<Character, TokenType> SPECIAL_SYMBOLS = Map.of(
@@ -66,12 +68,14 @@ public class Lexer {
 
     private char advance() {
         char c = peek();
+        System.out.println(c);
         index++;
         position++;
         if (c == '\n') {
             line++;
             position = 0;
         }
+
         return c;
     }
 
@@ -129,30 +133,125 @@ public class Lexer {
         return new Token(TokenType.COMMENT, "", line, startPos);
     }
 
+
     private Token scanOperatorOrSpecialSymbol() {
         char firstChar = peek();
-        if (firstChar == '=') {
-            advance(); // Consume the '='
-            if (peek() == '=') {
-                advance(); // Consume the second '='
-                return new Token(TokenType.EQ, "==", line, position - 2);
-            } else {
-                return new Token(TokenType.ASSIGN, "=", line, position - 1);
-            }
-        } else if (OPERATORS.containsKey(String.valueOf(firstChar))) {
-            String possibleDoubleCharOp = String.valueOf(firstChar) + peek();
-            if (OPERATORS.containsKey(possibleDoubleCharOp)) {
-                advance(); // Consume the second character
-                return new Token(OPERATORS.get(possibleDoubleCharOp), possibleDoubleCharOp, line, position - 2);
-            } else {
-                return new Token(OPERATORS.get(String.valueOf(firstChar)), String.valueOf(firstChar), line, position - 1);
-            }
-        } else if (SPECIAL_SYMBOLS.containsKey(firstChar)) {
-            advance();
-            return new Token(SPECIAL_SYMBOLS.get(firstChar), String.valueOf(firstChar), line, position - 1);
+        // Check for multi-character operators first
+        switch (firstChar) {
+            case '!':
+                System.out.println("here");
+                advance();
+                if (peek() == '=') {
+                    advance();
+                    return new Token(TokenType.NEQ, "!=", line, position - 2);
+                } else {
+                    return new Token(TokenType.NOT, "!", line, position - 1);
+                }
+            case '+':
+                advance();
+                if (peek() == '=') {
+                    advance();
+                    return new Token(TokenType.PLUS_ASSIGN, "+=", line, position - 2);
+                } else {
+                    return new Token(TokenType.PLUS, "+", line, position - 1);
+                }
+            case '-':  
+                advance();
+                if (peek() == '=') {
+                    advance();
+                    return new Token(TokenType.MINUS_ASSIGN, "-=", line, position - 2);
+                } else {
+                    return new Token(TokenType.MINUS, "-", line, position - 1);
+                }
+            case '=':
+                advance();
+                if (peek() == '=') {
+                    advance();
+                    return new Token(TokenType.EQ, "==", line, position - 2);
+                } else {
+                    return new Token(TokenType.ASSIGN, "=", line, position - 1);
+                }
+            case '<':
+                advance();
+                if (peek() == '=') {
+                    advance();
+                    return new Token(TokenType.LEQ, "<=", line, position - 2);
+                } else if (peek() == '<') {
+                    advance();
+                    return new Token(TokenType.LSHIFT, "<<", line, position - 2);
+                } else {
+                    return new Token(TokenType.LT, "<", line, position - 1);
+                }
+            case '>':
+                advance();
+                if (peek() == '=') {
+                    advance();
+                    return new Token(TokenType.GEQ, ">=", line, position - 2);
+                } else if (peek() == '>') {
+                    advance();
+                    return new Token(TokenType.RSHIFT, ">>", line, position - 2);
+                } else {
+                    return new Token(TokenType.GT, ">", line, position - 1);
+                }
+            case '&':
+                advance();
+                if (peek() == '&') {
+                    advance();
+                    return new Token(TokenType.AND, "&&", line, position - 2);
+                } else {
+                    return new Token(TokenType.BITWISE_AND, "&", line, position - 1);
+                }
+            case '|':
+                advance();
+                if (peek() == '|') {
+                    advance();
+                    return new Token(TokenType.OR, "||", line, position - 2);
+                } else {
+                    return new Token(TokenType.BITWISE_OR, "|", line, position - 1);
+                }
+            case '*':
+                advance();
+                if (peek() == '*') {
+                    advance();
+                    return new Token(TokenType.EXPONENT, "**", line, position - 2);
+                } 
+                if(peek() == '=') {
+                    advance();
+                    return new Token(TokenType.MULT_ASSIGN, "*=", line, position - 2);
+                }
+                else {
+                    return new Token(TokenType.MULT, "*", line, position - 1);
+                }
+            case '/':
+                advance();
+                if (peek() == '/') {
+                    advance();
+                    return new Token(TokenType.FLOOR_DIV, "//", line, position - 2);
+                } else {
+                    return new Token(TokenType.DIV, "/", line, position - 1);
+                }
+            case '%':
+                advance();
+                return new Token(TokenType.MOD, "%", line, position - 1);
+            case '^':
+                advance();
+                return new Token(TokenType.BITWISE_XOR, "^", line, position - 1);
+            case '~':
+                advance();
+                return new Token(TokenType.BITWISE_NOT, "~", line, position - 1);
+            default:
+                // Check for special symbols
+                if (SPECIAL_SYMBOLS.containsKey(firstChar)) {
+                    advance();
+                    return new Token(SPECIAL_SYMBOLS.get(firstChar), String.valueOf(firstChar), line, position - 1);
+                } else {
+                    // If no match, return an error token
+                    advance();
+                    return new Token(TokenType.ERROR, String.valueOf(firstChar), line, position - 1);
+                }
         }
-        return new Token(TokenType.ERROR, String.valueOf(firstChar), line, position);
     }
+
 
     private Token scanTokenUsingDFA() {
         char currentChar = peek();
