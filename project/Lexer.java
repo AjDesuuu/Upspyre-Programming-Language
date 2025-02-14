@@ -68,7 +68,6 @@ public class Lexer {
 
     private char advance() {
         char c = peek();
-        System.out.println(c);
         index++;
         position++;
         if (c == '\n') {
