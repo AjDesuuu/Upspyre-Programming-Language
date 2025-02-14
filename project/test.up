@@ -3,5 +3,5 @@ start
   number x += 42;
   text msg = "Hello, World!";
   show (msg);
-  !c
+  a!=c
 end

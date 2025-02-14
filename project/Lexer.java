@@ -30,12 +30,13 @@ public class Lexer {
             Map.entry("!=", TokenType.NEQ), Map.entry("<", TokenType.LT),
             Map.entry(">", TokenType.GT), Map.entry("<=", TokenType.LEQ),
             Map.entry(">=", TokenType.GEQ), Map.entry("and", TokenType.AND),
-            Map.entry("or", TokenType.OR), Map.entry("not", TokenType.NOT),
+            Map.entry("or", TokenType.OR), Map.entry("not", TokenType.LOG_NOT),
             Map.entry("&", TokenType.BITWISE_AND), Map.entry("|", TokenType.BITWISE_OR),
             Map.entry("^", TokenType.BITWISE_XOR), Map.entry("~", TokenType.BITWISE_NOT),
             Map.entry("<<", TokenType.LSHIFT), Map.entry(">>", TokenType.RSHIFT), 
             Map.entry("//", TokenType.FLOOR_DIV), Map.entry("+=", TokenType.PLUS_ASSIGN),
-            Map.entry("-=", TokenType.MINUS_ASSIGN), Map.entry("*=", TokenType.MULT_ASSIGN)
+            Map.entry("-=", TokenType.MINUS_ASSIGN), Map.entry("*=", TokenType.MULT_ASSIGN),
+            Map.entry("!",TokenType.NOT)
     );
 
     private static final Map<Character, TokenType> SPECIAL_SYMBOLS = Map.of(
@@ -138,7 +139,6 @@ public class Lexer {
         // Check for multi-character operators first
         switch (firstChar) {
             case '!':
-                System.out.println("here");
                 advance();
                 if (peek() == '=') {
                     advance();
