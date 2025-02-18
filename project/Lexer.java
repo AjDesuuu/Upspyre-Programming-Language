@@ -83,6 +83,7 @@ public class Lexer {
         while (Character.isWhitespace(peek())) advance();
     }
 
+    //Assigned to Mark Ngan
     private Token scanIdentifierOrKeyword() {
         StringBuilder sb = new StringBuilder();
         int startPos = position;
@@ -92,6 +93,7 @@ public class Lexer {
         return new Token(type, lexeme, line, startPos);
     }
 
+    //Assigned to Ansel
     private Token scanNumber() {
         StringBuilder sb = new StringBuilder();
         int startPos = position;
@@ -104,6 +106,7 @@ public class Lexer {
         return new Token(TokenType.NUMBER, sb.toString(), line, startPos);
     }
 
+    //Assigned to Simon
     private Token scanString() {
         StringBuilder sb = new StringBuilder();
         int startPos = position;
@@ -127,13 +130,14 @@ public class Lexer {
         return new Token(TokenType.STRING, sb.toString(), line, startPos);
     }
 
+    //Assign to  Jules
     private Token scanComment() {
         int startPos = position;
         while (peek() != '\n' && peek() != '\0') advance();
         return new Token(TokenType.COMMENT, "", line, startPos);
     }
 
-
+    //Assigned to Mark Jason
     private Token scanOperatorOrSpecialSymbol() {
         char firstChar = peek();
         // Check for multi-character operators first
@@ -251,7 +255,7 @@ public class Lexer {
         }
     }
 
-
+    //Assigned to Aaron
     private Token scanTokenUsingDFA() {
         char currentChar = peek();
         if (Character.isLetter(currentChar) || currentChar == '_') {
