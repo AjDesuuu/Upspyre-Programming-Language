@@ -1,0 +1,9 @@
+start
+// These are valid numbers
+ number x = 4;
+ number y = 11.21;
+
+ //These are invalid numbers
+ number z = 42.ea;
+ number q = 1.h;
+end

@@ -1,0 +1,8 @@
+start
+  text message1 = "This is a terminating string";
+  show (message1);
+
+  text message2 = "This is not a terminating string;
+  show (message 2);
+
+end
