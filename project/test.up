@@ -1,7 +1,7 @@
 start
   //THIS IS A NEW LINE  
-  number x += 42;
-  text msg = "Hello, World!";
+  number x +/ 42;
+  text 2msg = "Hello, \World!;"
   show (msg);
   a!=c
 end
