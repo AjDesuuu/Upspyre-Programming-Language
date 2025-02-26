@@ -13,7 +13,7 @@ public class Lexer {
             Map.entry("if", TokenType.IF), Map.entry("otherwise", TokenType.OTHERWISE),
             Map.entry("repeat", TokenType.REPEAT), Map.entry("repeat-until", TokenType.REPEAT_UNTIL),
             Map.entry("for", TokenType.FOR), Map.entry("stop", TokenType.STOP),
-            Map.entry("continue", TokenType.CONTINUE), Map.entry("method", TokenType.METHOD),
+            Map.entry("continue", TokenType.CONTINUE), Map.entry("method", TokenType.METHOD),   
             Map.entry("output", TokenType.OUTPUT), Map.entry("get", TokenType.GET),
             Map.entry("show", TokenType.SHOW), Map.entry("true", TokenType.TRUE),
             Map.entry("false", TokenType.FALSE), Map.entry("none", TokenType.NONE),
@@ -83,51 +83,122 @@ public class Lexer {
         while (Character.isWhitespace(peek())) advance();
     }
 
-    //Assigned to Mark Ngan
+    //MADE BY: NGAN
     private Token scanIdentifierOrKeyword() {
-        StringBuilder sb = new StringBuilder();
         int startPos = position;
-        while (Character.isLetterOrDigit(peek()) || peek() == '_') sb.append(advance());
-        String lexeme = sb.toString();
+        int startIdx = index;
+        char firstChar = peek();
+
+        // S1: Check if the first character is not a letter or an underscore
+        if (!(Character.isLetter(firstChar) || firstChar == '_')) {
+            while (!Character.isWhitespace(peek()) && peek() != '\0') {
+                advance();
+            }
+            String lexeme = input.substring(startIdx, index);
+            return new Token(TokenType.ERROR, lexeme, line, startPos);
+        }
+
+        // S2: Continue scanning if the first character is valid
+        advance();
+        while (Character.isLetterOrDigit(peek()) || peek() == '_') {
+            advance();
+        }
+
+        String lexeme = input.substring(startIdx, index);
+
+        // S3: Check if the lexeme is a keyword, otherwise classify it as an identifier
         TokenType type = KEYWORDS.getOrDefault(lexeme, TokenType.IDENTIFIER);
+
         return new Token(type, lexeme, line, startPos);
     }
 
-    //Assigned to Ansel
+    //Assigned to Ansel | EDITED BY: NGAN
     private Token scanNumber() {
-        StringBuilder sb = new StringBuilder();
         int startPos = position;
-        while (Character.isDigit(peek())) sb.append(advance());
-        if (peek() == '.') {
-            sb.append(advance());
-            while (Character.isDigit(peek())) sb.append(advance());
-            return new Token(TokenType.DECIMAL, sb.toString(), line, startPos);
+        int startIdx = index;
+    
+        while (Character.isDigit(peek())) {
+            advance();
         }
-        return new Token(TokenType.NUMBER, sb.toString(), line, startPos);
-    }
-
-    //Assigned to Simon
-    private Token scanString() {
-        StringBuilder sb = new StringBuilder();
-        int startPos = position;
-        advance(); // Skip opening quote
-        while (peek() != '"' && peek() != '\0') {
-            if (peek() == '\\') {
-                advance(); // Skip the backslash
-                switch (peek()) {
-                    case 'n': sb.append('\n'); break;
-                    case 't': sb.append('\t'); break;
-                    case '"': sb.append('"'); break;
-                    case '\\': sb.append('\\'); break;
-                    default: sb.append('\\').append(peek()); break;
-                }
+    
+        // Added by: Ngan (Error state)
+        if (Character.isLetter(peek())) {
+            while (!Character.isWhitespace(peek()) && peek() != '\0') {
                 advance();
+            }
+            String lexeme = input.substring(startIdx, index);
+            return new Token(TokenType.ERROR, lexeme, line, startPos);
+        }
+    
+        // Otherwise, return a valid number token
+        String lexeme = input.substring(startIdx, index);
+        return new Token(TokenType.NUMBER, lexeme, line, startPos);
+    }
+    
+
+    //MADE BY: SIMON
+    private Token scanString() {
+        int startPos = position;
+        String lexeme = "";
+        boolean warningIssued = false;
+
+        advance(); // Skip opening quote
+
+        // S1: Process characters until closing quote or end of input
+        while (peek() != '"' && peek() != '\0') {
+            char current = peek();
+
+            if (current == '\\') {
+                // DFA Transition: S1 -> S2 on backslash
+                advance(); // Consume '\\'
+                char escapeChar = peek();
+
+                // Check for end of input after backslash (possible invalid escape sequence)
+                if (escapeChar == '\0') {
+                    warningIssued = true;
+                    lexeme += '\\'; // Treat lone backslash as literal
+                    break;
+                }
+
+                // DFA State: S2 - Handle escape sequences
+                switch (escapeChar) {
+                    case 'n':
+                        lexeme += '\n';
+                        break;
+                    case 't':
+                        lexeme += '\t';
+                        break;
+                    case '"':
+                        lexeme += '"';
+                        break;
+                    case '\\':
+                        lexeme += '\\';
+                        break;
+                    default:
+                        warningIssued = true; // Issue warning for invalid escape sequences
+                        lexeme += "\\" + escapeChar; // Include unknown escape sequence as-is
+                        break;
+                }
+                advance(); // Consume escape character
             } else {
-                sb.append(advance());
+                // DFA Transition: S1 -> S1 on valid character (except '"' and '\\')
+                lexeme += current;
+                advance();
             }
         }
-        if (peek() == '"') advance(); // Consume closing quote
-        return new Token(TokenType.STRING, sb.toString(), line, startPos);
+
+        // End condition: Closing quote reached -> S1 -> Text
+        if (peek() == '"') {
+            advance(); // Consume closing quote
+            if (warningIssued) {
+                System.out.println("Warning: Possible invalid escape sequence in string literal at line " + line + ".");
+            }
+            return new Token(TokenType.STRING, lexeme, line, startPos);
+        }
+
+        // Error: Unterminated string literal
+        System.out.println("Error: Unterminated string literal at line " + line + ".");
+        return new Token(TokenType.ERROR, "Unterminated string literal: " + lexeme, line, startPos);
     }
 
     //Assign to  Jules

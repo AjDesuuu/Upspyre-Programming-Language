@@ -1,7 +1,13 @@
 start
-  //THIS IS A NEW LINE  
-  number x += 42;
-  text msg = "Hello, World!";
-  show (msg);
-  a!=c
+  text message1 = "This is a terminating string";
+  show (message1);
+
+  text message2 = "This must have a warning \ ";
+  show (message 2);
+
+  text message3 = "This must have a warning \d ";
+  show (message 3);
+
+  text message3 = "This is not a terminating string ;
+  show (message 3);
 end
