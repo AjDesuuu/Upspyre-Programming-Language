@@ -19,7 +19,11 @@ public class Lexer {
             Map.entry("false", TokenType.FALSE), Map.entry("none", TokenType.NONE),
             Map.entry("number", TokenType.NUMBER_TYPE), Map.entry("decimal", TokenType.DECIMAL_TYPE),
             Map.entry("text", TokenType.TEXT_TYPE), Map.entry("binary", TokenType.BINARY_TYPE),
-            Map.entry("list-of", TokenType.LIST_TYPE), Map.entry("pair-map", TokenType.PAIR_MAP_TYPE)
+            Map.entry("list-of", TokenType.LIST_TYPE), Map.entry("pair-map", TokenType.PAIR_MAP_TYPE),
+            Map.entry("choose-what", TokenType.CHOOSE_WHAT), Map.entry("convert-to", TokenType.CONVERT_TO),
+            Map.entry("len", TokenType.LEN), Map.entry("sort", TokenType.SORT),
+            Map.entry("key", TokenType.KEY), Map.entry("value", TokenType.VALUE),
+            Map.entry("to-text", TokenType.TO_TEXT), Map.entry("pick", TokenType.PICK)
     );
 
     private static final Map<String, TokenType> OPERATORS = Map.ofEntries(
@@ -29,19 +33,19 @@ public class Lexer {
             Map.entry("%", TokenType.MOD), Map.entry("==", TokenType.EQ),
             Map.entry("!=", TokenType.NEQ), Map.entry("<", TokenType.LT),
             Map.entry(">", TokenType.GT), Map.entry("<=", TokenType.LEQ),
-            Map.entry(">=", TokenType.GEQ), Map.entry("and", TokenType.AND),
-            Map.entry("or", TokenType.OR), Map.entry("not", TokenType.LOG_NOT),
+            Map.entry(">=", TokenType.GEQ), Map.entry("AND", TokenType.AND),
+            Map.entry("OR", TokenType.OR), Map.entry("NOT", TokenType.NOT),
             Map.entry("&", TokenType.BITWISE_AND), Map.entry("|", TokenType.BITWISE_OR),
             Map.entry("^", TokenType.BITWISE_XOR), Map.entry("~", TokenType.BITWISE_NOT),
             Map.entry("<<", TokenType.LSHIFT), Map.entry(">>", TokenType.RSHIFT), 
-            Map.entry("//", TokenType.FLOOR_DIV), Map.entry("+=", TokenType.PLUS_ASSIGN),
+            Map.entry("///", TokenType.FLOOR_DIV), Map.entry("+=", TokenType.PLUS_ASSIGN),
             Map.entry("-=", TokenType.MINUS_ASSIGN), Map.entry("*=", TokenType.MULT_ASSIGN),
-            Map.entry("!",TokenType.NOT)
+            Map.entry("!",TokenType.S_NOT), Map.entry("\"",TokenType.QUOTE)
     );
 
     private static final Map<Character, TokenType> SPECIAL_SYMBOLS = Map.of(
             '(', TokenType.LPAREN, ')', TokenType.RPAREN,
-            '{', TokenType.LBRACE, '}', TokenType.RBRACE,
+            '{', TokenType.LCURLY, '}', TokenType.RCURLY,
             '[', TokenType.LBRACKET, ']', TokenType.RBRACKET,
             ';', TokenType.SEMI, ',', TokenType.COMMA,
             ':', TokenType.COLON, '.', TokenType.DOT
@@ -121,29 +125,33 @@ public class Lexer {
     private Token scanNumber() {
         int startPos = position;
         int startIdx = index;
-    
-        while (Character.isDigit(peek())) {
+        boolean isDecimal = false;
+
+        while (Character.isDigit(peek()) || (peek() == '.' && !isDecimal)) {
+            if (peek() == '.') {
+                isDecimal = true;
+            }
             advance();
         }
-    
-        // Added by: Ngan (Error state)
+
+        // Check for invalid characters after the number
         if (Character.isLetter(peek())) {
             while (!Character.isWhitespace(peek()) && peek() != '\0') {
                 advance();
             }
             String lexeme = input.substring(startIdx, index);
-            //pag may error yung identifier, pumupunta dito sa number error state
-            return new Token(TokenType.ERROR , "Invalid token at line " +line +": "+lexeme, line, startPos);
+            return new Token(TokenType.ERROR, "Invalid token at line " + line + ": " + lexeme, line, startPos);
         }
-    
-        // Otherwise, return a valid number token
+
+        // Return the appropriate token type
         String lexeme = input.substring(startIdx, index);
-        return new Token(TokenType.NUMBER, lexeme, line, startPos);
+        TokenType type = isDecimal ? TokenType.DECIMAL : TokenType.NUMBER;
+        return new Token(type, lexeme, line, startPos);
     }
     
 
     //MADE BY: SIMON
-    private Token scanString() {
+    private Token scanText() {
         int startPos = position;
         String lexeme = "";
         boolean warningIssued = false;
@@ -199,7 +207,7 @@ public class Lexer {
             if (warningIssued) {
                 System.out.println("Warning: Possible invalid escape sequence in string literal at line " + line + ".");
             }
-            return new Token(TokenType.STRING, lexeme, line, startPos);
+            return new Token(TokenType.TEXT, lexeme, line, startPos);
         }
 
         // Error: Unterminated string literal
@@ -209,10 +217,38 @@ public class Lexer {
     //Assign to  Jules
     private Token scanComment() {
         int startPos = position;
-        while (peek() != '\n' && peek() != '\0') advance();
-        return new Token(TokenType.COMMENT, "", line, startPos);
+        int startLine = line;
+    
+        // Check if it's a multi-line comment
+        if (peek() == '/' && peek(1) == '*') {
+            advance(); // Consume '/'
+            advance(); // Consume '*'
+    
+            // Scan until the end of the multi-line comment
+            while (true) {
+                if (peek() == '\0') {
+                    // End of input reached without closing the comment
+                    return new Token(TokenType.ERROR, "Unterminated multi-line comment at line " + startLine, startLine, startPos);
+                }
+    
+                if (peek() == '*' && peek(1) == '/') {
+                    advance(); // Consume '*'
+                    advance(); // Consume '/'
+                    break; // End of multi-line comment
+                }
+    
+                advance(); // Consume the current character
+            }
+    
+            return new Token(TokenType.MCOMMENT, "", line, startPos);
+        } else {
+            // Single-line comment
+            while (peek() != '\n' && peek() != '\0') {
+                advance();
+            }
+            return new Token(TokenType.SCOMMENT, "", line, startPos);
+        }
     }
-
     //Assigned to Mark Jason
     private Token scanOperatorOrSpecialSymbol() {
         char firstChar = peek();
@@ -224,7 +260,7 @@ public class Lexer {
                     advance();
                     return new Token(TokenType.NEQ, "!=", line, position - 2);
                 } else {
-                    return new Token(TokenType.NOT, "!", line, position - 1);
+                    return new Token(TokenType.S_NOT, "!", line, position - 1);
                 }
             case '+':
                 advance();
@@ -302,13 +338,19 @@ public class Lexer {
                     return new Token(TokenType.MULT, "*", line, position - 1);
                 }
             case '/':
-                advance();
-                if (peek() == '/') {
-                    advance();
-                    return new Token(TokenType.FLOOR_DIV, "//", line, position - 2);
-                } else {
-                    return new Token(TokenType.DIV, "/", line, position - 1);
+                if (peek() == '/' && peek(2) == '/') {
+                    // Check for floor division ("///")
+                    advance(); // Consume first '/'
+                    advance(); // Consume second '/'
+                    advance(); // Consume third '/'
+                    return new Token(TokenType.FLOOR_DIV, "///", line, position - 3);
+                } else if (peek(1) == '/' || peek(1) == '*') {
+                    // Check for comments
+                    return scanComment();
                 }
+                // Handle single '/' as division or other operators if applicable
+                advance();
+                return new Token(TokenType.DIV, "/", line, position - 1);
             case '%':
                 advance();
                 return new Token(TokenType.MOD, "%", line, position - 1);
@@ -334,21 +376,25 @@ public class Lexer {
     //Assigned to Aaron
     private Token scanTokenUsingDFA() {
         char currentChar = peek();
+
+        // Check for floor division ("///") first
+        if (currentChar == '/' && peek(1) == '/' && peek(2) == '/') {
+            advance(); // Consume first '/'
+            advance(); // Consume second '/'
+            advance(); // Consume third '/'
+            return new Token(TokenType.FLOOR_DIV, "///", line, position - 3);
+        }
+        if (currentChar == '/') {
+            if (peek(1) == '/' || peek(1) == '*') {
+                return scanComment();
+            }
+        }
         if (Character.isLetter(currentChar) || currentChar == '_') {
             return scanIdentifierOrKeyword();
         } else if (Character.isDigit(currentChar)) {
-            //TODO need mag add ng additional scanner or advance then unconsume para macheck if identifier or not.
-            //if(Character.isLetter(peek(2))) return scanIdentifierOrKeyword();
             return scanNumber();
         } else if (currentChar == '"') {
-            return scanString();
-        } else if (currentChar == '/') {
-            advance();
-            if (peek() == '/') {
-                return scanComment();
-            } else {
-                return new Token(TokenType.DIV, "/", line, position - 1);
-            }
+            return scanText();
         } else if (OPERATORS.containsKey(String.valueOf(currentChar))) {
             return scanOperatorOrSpecialSymbol();
         } else if (SPECIAL_SYMBOLS.containsKey(currentChar)) {

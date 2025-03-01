@@ -1,7 +1,15 @@
 start
-  //THIS IS A NEW LINE  
-  number x +/ 42;
-  text 2msg = "Hello, \World!;"
+  /* Multline
+
+
+  sdfsdfsf
+
+  */
+  x = 10 /// 3; // This is a comment
+  text 2msg = "Hello, \World!";
   show (msg);
   a!=c
+  a * c
+  a / c
+  
 end
