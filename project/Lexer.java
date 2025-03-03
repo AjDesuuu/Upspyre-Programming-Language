@@ -8,6 +8,7 @@ import java.util.Scanner;
 public class Lexer {
     private String input;
     private int index = 0, line = 1, position = 0;
+    private SymbolTable symbolTable;
     private static final Map<String, TokenType> KEYWORDS = Map.ofEntries(
             Map.entry("start", TokenType.START), Map.entry("end", TokenType.END),
             Map.entry("if", TokenType.IF), Map.entry("otherwise", TokenType.OTHERWISE),
@@ -51,8 +52,9 @@ public class Lexer {
             ':', TokenType.COLON, '.', TokenType.DOT
     );
 
-    public Lexer(String filePath) throws FileNotFoundException {
+    public Lexer(String filePath, SymbolTable symbolTable) throws FileNotFoundException {
         this.input = readFileContent(filePath);
+        this.symbolTable = symbolTable;
     }
 
     private String readFileContent(String filePath) throws FileNotFoundException {
@@ -104,7 +106,7 @@ public class Lexer {
                 advance();
             }
             String lexeme = input.substring(startIdx, index);
-            return new Token(TokenType.ERROR, "Invalid token at line " +line +": "+lexeme, line, startPos);
+            return new Token(TokenType.ERROR, "Invalid token: "+lexeme, line, startPos);
         }
 
         // S2: Continue scanning if the first character is valid
@@ -117,6 +119,11 @@ public class Lexer {
 
         // S3: Check if the lexeme is a keyword, otherwise classify it as an identifier
         TokenType type = KEYWORDS.getOrDefault(lexeme, TokenType.IDENTIFIER);
+
+        // Add identifier to symbol table if it's not a keyword
+        if (type == TokenType.IDENTIFIER && !symbolTable.containsIdentifier(lexeme)) {
+            symbolTable.addIdentifier(lexeme, type);
+        }
 
         return new Token(type, lexeme, line, startPos);
     }
@@ -140,7 +147,7 @@ public class Lexer {
                 advance();
             }
             String lexeme = input.substring(startIdx, index);
-            return new Token(TokenType.ERROR, "Invalid token at line " + line + ": " + lexeme, line, startPos);
+            return new Token(TokenType.ERROR, "Invalid token: "+lexeme, line, startPos);
         }
 
         // Return the appropriate token type
@@ -211,7 +218,7 @@ public class Lexer {
         }
 
         // Error: Unterminated string literal
-        return new Token(TokenType.ERROR, "Unterminated string literal at line " +line +": "+ lexeme, line, startPos);
+        return new Token(TokenType.ERROR, "Unterminated string literal: "+ lexeme, line, startPos);
     }
 
     //Assign to  Jules
@@ -228,7 +235,7 @@ public class Lexer {
             while (true) {
                 if (peek() == '\0') {
                     // End of input reached without closing the comment
-                    return new Token(TokenType.ERROR, "Unterminated multi-line comment at line " + startLine, startLine, startPos);
+                    return new Token(TokenType.ERROR, "Unterminated multi-line comment" + startLine, startLine, startPos);
                 }
     
                 if (peek() == '*' && peek(1) == '/') {
@@ -401,7 +408,7 @@ public class Lexer {
             return scanOperatorOrSpecialSymbol();
         } else {
             advance();
-            return new Token(TokenType.ERROR, String.valueOf(currentChar), line, position - 1);
+            return new Token(TokenType.ERROR, "Unrecognized token: " + String.valueOf(currentChar), line, position - 1);
         }
     }
 

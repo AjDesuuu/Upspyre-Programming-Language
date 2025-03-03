@@ -5,8 +5,9 @@ start
   sdfsdfsf
 
   */
+   fs
   x = 10 /// 3; // This is a comment
-  text 2msg = "Hello, \World!";
+  text 2msg = "Hello, World!";
   show (msg);
   a!=c
   a * c
