@@ -1,10 +1,11 @@
 start
   // Testing repeat-until
   number count = 1;
-  repeat-until (count > 5) {
+
+  repeat{
     show(count);
     count = count + 1;
-  }
+  } until(count > 5);
 
   // Testing for loop
   for (number i = 1; i <= 5; i = i + 1) {

@@ -1,6 +1,6 @@
 start
   // Testing pair-map
-  pair-map text:number ages = [("Alice": 30), ("Bob": 25)];
+  pair_map text:number ages = [("Alice": 30), ("Bob": 25)];
   show(ages["Alice"]);
 
   // Testing type conversion
@@ -10,7 +10,7 @@ start
 
   // Testing choose-what
   number day = 3;
-  choose-what {
+  choose_what {
     pick 1: { show("Monday"); }
     pick 2: { show("Tuesday"); }
     pick 3: { show("Wednesday"); }

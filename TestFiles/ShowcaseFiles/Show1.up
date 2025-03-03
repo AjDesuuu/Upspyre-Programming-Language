@@ -13,7 +13,7 @@ start
   show(result);
 
   // Testing special symbols
-  list-of number numbers = [1, 2, 3, 4, 5];
+  list_of number numbers = [1, 2, 3, 4, 5];
   show(numbers[2]);
 
   // Testing method
@@ -29,8 +29,8 @@ start
      multi-line comment */
 
   // Testing boolean values
-  boolean isTrue = true;
-  boolean isFalse = false;
+  binary isTrue = true;
+  binary isFalse = false;
   show(isTrue);
   show(isFalse);
 end

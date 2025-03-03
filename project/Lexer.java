@@ -12,7 +12,7 @@ public class Lexer {
     private static final Map<String, TokenType> KEYWORDS = Map.ofEntries(
             Map.entry("start", TokenType.START), Map.entry("end", TokenType.END),
             Map.entry("if", TokenType.IF), Map.entry("otherwise", TokenType.OTHERWISE),
-            Map.entry("repeat", TokenType.REPEAT), Map.entry("repeat_until", TokenType.REPEAT_UNTIL),
+            Map.entry("repeat", TokenType.REPEAT), Map.entry("until", TokenType.UNTIL),
             Map.entry("for", TokenType.FOR), Map.entry("stop", TokenType.STOP),
             Map.entry("continue", TokenType.CONTINUE), Map.entry("method", TokenType.METHOD),   
             Map.entry("output", TokenType.OUTPUT), Map.entry("get", TokenType.GET),
