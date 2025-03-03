@@ -1,0 +1,5 @@
+start  
+  text invalidNumber = "hello";  
+  number num = invalidNumber.convertTo(number);  // Error: Cannot convert "hello" to a number  
+  show (num);  
+end  

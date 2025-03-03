@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 
 public class LexerTester {
     public static void main(String[] args) {
-        String filePath = "project/test.up";
+        String filePath = "TestFiles/test.up";
         SymbolTable symbolTable = new SymbolTable();
 
         try {

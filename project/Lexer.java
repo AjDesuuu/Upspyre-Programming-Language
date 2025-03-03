@@ -12,7 +12,7 @@ public class Lexer {
     private static final Map<String, TokenType> KEYWORDS = Map.ofEntries(
             Map.entry("start", TokenType.START), Map.entry("end", TokenType.END),
             Map.entry("if", TokenType.IF), Map.entry("otherwise", TokenType.OTHERWISE),
-            Map.entry("repeat", TokenType.REPEAT), Map.entry("repeat-until", TokenType.REPEAT_UNTIL),
+            Map.entry("repeat", TokenType.REPEAT), Map.entry("repeat_until", TokenType.REPEAT_UNTIL),
             Map.entry("for", TokenType.FOR), Map.entry("stop", TokenType.STOP),
             Map.entry("continue", TokenType.CONTINUE), Map.entry("method", TokenType.METHOD),   
             Map.entry("output", TokenType.OUTPUT), Map.entry("get", TokenType.GET),
@@ -20,11 +20,11 @@ public class Lexer {
             Map.entry("false", TokenType.FALSE), Map.entry("none", TokenType.NONE),
             Map.entry("number", TokenType.NUMBER_TYPE), Map.entry("decimal", TokenType.DECIMAL_TYPE),
             Map.entry("text", TokenType.TEXT_TYPE), Map.entry("binary", TokenType.BINARY_TYPE),
-            Map.entry("list-of", TokenType.LIST_TYPE), Map.entry("pair-map", TokenType.PAIR_MAP_TYPE),
-            Map.entry("choose-what", TokenType.CHOOSE_WHAT), Map.entry("convert-to", TokenType.CONVERT_TO),
+            Map.entry("list_of", TokenType.LIST_TYPE), Map.entry("pair_map", TokenType.PAIR_MAP_TYPE),
+            Map.entry("choose_what", TokenType.CHOOSE_WHAT), Map.entry("convertTo", TokenType.CONVERT_TO),
             Map.entry("len", TokenType.LEN), Map.entry("sort", TokenType.SORT),
             Map.entry("key", TokenType.KEY), Map.entry("value", TokenType.VALUE),
-            Map.entry("to-text", TokenType.TO_TEXT), Map.entry("pick", TokenType.PICK)
+            Map.entry("toText", TokenType.TO_TEXT), Map.entry("pick", TokenType.PICK)
     );
 
     private static final Map<String, TokenType> OPERATORS = Map.ofEntries(
@@ -111,7 +111,7 @@ public class Lexer {
 
         // S2: Continue scanning if the first character is valid
         advance();
-        while (Character.isLetterOrDigit(peek()) || peek() == '_') {
+        while (Character.isLetterOrDigit(peek()) || peek() == '_'|| peek() == '-' ) {
             advance();
         }
 

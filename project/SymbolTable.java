@@ -25,10 +25,10 @@ public class SymbolTable {
     }
 
     public void printTable() {
-        System.out.printf("| %-12s | %-12s |\n", "Lexeme", "Type");
+        System.out.printf("| %-15s | %-12s |\n", "Lexeme", "Type");
         for (Map.Entry<String, SymbolDetails> entry : table.entrySet()) {
             SymbolDetails details = entry.getValue();
-            System.out.printf("| %-12s | %-12s |\n", details.getLexeme(), details.getType());
+            System.out.printf("| %-15s | %-12s |\n", details.getLexeme(), details.getType());
         }
     }
 }
