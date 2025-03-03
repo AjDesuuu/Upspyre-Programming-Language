@@ -1,0 +1,22 @@
+start
+  // Testing pair-map
+  pair-map text:number ages = [("Alice": 30), ("Bob": 25)];
+  show(ages["Alice"]);
+
+  // Testing type conversion
+  text numText = "42";
+  number num = numText.convertTo(number);
+  show(num + 1);
+
+  // Testing choose-what
+  number day = 3;
+  choose-what {
+    pick 1: { show("Monday"); }
+    pick 2: { show("Tuesday"); }
+    pick 3: { show("Wednesday"); }
+    pick 4: { show("Thursday"); }
+    pick 5: { show("Friday"); }
+    pick 6: { show("Saturday"); }
+    pick 7: { show("Sunday"); }
+  }
+end

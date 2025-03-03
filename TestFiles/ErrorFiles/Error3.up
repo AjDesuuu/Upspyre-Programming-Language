@@ -1,0 +1,4 @@
+start
+  /* This is an unclosed comment  // Error: Unclosed comment
+  number x = 10;
+end

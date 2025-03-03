@@ -1,0 +1,36 @@
+start
+  // Testing keywords
+  number x = 10;
+  number y = 20;
+  if (x < y) {
+    show("x is less than y");
+  } otherwise {
+    show("x is not less than y");
+  }
+
+  // Testing operators
+  number result = x + y * (x - y) / 2 ** 2;
+  show(result);
+
+  // Testing special symbols
+  list-of number numbers = [1, 2, 3, 4, 5];
+  show(numbers[2]);
+
+  // Testing method
+  method add(number a, number b) {
+    output a + b;
+  }
+  number sum = add(x, y);
+  show(sum);
+
+  // Testing comments
+  // This is a single-line comment
+  /* This is a
+     multi-line comment */
+
+  // Testing boolean values
+  boolean isTrue = true;
+  boolean isFalse = false;
+  show(isTrue);
+  show(isFalse);
+end

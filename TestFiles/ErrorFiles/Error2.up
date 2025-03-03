@@ -1,0 +1,3 @@
+start
+  show ("This is an unclosed text;  // Error: Unclosed text
+end

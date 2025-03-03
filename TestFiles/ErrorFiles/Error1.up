@@ -1,0 +1,8 @@
+start
+  number x = 5;
+  number y = 10;
+  decimal z = 2.da; // Error: Malformed decimal
+  number @invalidToken = 15;  // Error: Invalid token '@' but the scanner will ignore the invalid token and continue scanning
+
+  show("Hello \World") // Warning: Invalid escape sequence '\W'
+end
