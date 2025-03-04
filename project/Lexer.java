@@ -111,7 +111,7 @@ public class Lexer {
 
         // S2: Continue scanning if the first character is valid
         advance();
-        while (Character.isLetterOrDigit(peek()) || peek() == '_'|| peek() == '-' ) {
+        while (Character.isLetterOrDigit(peek()) || peek() == '_') {
             advance();
         }
 
