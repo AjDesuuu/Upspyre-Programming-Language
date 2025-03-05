@@ -1,0 +1,10 @@
+start  
+  list-of text colors = ["Red", "Green", "Blue"];  
+  number i = 3;  
+
+  if (i >= 0 and i < 3) {  
+    show (colors[i]);  
+  } otherwise {  
+    show "Index out of bounds.";  
+  }  
+end  

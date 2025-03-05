@@ -1,0 +1,4 @@
+start  
+  pair-map text:number studentScores = [("Alice": 95), ("Bob": 88)];  
+  show (studentScores.value["Alice"]);  // Expected Output: 95  
+end  

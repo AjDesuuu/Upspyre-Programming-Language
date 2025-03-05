@@ -1,0 +1,6 @@
+start
+  number x = 5;
+  number y = 2;
+  number result = x ** y; // Exponentiation
+  show (result); // Expected Output: 25
+end

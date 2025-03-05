@@ -1,0 +1,7 @@
+start  
+  number age = 20;  
+  
+  if age >= 18 {  // Error: Missing parentheses around condition  
+    show ("You are an adult.");  
+  }  
+end  

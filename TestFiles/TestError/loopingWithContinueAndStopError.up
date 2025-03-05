@@ -1,0 +1,11 @@
+start  
+  number count = 0;  
+  
+  repeat (count < 10) {  
+    if (count == 5) {  
+      stop;  // Error: Loop variable not incremented, causes infinite loop  
+    }  
+    
+    show (count);  
+  }  
+end  

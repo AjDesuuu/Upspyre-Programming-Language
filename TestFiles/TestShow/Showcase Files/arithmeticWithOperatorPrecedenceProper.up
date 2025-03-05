@@ -1,0 +1,11 @@
+start
+  number result = 3 + 4 * 2 / (1 - 5) ** 2;
+  show(result);  // Output: 3.5
+end
+
+
+// The expression 3 + 4 * 2 / (1 - 5) ** 2 follows this precedence order:
+// Parentheses (1 - 5) → -4
+// Exponentiation (-4) ** 2 → 16
+// Multiplication & Division 4 * 2 / 16 → 0.5
+// Addition 3 + 0.5 → 3.5

@@ -1,0 +1,3 @@
+start  
+  get text;  //Error: Missing variable name for input  
+end  

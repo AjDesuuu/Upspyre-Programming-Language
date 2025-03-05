@@ -1,0 +1,5 @@
+start  
+  method greet {  //Error: Missing parentheses for method parameters  
+    show ("Hello!");  
+  }  
+end  

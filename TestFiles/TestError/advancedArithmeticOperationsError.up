@@ -1,0 +1,6 @@
+start
+  number x = 5;
+  number y = "two"; // Error: Type mismatch (string assigned to number)
+  number result = x ** y;
+  show (result);
+end

@@ -1,0 +1,14 @@
+start
+  number day = 3;
+  choose-what {
+    pick 1: { show("Monday"); }
+    pick 2: { show("Tuesday"); }
+    pick 3: { show("Wednesday"); }
+    pick 4: { show("Thursday"); }
+    pick 5: { show("Friday"); }
+    pick 6: { show("Saturday"); }
+    pick 7: { show("Sunday"); }
+  }
+end
+
+// Output: Wednesday

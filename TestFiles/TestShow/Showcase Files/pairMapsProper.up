@@ -1,0 +1,4 @@
+start  
+  pair-map text:number studentAges = [("Mark": 20), ("AJ": 22)];  
+  show (studentAges["Mark"]);  
+end  

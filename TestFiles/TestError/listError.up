@@ -1,0 +1,4 @@
+start 
+list-of text fruits = ["Apple", "Banana", "Cherry"]; 
+show (fruits[3]); // Error: Index 3 is out of bounds (valid range: 0-2) 
+end

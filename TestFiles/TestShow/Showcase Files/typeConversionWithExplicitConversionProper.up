@@ -1,0 +1,5 @@
+start  
+  text numberText = "42";  
+  number num = numberText.convertTo(number);  
+  show (num + 1);  // Expected Output: 43  
+end 

@@ -1,0 +1,3 @@
+start  
+  number age = "twenty-one"; //Error: Type mismatch (text assigned to number)  
+end  

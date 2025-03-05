@@ -1,0 +1,5 @@
+start  
+  if age >= 18 {  	//Error: Missing parentheses around condition  
+    show (Valid);  
+  }  
+end  

@@ -1,0 +1,8 @@
+start  
+  method multiply(number a, number b) {  
+    output a * b;  
+  }  
+
+  number result = multiply(6, 7);  
+  show (result);  // Expected Output: 42  
+end  

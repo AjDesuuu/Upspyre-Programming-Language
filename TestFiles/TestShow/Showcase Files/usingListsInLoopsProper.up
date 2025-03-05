@@ -1,0 +1,9 @@
+start  
+  list-of text colors = ["Red", "Green", "Blue"];  
+  number i = 0;  
+
+  repeat (i < 3) {  
+    show (colors[i]);  
+    i = i + 1;  
+  }  
+end  

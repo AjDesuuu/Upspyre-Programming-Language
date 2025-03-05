@@ -1,0 +1,4 @@
+start  
+  list-of text fruits = ["Apple", "Banana", "Cherry"];  
+  show (fruits[1]);  
+end  

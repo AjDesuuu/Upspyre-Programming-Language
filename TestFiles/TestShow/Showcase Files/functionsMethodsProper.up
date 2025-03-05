@@ -1,0 +1,7 @@
+start  
+  method add(number x, number y) {  
+    output x + y;  
+  }  
+  number result = add(3, 7);  
+  show (result);  
+end  

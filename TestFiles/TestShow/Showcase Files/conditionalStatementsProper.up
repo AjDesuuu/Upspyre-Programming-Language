@@ -1,0 +1,8 @@
+start  
+  age = 18;  
+  if (age >= 18) {  
+    show ("You are an adult.");  
+  } otherwise {  
+    show ("You are a minor.");  
+  }  
+end  

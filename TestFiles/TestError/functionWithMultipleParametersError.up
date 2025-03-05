@@ -1,0 +1,5 @@
+start  
+  method multiply(a, b) {  // Error: Missing data type for parameters  
+    output a * b;  
+  }  
+end  

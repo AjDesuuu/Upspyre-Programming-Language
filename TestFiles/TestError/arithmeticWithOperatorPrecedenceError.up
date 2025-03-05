@@ -1,0 +1,4 @@
+start
+  number result = 3 + * 4;  // Error: Unexpected '*' operator without a left operand
+  show(result);
+end

@@ -1,0 +1,4 @@
+start  
+  pair-map text:number studentAges = [("Mark": 20), ("AJ": 22)];  
+  show (studentAges["Jules"]);  // Error: Key "Jules" does not exist in the pair-map  
+end  

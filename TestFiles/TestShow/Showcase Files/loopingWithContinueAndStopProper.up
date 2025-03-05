@@ -1,0 +1,17 @@
+start  
+  number count = 0;  
+  
+  repeat (count < 10) {  
+    count = count + 1;  
+    
+    if (count == 5) {  
+      continue;  // Skip printing 5  
+    }  
+    
+    show (count);  
+    
+    if (count == 8) {  
+      stop;  // Stops loop when count reaches 8  
+    }  
+  }  
+end  

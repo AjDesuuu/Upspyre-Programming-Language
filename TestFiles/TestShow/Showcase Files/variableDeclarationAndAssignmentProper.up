@@ -1,0 +1,8 @@
+start  
+  name = " Mark";  
+  age = 21;  
+  height = 5.7;  
+  isStudent = true;  
+  show (name);  
+  show (age);  
+end  

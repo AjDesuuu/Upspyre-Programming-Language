@@ -1,0 +1,6 @@
+start  
+  show "Enter your name:";
+  text name;  
+  get text name;  
+  show ("Hello, " + name + "!");  
+end  

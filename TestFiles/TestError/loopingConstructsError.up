@@ -1,0 +1,5 @@
+start  
+  repeat (count < 5) {  //Error: repeat-until expected  
+    show ("Looping...");  
+  }  
+end  
