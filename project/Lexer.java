@@ -133,23 +133,57 @@ public class Lexer {
         int startPos = position;
         int startIdx = index;
         boolean isDecimal = false;
-
-        while (Character.isDigit(peek()) || (peek() == '.' && !isDecimal)) {
+        boolean hasDigitBeforeDot = false;
+        boolean hasDigitAfterDot = false;
+    
+        while (Character.isDigit(peek()) || peek() == '.') {
             if (peek() == '.') {
+                if (isDecimal) {
+                    // Second dot encountered, return error
+                    while (!Character.isWhitespace(peek())) {
+                        advance();
+                    }
+                    String lexeme = input.substring(startIdx, index);
+                    return new Token(TokenType.ERROR, "Invalid decimal: " + lexeme, line, startPos);
+                }
                 isDecimal = true;
+                advance(); // Consume the dot
+            } else {
+                if (isDecimal) {
+                    hasDigitAfterDot = true;
+                } else {
+                    hasDigitBeforeDot = true;
+                }
+                advance(); // Consume the digit
             }
-            advance();
         }
-
+    
         // Check for invalid characters after the number
         if (Character.isLetter(peek())) {
             while (!Character.isWhitespace(peek()) && peek() != '\0') {
                 advance();
             }
             String lexeme = input.substring(startIdx, index);
-            return new Token(TokenType.ERROR, "Invalid token: "+lexeme, line, startPos);
+            return new Token(TokenType.ERROR, "Invalid token: " + lexeme, line, startPos);
         }
-
+    
+        // Handle cases like ".123" and "1."
+        if (isDecimal) {
+            if (!hasDigitBeforeDot && !hasDigitAfterDot) {
+                // Both before and after dot are missing, e.g., "."
+                String lexeme = input.substring(startIdx, index);
+                return new Token(TokenType.ERROR, "Invalid number: " + lexeme, line, startPos);
+            } else if (!hasDigitBeforeDot) {
+                // Case like ".123", treat as "0.123"
+                String lexeme = "0" + input.substring(startIdx, index);
+                return new Token(TokenType.DECIMAL, lexeme, line, startPos);
+            } else if (!hasDigitAfterDot) {
+                // Case like "1.", return error
+                String lexeme = input.substring(startIdx, index);
+                return new Token(TokenType.ERROR, "Invalid decimal: " + lexeme, line, startPos);
+            }
+        }
+    
         // Return the appropriate token type
         String lexeme = input.substring(startIdx, index);
         TokenType type = isDecimal ? TokenType.DECIMAL : TokenType.NUMBER;
@@ -400,7 +434,10 @@ public class Lexer {
             return scanIdentifierOrKeyword();
         } else if (Character.isDigit(currentChar)) {
             return scanNumber();
-        } else if (currentChar == '"') {
+            
+        } else if (currentChar == '.' && Character.isDigit(peek(1))) {
+            return scanNumber();
+        }else if (currentChar == '"') {
             return scanText();
         } else if (OPERATORS.containsKey(String.valueOf(currentChar))) {
             return scanOperatorOrSpecialSymbol();

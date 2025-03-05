@@ -2,6 +2,8 @@ start
   // Testing keywords
   number x = 10;
   number y = 20;
+  decimal f = .20;
+  decimal g = 1.20;
   if (x < y) {
     show("x is less than y");
   } otherwise {

@@ -4,7 +4,8 @@ import java.io.FileNotFoundException;
 
 public class LexerTester {
     public static void main(String[] args) {
-        String filePath = "TestFiles/ShowcaseFiles/Show3.up";
+        String fileName ="Show1.up";
+        String filePath = getFilePath(fileName);
         SymbolTable symbolTable = new SymbolTable();
 
         try {
@@ -20,6 +21,15 @@ public class LexerTester {
             symbolTable.printTable();
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + filePath);
+        }
+    }
+    private static String getFilePath(String fileName) {
+        if (fileName.startsWith("S")) {
+            return "TestFiles/ShowcaseFiles/" + fileName;
+        } else if (fileName.startsWith("E")) {
+            return "TestFiles/ErrorFiles/" + fileName;
+        } else {
+            throw new IllegalArgumentException("Invalid file name: " + fileName);
         }
     }
 }
