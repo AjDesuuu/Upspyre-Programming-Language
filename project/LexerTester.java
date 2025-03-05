@@ -29,7 +29,7 @@ public class LexerTester {
         } else if (fileName.startsWith("E")) {
             return "TestFiles/ErrorFiles/" + fileName;
         } else {
-            throw new IllegalArgumentException("Invalid file name: " + fileName);
+           return fileName;
         }
     }
 }
