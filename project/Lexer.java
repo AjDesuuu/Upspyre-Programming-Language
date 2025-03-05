@@ -415,36 +415,42 @@ public class Lexer {
     //Assigned to Aaron
     private Token scanTokenUsingDFA() {
         char currentChar = peek();
-
-        // Check for floor division ("///") first
-        if (currentChar == '/' && peek(1) == '/' && peek(2) == '/') {
-            advance(); // Consume first '/'
-            advance(); // Consume second '/'
-            advance(); // Consume third '/'
-            return new Token(TokenType.FLOOR_DIV, "///", line, position - 3);
+    
+        // Handle identifiers or keywords
+        if (Character.isLetter(currentChar) || currentChar == '_') {
+            return scanIdentifierOrKeyword();
         }
+    
+        // Handle numbers
+        if (Character.isDigit(currentChar)) {
+            return scanNumber();
+        }
+    
+        // Handle floating-point numbers starting with a dot
+        if (currentChar == '.' && Character.isDigit(peek(1))) {
+            return scanNumber();
+        }
+    
+        // Handle text literals
+        if (currentChar == '"') {
+            return scanText();
+        }
+    
+        // Handle operators or special symbols (including floor division)
+        if (OPERATORS.containsKey(String.valueOf(currentChar)) || SPECIAL_SYMBOLS.containsKey(currentChar)) {
+            return scanOperatorOrSpecialSymbol();
+        }
+    
+        // Handle comments
         if (currentChar == '/') {
             if (peek(1) == '/' || peek(1) == '*') {
                 return scanComment();
             }
         }
-        if (Character.isLetter(currentChar) || currentChar == '_') {
-            return scanIdentifierOrKeyword();
-        } else if (Character.isDigit(currentChar)) {
-            return scanNumber();
-            
-        } else if (currentChar == '.' && Character.isDigit(peek(1))) {
-            return scanNumber();
-        }else if (currentChar == '"') {
-            return scanText();
-        } else if (OPERATORS.containsKey(String.valueOf(currentChar))) {
-            return scanOperatorOrSpecialSymbol();
-        } else if (SPECIAL_SYMBOLS.containsKey(currentChar)) {
-            return scanOperatorOrSpecialSymbol();
-        } else {
-            advance();
-            return new Token(TokenType.ERROR, "Unrecognized token: " + String.valueOf(currentChar), line, position - 1);
-        }
+    
+        // Handle unrecognized tokens
+        advance();
+        return new Token(TokenType.ERROR, "Unrecognized token: " + String.valueOf(currentChar), line, position - 1);
     }
 
     public Token nextToken() {

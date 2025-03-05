@@ -24,7 +24,6 @@ start
   }
   number sum = add(x, y);
   show(sum);
-
   // Testing comments
   // This is a single-line comment
   /* This is a
@@ -32,7 +31,8 @@ start
 
   num = 2/a;
   num = 2///a
-  
+  num = 2 // a
+
   // Testing boolean values
   binary isTrue = true;
   binary isFalse = false;
