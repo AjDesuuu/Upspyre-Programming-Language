@@ -30,6 +30,9 @@ start
   /* This is a
      multi-line comment */
 
+  num = 2/a;
+  num = 2///a
+  
   // Testing boolean values
   binary isTrue = true;
   binary isFalse = false;
