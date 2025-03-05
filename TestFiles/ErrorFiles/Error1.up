@@ -4,7 +4,8 @@ start
   decimal z = 2.da; // Error: Malformed decimal
   decimal i = 2.; //invalid decimal format
   decimal j = 2..1; //multiple dots in decimal format
-  text 1abc = "wj"; // invalid identifier name 
+  text 1abc = "wj"; // invalid identifier name
+  number p = 22we; 
   number @invalidToken = 15;  // Error: Invalid token '@' but the scanner will ignore the invalid token and continue scanning
 
   show("Hello \World") // Warning: Invalid escape sequence '\W'

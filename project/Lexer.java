@@ -102,9 +102,7 @@ public class Lexer {
 
         // S1: Check if the first character is not a letter or an underscore
         if (!(Character.isLetter(firstChar) || firstChar == '_')) {
-            while (!Character.isWhitespace(peek()) && peek() != '\0') {
-                advance();
-            }
+            advance();
             String lexeme = input.substring(startIdx, index);
             return new Token(TokenType.ERROR, "Invalid token: "+lexeme, line, startPos);
         }
