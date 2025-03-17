@@ -2,7 +2,7 @@ start
   // Testing keywords
   number x = 10;
   number y = 20;
-  decimal f = .20;
+  decimalation          f = AND.30;
   decimal g = 1.20;
   if (x < y) {
     show("x is less than y");
@@ -11,7 +11,7 @@ start
   }
 
   // Testing operators
-  number result = x + y * (x - y) / 2 ** 2;
+  number result =x+yg4y@tewx-y)/2***2;
   show(result);
 
   // Testing special symbols

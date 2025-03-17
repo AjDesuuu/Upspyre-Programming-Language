@@ -24,7 +24,9 @@ public class Lexer {
             Map.entry("choose_what", TokenType.CHOOSE_WHAT), Map.entry("convertTo", TokenType.CONVERT_TO),
             Map.entry("len", TokenType.LEN), Map.entry("sort", TokenType.SORT),
             Map.entry("key", TokenType.KEY), Map.entry("value", TokenType.VALUE),
-            Map.entry("toText", TokenType.TO_TEXT), Map.entry("pick", TokenType.PICK)
+            Map.entry("toText", TokenType.TO_TEXT), Map.entry("pick", TokenType.PICK),
+            Map.entry("AND", TokenType.AND),
+            Map.entry("OR", TokenType.OR), Map.entry("NOT", TokenType.NOT)
     );
 
     private static final Map<String, TokenType> OPERATORS = Map.ofEntries(
@@ -349,20 +351,10 @@ public class Lexer {
                 }
             case '&':
                 advance();
-                if (peek() == '&') {
-                    advance();
-                    return new Token(TokenType.AND, "&&", line, position - 2);
-                } else {
-                    return new Token(TokenType.BITWISE_AND, "&", line, position - 1);
-                }
+                return new Token(TokenType.BITWISE_AND, "&", line, position - 1);
             case '|':
                 advance();
-                if (peek() == '|') {
-                    advance();
-                    return new Token(TokenType.OR, "||", line, position - 2);
-                } else {
-                    return new Token(TokenType.BITWISE_OR, "|", line, position - 1);
-                }
+                return new Token(TokenType.BITWISE_OR, "|", line, position - 1);
             case '*':
                 advance();
                 if (peek() == '*') {
