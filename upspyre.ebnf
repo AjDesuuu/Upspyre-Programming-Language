@@ -1,79 +1,59 @@
-<program> ::= "start" <stmt>* "end"
-<stmt> ::= <simple_stmt> | <compound_stmt>
-<simple_stmt> ::= ( <assignment_stmt> | <return_stmt> | <io_statement> | <collection_stmt> | <decl_stmt> ) ";"
-<compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <choose_what_stmt>
-
-<expression> ::= <term> | <expression> <add_op> <term>
-<term> ::= <factor> | <term> <multi_op> <factor>
-<factor> ::= <base> | <base> <exp_op> <factor>
-<base> ::= "(" <expression> ")" | <const> | <identifier> | <conv_expr> | <collection_expr> | <collection_method>
-<const> ::= <number> | <decimal> | "\"" <text> "\"" | <binary> | <none>
-
-<bit_expr> ::= <bitor_expr>
-<bitor_expr> ::= <bitxor_expr> | <bitor_expr> "|" <bitxor_expr>
-<bitxor_expr> ::= <bitand_expr> | <bitxor_expr> "^" <bitand_expr> 
-<bitand_expr> ::= <bitshift_expr> | <bitand_expr> "&" <bitshift_expr>
-<bitshift_expr> ::= <bitnot_expr> | <bitshift_expr> <shift_op> <bitnot_expr>
-<bitnot_expr> ::= "~" <bit_base>
-<bit_base> ::= "(" <bit_expr> ")" | <expression>
-
-<decl_stmt> ::= <data_type> <identifier>
-<io_statement> ::= <output_stmt> | <input_stmt>
-<output_stmt> ::= "show" "(" <expression> ")"
-<input_stmt> ::= "get" <data_type> <const> "(" ")"
-
-<conv_expr> ::= <identifier> "." "convertTo" "(" <data_type> ")"
-
-<assignment_stmt> ::= <identifier> <assign_op> <expression>
-<return_stmt> ::= "output" <expression>
-<conditional_stmt> ::= "if" "(" <conditional_expr> ")" <block_stmt> ( "otherwise" <block_stmt>)*
-<block_stmt> ::= "{" <stmt>* "}"
-
-<conditional_expr> ::= <logicor_expr>
-<logicor_expr> ::= <logicand_expr>  | <logicor_expr> "OR" <logicand_expr>
-<logicand_expr> ::= <logicnot_expr> | <logicand_expr> "AND" <logicnot_expr>
-<logicnot_expr> ::= <relational_expr> | "NOT" <logicnot_expr>
-<relational_expr> ::= <expression> <relational_op> <expression> | "(" <conditional_expr> ")" | <const> | <identifier>
-
-<loop_stmt> ::= <for_loop> | <repeat_loop> | <repeat_until>
-<for_loop> ::= "for" "(" <assignment_stmt> ";" <conditional_expr> ";" <expression> ")" <block_stmt>
-<repeat_loop> ::= "repeat" "(" <conditional_expr> ")" <block_stmt>
-<repeat_until> ::= "repeat" <block_stmt> "until" "(" <conditional_expr> ")"
-
-<func_decl> ::= "method" <identifier> "(" <param_list>? ")" <block_stmt>
-<param_list> ::= <identifier> ("," <identifier>)* 
-
-<func_call> ::= <identifier> "(" <arg_list>? ")"
-<arg_list> ::= <expression> ("," <expression>)*
-
-<choose_what_stmt> ::= "choose-what" "{" <pick_case>* "}"
-<pick_case> ::= "pick" <expression> ":" <block_stmt>
-
-<collection_stmt> ::= <list_decl> | <pair_map_decl> | <collection_assign>
-<list_decl> ::= "list-of" <data_type> <identifier> "=" "[" <expression> ("," <expression>)* "]"
-<pair_map_decl> ::= "pair-map" "(" <data_type> ":" <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" 
-<pair_map_val> ::= <pair> ("," <pair> )*
-<pair> ::= "(" <expression> ":" <expression> ")"
-<collection_assign> ::= <collection_expr> <assign_op> <expression>
-<collection_expr> ::= <list_value> | <pair_map_value> | <pair_map_value>
-<list_value> ::= <identifier> "[" <expression> "]"
-<pair_map_value> ::= <identifier> ".value[" <expression> "]"
-<pair_map_key> ::= <identifier> ".key[" <expression> "]"
-<collection_method> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")"
-
-<data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
-<relational_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">="
-<add_op> ::= "+" | "-"
-<multi_op> ::= "*" | "/" | "%"
-<exp_op> ::= "**"
-<assign_op> ::= "=" | "+=" | "-=" | "*="
-<shift_op> ::= "<<" | ">>"
-
-/*The terminals below are TOKENS and is not part of the CFG. But for formality purposes we have included it.*/
-
-<identifier> ::= //taken from DFA
-<number> ::= //Taken from DFA
-<decimal> ::= //Taken from DFA
-<text> ::= //Taken from DFA
-<binary> ::= "TRUE" | "FALSE"
-<none> ::= "null"
+<PROGRAM> ::= START <STMT>* END
+<STMT> ::= <SIMPLE_STMT> | <COMPOUND_STMT>
+<SIMPLE_STMT> ::= ( <ASSIGNMENT_STMT> | <RETURN_STMT> | <IO_STATEMENT> | <COLLECTION_STMT> | <DECL_STMT> ) SEMI
+<COMPOUND_STMT> ::= <CONDITIONAL_STMT> | <LOOP_STMT> | <FUNC_DECL> | <CHOOSE_WHAT_STMT>
+<EXPRESSION> ::= <TERM> | <EXPRESSION> <ADD_OP> <TERM>
+<TERM> ::= <FACTOR> | <TERM> <MULTI_OP> <FACTOR>
+<FACTOR> ::= <BASE> | <BASE> <EXP_OP> <FACTOR>
+<BASE> ::= LPAREN <EXPRESSION> RPAREN | <CONST> | IDENTIFIER | <CONV_EXPR> | <COLLECTION_EXPR> | <COLLECTION_METHOD>
+<CONST> ::= NUMBER | DECIMAL | QUOTE TEXT QUOTE | <BINARY> | NONE
+<BIT_EXPR> ::= <BITOR_EXPR>
+<BITOR_EXPR> ::= <BITXOR_EXPR> | <BITOR_EXPR> BITWISE_OR <BITXOR_EXPR>
+<BITXOR_EXPR> ::= <BITAND_EXPR> | <BITXOR_EXPR> BITWISE_XOR <BITAND_EXPR>
+<BITAND_EXPR> ::= <BITSHIFT_EXPR> | <BITAND_EXPR> BITWISE_AND <BITSHIFT_EXPR>
+<BITSHIFT_EXPR> ::= <BITNOT_EXPR> | <BITSHIFT_EXPR> <SHIFT_OP> <BITNOT_EXPR>
+<BITNOT_EXPR> ::= BITWISE_NOT <BIT_BASE>
+<BIT_BASE> ::= LPAREN <BIT_EXPR> RPAREN | <EXPRESSION>
+<DECL_STMT> ::= <DATA_TYPE> IDENTIFIER
+<IO_STATEMENT> ::= <OUTPUT_STMT> | <INPUT_STMT>
+<OUTPUT_STMT> ::= SHOW LPAREN <EXPRESSION> RPAREN
+<INPUT_STMT> ::= GET <DATA_TYPE> <CONST> LPAREN RPAREN
+<CONV_EXPR> ::= IDENTIFIER DOT CONVERTTO LPAREN <DATA_TYPE> RPAREN
+<ASSIGNMENT_STMT> ::= IDENTIFIER <ASSIGN_OP> <EXPRESSION>
+<RETURN_STMT> ::= OUTPUT <EXPRESSION>
+<CONDITIONAL_STMT> ::= IF LPAREN <CONDITIONAL_EXPR> RPAREN <BLOCK_STMT> ( OTHERWISE <BLOCK_STMT>)*
+<BLOCK_STMT> ::= RCURLY <STMT>* LCURLY
+<CONDITIONAL_EXPR> ::= <LOGICOR_EXPR>
+<LOGICOR_EXPR> ::= <LOGICAND_EXPR>  | <LOGICOR_EXPR> OR <LOGICAND_EXPR>
+<LOGICAND_EXPR> ::= <LOGICNOT_EXPR> | <LOGICAND_EXPR> AND <LOGICNOT_EXPR>
+<LOGICNOT_EXPR> ::= <RELATIONAL_EXPR> | NOT <LOGICNOT_EXPR>
+<RELATIONAL_EXPR> ::= <EXPRESSION> <RELATIONAL_OP> <EXPRESSION> | LPAREN <CONDITIONAL_EXPR> RPAREN | <BINARY> | IDENTIFIER
+<LOOP_STMT> ::= <FOR_LOOP> | <REPEAT_LOOP> | <REPEAT_UNTIL>
+<FOR_LOOP> ::= FOR LPAREN <ASSIGNMENT_STMT> SEMI <CONDITIONAL_EXPR> SEMICOLON <EXPRESSION> RPAREN <BLOCK_STMT>
+<REPEAT_LOOP> ::= REPEAT LPAREN <CONDITIONAL_EXPR> RPAREN <BLOCK_STMT>
+<REPEAT_UNTIL> ::= REPEAT <BLOCK_STMT> UNTIL LPAREN <CONDITIONAL_EXPR> RPAREN
+<FUNC_DECL> ::= METHOD IDENTIFIER LPAREN <PARAM_LIST>? RPAREN <BLOCK_STMT>
+<PARAM_LIST> ::= IDENTIFIER (COMMA IDENTIFIER)*
+<FUNC_CALL> ::= IDENTIFIER LPAREN <ARG_LIST>? RPAREN
+<ARG_LIST> ::= <EXPRESSION> (COMMA <EXPRESSION>)*
+<CHOOSE_WHAT_STMT> ::= CHOOSE_WHAT RCURLY <PICK_CASE>* LCURLY
+<PICK_CASE> ::= PICK <EXPRESSION> COLON <BLOCK_STMT>
+<COLLECTION_STMT> ::= <LIST_DECL> | <PAIR_MAP_DECL> | <COLLECTION_ASSIGN>
+<LIST_DECL> ::= LIST_OF <DATA_TYPE> IDENTIFIER ASSIGN LBRACKET <EXPRESSION> (COMMA <EXPRESSION>)* RBRACKET
+<PAIR_MAP_DECL> ::= PAIR_MAP LPAREN <DATA_TYPE> COLON <DATA_TYPE> RPAREN IDENTIFIER ASSIGN LBRACKET <PAIR_MAP_VAL> RBRACKET
+<PAIR_MAP_VAL> ::= <PAIR> (COMMA <PAIR> )*
+<PAIR> ::= LPAREN <EXPRESSION> COLON <EXPRESSION> RPAREN
+<COLLECTION_ASSIGN> ::= <COLLECTION_EXPR> <ASSIGN_OP> <EXPRESSION>
+<COLLECTION_EXPR> ::= <LIST_VALUE> | <PAIR_MAP_VALUE> | <PAIR_MAP_VALUE>
+<LIST_VALUE> ::= IDENTIFIER LBRACKET <EXPRESSION> RBRACKET
+<PAIR_MAP_VALUE> ::= IDENTIFIER DOT VALUE LBRACKET <EXPRESSION> RBRACKET
+<PAIR_MAP_KEY> ::= IDENTIFIER DOT KEY LBRACKET <EXPRESSION> RBRACKET
+<COLLECTION_METHOD> ::= IDENTIFIER DOT ( TOTEXT | LEN | SORT) LPAREN RPAREN
+<DATA_TYPE> ::= BINARY_TYPE | NUMBER_TYPE | DECIMAL_TYPE | TEXT_TYPE | NONE
+<RELATIONAL_OP> ::= EQ | NEQ | LT | GT | LEQ | GEQ
+<ADD_OP> ::= PLUS | MINUS
+<MULTI_OP> ::= MULT | DIV | MOD
+<EXP_OP> ::= EXPONENT
+<ASSIGN_OP> ::= ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULT_ASSIGN
+<SHIFT_OP> ::= LSHIFT | RSHIFT
+<BINARY> ::= TRUE | FALSE
