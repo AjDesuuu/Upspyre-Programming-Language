@@ -450,4 +450,10 @@ public class Lexer {
         if (index >= input.length()) return new Token(TokenType.EOF, "EOF", line, position);
         return scanTokenUsingDFA();
     }
+    public void reset() {
+        // Reset position trackers
+        this.index = 0;
+        this.line = 1;
+        this.position = 0;
+    }
 }
