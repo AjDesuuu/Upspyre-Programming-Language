@@ -1,3 +1,6 @@
+import openpyxl
+import json
+
 class Symbol:
     def __init__(self, name, is_terminal=False):
         self.name = name
@@ -460,6 +463,76 @@ class LRTableGenerator:
             
             print(row)
         print("-" * len(header))
+    
+    def save_lr_table_to_json(self, filename):
+        """Save the LR parsing table to a JSON file."""
+        table_data = {
+            "action_table": {},
+            "goto_table": {},
+            "productions": [str(prod) for prod in self.augmented_grammar.productions]
+        }
+
+        # Convert action table to a serializable format
+        for key, value in self.action_table.items():
+            state, symbol = key
+            action, val = value
+            table_data["action_table"][f"{state},{symbol}"] = {
+                "action": action,
+                "value": str(val) if val else None
+            }
+
+        # Convert goto table to a serializable format
+        for key, value in self.goto_table.items():
+            state, symbol = key
+            table_data["goto_table"][f"{state},{symbol}"] = value
+
+        # Save to JSON file
+        with open(filename, 'w') as f:
+            json.dump(table_data, f, indent=4)
+
+    def save_lr_table_to_excel(self, filename):
+        """Save the LR parsing table to an Excel file."""
+        wb = openpyxl.Workbook()
+        ws = wb.active
+
+        # Collect all symbols for table headers
+        all_terminals = list(self.augmented_grammar.terminals) + [self.EOF]
+        all_non_terminals = list(self.augmented_grammar.non_terminals)
+
+        # Write the table header
+        headers = ["State"] + [str(terminal) for terminal in all_terminals] + [str(non_terminal) for non_terminal in all_non_terminals]
+        ws.append(headers)
+
+        # Write each state's row
+        for i in range(len(self.canonical_collection)):
+            row = [i]
+
+            # Write action entries for terminals
+            for terminal in all_terminals:
+                if (i, terminal) in self.action_table:
+                    action, value = self.action_table[(i, terminal)]
+                    if action == 'shift':
+                        row.append(f"s{value}")
+                    elif action == 'reduce':
+                        # Find the index of the production for reduce actions
+                        prod_idx = self.augmented_grammar.productions.index(value)
+                        row.append(f"r{prod_idx}")
+                    elif action == 'accept':
+                        row.append("acc")
+                else:
+                    row.append("")
+
+            # Write goto entries for non-terminals
+            for non_terminal in all_non_terminals:
+                if (i, non_terminal) in self.goto_table:
+                    row.append(self.goto_table[(i, non_terminal)])
+                else:
+                    row.append("")
+
+            ws.append(row)
+
+        # Save the workbook
+        wb.save(filename)
 
     def save_lr_table_to_file(self, filename):
         """Save the LR parsing table to a file."""
@@ -532,27 +605,33 @@ def parse_ebnf_and_build_lr_table(grammar_file_path):
 
 def main():
     import argparse
-    
+
     # Set up command-line argument parsing
     parser = argparse.ArgumentParser(description='Generate LR parsing table from EBNF grammar file.')
     parser.add_argument('grammar_file', help='Path to the EBNF grammar file')
-    parser.add_argument('-o', '--output', help='Output file for the LR table', default='format.ebnf')
+    parser.add_argument('-o', '--output', help='Output file for the LR table', default='output.txt')
     args = parser.parse_args()
-    
+
     # Parse grammar and build table
     generator = parse_ebnf_and_build_lr_table(args.grammar_file)
-    
+
     if generator:
         print("Grammar parsed successfully.")
         print(f"Found {len(generator.augmented_grammar.non_terminals)} non-terminals and {len(generator.augmented_grammar.terminals)} terminals.")
         print(f"Generated {len(generator.canonical_collection)} LR states.")
-        
-        # Save table to file
-        generator.save_lr_table_to_file(args.output)
-        print(f"LR table saved to {args.output}")
-        
-    
 
+        # Determine the output format based on the file extension
+        if args.output.endswith('.txt'):
+            generator.save_lr_table_to_file(args.output)
+        elif args.output.endswith('.xlsx'):
+            generator.save_lr_table_to_excel(args.output)
+        elif args.output.endswith('.json'):
+            generator.save_lr_table_to_json(args.output)
+        else:
+            print("Unsupported output format. Please use .txt, .xlsx, or .json.")
+            return
+
+        print(f"LR table saved to {args.output}")
 
 if __name__ == "__main__":
     main()
