@@ -15,31 +15,38 @@ public class Parser {
         stack.push(0); // Start state
 
         // Load parsing table from CSV
-        ParsingTableGenerator.generateParsingTables("output.csv");
+        ParsingTableGenerator.generateParsingTables("project/output.csv");
     }
 
     public void parse() {
         while (true) {
-
+            // Skip comment tokens
             while (currentToken.getType().toString().equals("COMMENT")) {
-                currentToken = lexer.nextToken(); // Move to the next token
+                currentToken = lexer.nextToken();
             }
+    
+            // Stop parsing if EOF is reached
+            if (currentToken.getType() == TokenType.EOF) {
+                System.out.println("Parsing complete.");
+                return;
+            }
+    
             int state = stack.peek();
-            String tokenType = currentToken.getType().toString(); // Convert TokenType to string
-
+            String tokenType = currentToken.getType().toString();
+    
             // Check action table
             HashMap<String, String> actionRow = ParsingTableGenerator.actionTable.get(state);
             if (actionRow == null || !actionRow.containsKey(tokenType)) {
                 System.out.println("Syntax Error at token: " + currentToken);
                 return;
             }
-
+    
             String action = actionRow.get(tokenType);
-
+    
             if (action.startsWith("s")) { // Shift action
                 int nextState = Integer.parseInt(action.substring(1));
                 stack.push(nextState);
-                currentToken = lexer.nextToken(); // Move to the next token
+                currentToken = lexer.nextToken(); 
             } else if (action.startsWith("r")) { // Reduce action
                 int ruleNumber = Integer.parseInt(action.substring(1));
                 reduce(ruleNumber);

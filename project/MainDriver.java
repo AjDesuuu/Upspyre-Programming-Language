@@ -18,6 +18,8 @@ public class MainDriver {
             System.out.println("\nSymbol Table:");
             symbolTable.printTable();
 
+            parser.parse();
+
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + filePath);
         }
