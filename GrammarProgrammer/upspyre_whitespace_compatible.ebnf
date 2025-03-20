@@ -1,0 +1,78 @@
+<program> ::= <ws> "start" <ws> <stmt>* <ws> "end" <ws>
+
+<stmt> ::= <simple_stmt> | <compound_stmt>
+<simple_stmt> ::= (<expression_stmt> | <assignment_stmt> | <return_stmt> | <io_statement>) ";" <ws>
+<compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <collection_stmt> | <choose_what_stmt>
+
+<io_statement> ::= <output_stmt> | <input_stmt>
+<output_stmt> ::= "show" <ws> "(" <ws> <expression_stmt> <ws> ")" <ws>
+<input_stmt> ::= "get" <ws> <data_type> <ws> <const> <ws> "(" <ws> ")" <ws>
+
+<expression_stmt> ::= <expression>
+<expression> ::= <term> | <expression> <ws> <add_op> <ws> <term>
+<term> ::= <factor> | <term> <ws> <multi_op> <ws> <factor>
+<factor> ::= <base> | <base> <ws> <exp_op> <ws> <factor>
+<base> ::= "(" <ws> <expression> <ws> ")" | <const> | <identifier>
+<const> ::= <number> | <decimal> | <text> | <binary> | <none>
+
+<bit_expr> ::= <bitor_expr>
+<bitor_expr> ::= <bitxor_expr> | (<bitor_expr> <ws> "|" <ws> <bitxor_expr>)
+<bitxor_expr> ::= <bitand_expr> | (<bitxor_expr> <ws> "^" <ws> <bitand_expr>)
+<bitand_expr> ::= <bitshift_expr> | (<bitand_expr> <ws> "&" <ws> <bitshift_expr>)
+<bitshift_expr> ::= <bitnot_expr> | (<bitshift_expr> <ws> <shift_op> <ws> <bitnot_expr>)
+<bitnot_expr> ::= "~" <ws> <bit_base>
+<bit_base> ::= "(" <ws> <bit_expr> <ws> ")" | <expression>
+
+<assignment_stmt> ::= <identifier> <ws> <assign_op> <ws> <expression>
+<return_stmt> ::= "output" <ws> <expression>
+<conditional_stmt> ::= "if" <ws> "(" <ws> <conditional_expr> <ws> ")" <ws> <block_stmt> (<ws> "otherwise" <ws> <block_stmt>)*
+
+<block_stmt> ::= "{" <ws> <stmt>* <ws> "}" <ws>
+
+<conditional_expr> ::= <logicor_expr>
+<logicor_expr> ::= <logicand_expr> | <logicor_expr> <ws> "or" <ws> <logicand_expr>
+<logicand_expr> ::= <logicnot_expr> | <logicand_expr> <ws> "and" <ws> <logicnot_expr>
+<logicnot_expr> ::= <relational_expr> | "not" <ws> <logicnot_expr>
+<relational_expr> ::= <bit_expr> <ws> <relational_op> <ws> <bit_expr> | "(" <ws> <conditional_expr> <ws> ")" | <const> | <identifier>
+
+<loop_stmt> ::= <for_loop> | <repeat_loop> | <repeat_until>
+<for_loop> ::= "for" <ws> "(" <ws> <assignment_stmt> <ws> ";" <ws> <conditional_expr> <ws> ";" <ws> <expression> <ws> ")" <ws> <block_stmt>
+<repeat_loop> ::= "repeat" <ws> "(" <ws> <conditional_expr> <ws> ")" <ws> <block_stmt>
+<repeat_until> ::= "repeat" <ws> <block_stmt> <ws> "until" <ws> "(" <ws> <conditional_expr> <ws> ")"
+
+<func_decl> ::= "method" <ws> <identifier> <ws> "(" <ws> <param_list>? <ws> ")" <ws> <block_stmt>
+<param_list> ::= <identifier> (<ws> "," <ws> <identifier>)*
+<func_call> ::= <identifier> <ws> "(" <ws> <arg_list>? <ws> ")"
+<arg_list> ::= <expression> (<ws> "," <ws> <expression>)*
+
+<choose_what_stmt> ::= "choose-what" <ws> "{" <ws> <pick_case> <ws> "}" <ws>
+<pick_case> ::= "pick" <ws> <expression> <ws> ":" <ws> <block_stmt>
+
+<collection_stmt> ::= <list_decl> | <list_access> | <pair_map_decl> | <list_access> | <pair_map_access>
+<list_decl> ::= "list-of" <ws> <data_type> <ws> <identifier> <ws> "=" <ws> "[" <ws> <expression> (<ws> "," <ws> <expression>)* <ws> "]" <ws> ";" <ws>
+
+<pair_map_decl> ::= "pair-map" <ws> "(" <ws> <data_type> <ws> ":" <ws> <data_type> <ws> ")" <ws> <identifier> <ws> "=" <ws> "[" <ws> <pair_map_val> <ws> "]" <ws> ";" <ws>
+<pair_map_val> ::= <pair> (<ws> "," <ws> <pair>)*
+<pair> ::= "(" <ws> <expression> <ws> ":" <ws> <expression> <ws> ")" <ws>
+
+<list_access> ::= <identifier> <ws> "[" <ws> <const> <ws> "]" <ws>
+<pair_map_access> ::= <identifier> <ws> "[" <ws> <const> <ws> "]" <ws> <identifier> <ws> "." <ws> "key" <ws> "[" <ws> <const> <ws> "]" <ws>
+
+<data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
+<relational_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">="
+<add_op> ::= "+" | "-"
+<multi_op> ::= "*" | "/" | "%"
+<exp_op> ::= "**"
+<assign_op> ::= "=" | "+=" | "-=" | "*="
+<shift_op> ::= "<<" | ">>"
+
+<identifier> ::= (<letter_lower> | <letter_upper>) (<letter_lower> | <letter_upper> | <digit> | "_")*
+<number> ::= <digit>+
+<decimal> ::= <number> "." <number>
+<text> ::= (<letter_lower> | <letter_upper>) (<letter_lower> | <letter_upper> | <digit> | " " )*
+<binary> ::= "true" | "false"
+<none> ::= "null"
+<letter_lower> ::= [a-z]
+<letter_upper> ::= [A-Z]
+<digit> ::= [0-9]
+<ws> ::= (" " | "\t" | "\n")*

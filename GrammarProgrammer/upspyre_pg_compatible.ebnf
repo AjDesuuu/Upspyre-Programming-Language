@@ -1,0 +1,81 @@
+<program> ::= "start" <stmt>* "end"
+<stmt> ::= <simple_stmt> | <compound_stmt>
+<simple_stmt> ::= ( <assignment_stmt> | <return_stmt> | <io_statement> | <collection_stmt> | <decl_stmt> ) ";"
+<compound_stmt> ::= <conditional_stmt> | <loop_stmt> | <func_decl> | <choose_what_stmt>
+
+<expression> ::= <term> | <expression> <add_op> <term>
+<term> ::= <factor> | <term> <multi_op> <factor>
+<factor> ::= <base> | <base> <exp_op> <factor>
+<base> ::= "(" <expression> ")" | <const> | <identifier> | <conv_expr> | <collection_expr> | <collection_method>
+<const> ::= <number> | <decimal> | "\"" <text> "\"" | <binary> | <none>
+
+<bit_expr> ::= <bitor_expr>
+<bitor_expr> ::= <bitxor_expr> | <bitor_expr> "|" <bitxor_expr>
+<bitxor_expr> ::= <bitand_expr> | <bitxor_expr> "^" <bitand_expr> 
+<bitand_expr> ::= <bitshift_expr> | <bitand_expr> "&" <bitshift_expr>
+<bitshift_expr> ::= <bitnot_expr> | <bitshift_expr> <shift_op> <bitnot_expr>
+<bitnot_expr> ::= "~" <bit_base>
+<bit_base> ::= "(" <bit_expr> ")" | <expression>
+
+<decl_stmt> ::= <data_type> <identifier>
+<io_statement> ::= <output_stmt> | <input_stmt>
+<output_stmt> ::= "show" "(" <expression> ")"
+<input_stmt> ::= "get" <data_type> <identifier>
+
+<conv_expr> ::= <identifier> "." "convertTo" "(" <data_type> ")"
+
+<assignment_stmt> ::= <identifier> <assign_op> <expression>
+<return_stmt> ::= "output" <expression>
+<conditional_stmt> ::= "if" "(" <conditional_expr> ")" <block_stmt> ( "otherwise" <block_stmt>)*
+<block_stmt> ::= "{" <stmt>* "}"
+
+<conditional_expr> ::= <logicor_expr>
+<logicor_expr> ::= <logicand_expr>  | <logicor_expr> "OR" <logicand_expr>
+<logicand_expr> ::= <logicnot_expr> | <logicand_expr> "AND" <logicnot_expr>
+<logicnot_expr> ::= <relational_expr> | "NOT" <logicnot_expr>
+<relational_expr> ::= <expression> <relational_op> <expression> | "(" <conditional_expr> ")" | <const> | <identifier>
+
+<loop_stmt> ::= <for_loop> | <repeat_loop> | <repeat_until>
+<for_loop> ::= "for" "(" <assignment_stmt> ";" <conditional_expr> ";" <expression> ")" <block_stmt>
+<repeat_loop> ::= "repeat" "(" <conditional_expr> ")" <block_stmt>
+<repeat_until> ::= "repeat" <block_stmt> "until" "(" <conditional_expr> ")"
+
+<func_decl> ::= "method" <identifier> "(" <param_list>? ")" <block_stmt>
+<param_list> ::= <identifier> ("," <identifier>)* 
+
+<func_call> ::= <identifier> "(" <arg_list>? ")"
+<arg_list> ::= <expression> ("," <expression>)*
+
+<choose_what_stmt> ::= "choose-what" "{" <pick_case>* "}"
+<pick_case> ::= "pick" <expression> ":" <block_stmt>
+
+<collection_stmt> ::= <list_decl> | <pair_map_decl> | <collection_assign>
+<list_decl> ::= "list-of" <data_type> <identifier> "=" "[" <expression> ("," <expression>)* "]"
+<pair_map_decl> ::= "pair-map" "(" <data_type> ":" <data_type> ")" <identifier> "=" "[" <pair_map_val> "]" 
+<pair_map_val> ::= <pair> ("," <pair> )*
+<pair> ::= "(" <expression> ":" <expression> ")"
+<collection_assign> ::= <collection_expr> <assign_op> <expression>
+<collection_expr> ::= <list_value> | <pair_map_value> | <pair_map_value>
+<list_value> ::= <identifier> "[" <expression> "]"
+<pair_map_value> ::= <identifier> ".value[" <expression> "]"
+<pair_map_key> ::= <identifier> ".key[" <expression> "]"
+<collection_method> ::= <identifier> "." ( "toText" | "len" | "sort") "(" ")"
+
+<data_type> ::= "binary" | "number" | "decimal" | "text" | "none"
+<relational_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">="
+<add_op> ::= "+" | "-"
+<multi_op> ::= "*" | "/" | "%"
+<exp_op> ::= "**"
+<assign_op> ::= "=" | "+=" | "-=" | "*="
+<shift_op> ::= "<<" | ">>"
+
+<identifier> ::= (<letter_lower> | <letter_upper>) (<letter_lower> | <letter_upper> | <digit> | "_")*
+<number> ::= <digit>+
+<decimal> ::= <number> "." <number>
+<text> ::= (<letter_lower> | <letter_upper>) (<letter_lower> | <letter_upper> | <digit> | " " )*
+<binary> ::= "true" | "false"
+<none> ::= "null"
+
+<letter_lower> ::= [a-z]
+<letter_upper> ::= [A-Z]
+<digit> ::= [0-9]
