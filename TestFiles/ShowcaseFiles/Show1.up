@@ -1,41 +1,5 @@
 start
-  // Testing keywords
   number x = 10;
   number y = 20;
-  decimalation          f = AND.30;
-  decimal g = 1.20;
-  if (x < y) {
-    show("x is less than y");
-  } otherwise {
-    show("x is not less than y");
-  }
-
-  // Testing operators
-  number result =x+yg4y@tewx-y)/2***2;
-  show(result);
-
-  // Testing special symbols
-  list_of number numbers = [1, 2, 3, 4, 5];
-  show(numbers[2]);
-
-  // Testing method
-  method add(number a, number b) {
-    output a + b;
-  }
-  number sum = add(x, y);
-  show(sum);
-  // Testing comments
-  // This is a single-line comment
-  /* This is a
-     multi-line comment */
-
-  num = 2/a;
-  num = 2///a
-  num = 2 // a
-
-  // Testing boolean values
-  binary isTrue = true;
-  binary isFalse = false;
-  show(isTrue);
-  show(isFalse);
+  
 end
