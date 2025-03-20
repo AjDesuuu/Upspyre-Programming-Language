@@ -15,7 +15,7 @@ public class Parser {
         stack.push(0); // Start state
 
         // Load parsing table from CSV
-        ParsingTableGenerator.generateParsingTables("project/output.csv");
+        ParsingTableGenerator.generateParsingTables("GrammarProgrammer/output.csv");
     }
 
     public void parse() {

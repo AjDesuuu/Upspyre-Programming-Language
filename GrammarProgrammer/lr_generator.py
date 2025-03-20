@@ -1,5 +1,6 @@
 import openpyxl
 import json
+import csv
 
 class Symbol:
     def __init__(self, name, is_terminal=False):
@@ -463,7 +464,50 @@ class LRTableGenerator:
             
             print(row)
         print("-" * len(header))
-    
+    def save_lr_table_to_csv(self, filename):
+        """Save the LR parsing table to a CSV file."""
+        # Collect all symbols for table headers
+        all_terminals = list(self.augmented_grammar.terminals) + [self.EOF]
+        all_non_terminals = list(self.augmented_grammar.non_terminals)
+
+        # Prepare the header row
+        headers = ["State"] + [str(terminal) for terminal in all_terminals] + [str(non_terminal) for non_terminal in all_non_terminals]
+
+        # Prepare the data rows
+        rows = []
+        for i in range(len(self.canonical_collection)):
+            row = [i]
+
+            # Add action entries for terminals
+            for terminal in all_terminals:
+                if (i, terminal) in self.action_table:
+                    action, value = self.action_table[(i, terminal)]
+                    if action == 'shift':
+                        row.append(f"s{value}")
+                    elif action == 'reduce':
+                        # Find the index of the production for reduce actions
+                        prod_idx = self.augmented_grammar.productions.index(value)
+                        row.append(f"r{prod_idx}")
+                    elif action == 'accept':
+                        row.append("acc")
+                else:
+                    row.append("")
+
+            # Add goto entries for non-terminals
+            for non_terminal in all_non_terminals:
+                if (i, non_terminal) in self.goto_table:
+                    row.append(self.goto_table[(i, non_terminal)])
+                else:
+                    row.append("")
+
+            rows.append(row)
+
+        # Write to CSV file
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(headers)  # Write the header
+            writer.writerows(rows)
+
     def save_lr_table_to_json(self, filename):
         """Save the LR parsing table to a JSON file."""
         table_data = {
@@ -602,7 +646,6 @@ def parse_ebnf_and_build_lr_table(grammar_file_path):
     
     return generator
 
-
 def main():
     import argparse
 
@@ -627,8 +670,10 @@ def main():
             generator.save_lr_table_to_excel(args.output)
         elif args.output.endswith('.json'):
             generator.save_lr_table_to_json(args.output)
+        elif args.output.endswith('.csv'):
+            generator.save_lr_table_to_csv(args.output)
         else:
-            print("Unsupported output format. Please use .txt, .xlsx, or .json.")
+            print("Unsupported output format. Please use .txt, .xlsx, .json, or .csv.")
             return
 
         print(f"LR table saved to {args.output}")
