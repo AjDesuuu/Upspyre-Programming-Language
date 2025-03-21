@@ -387,13 +387,19 @@ class LRTableGenerator:
         return self.canonical_collection
     
     def build_lr_parsing_table(self):
-        """Build the LR parsing table (action and goto tables)."""
+        """Build the LR parsing table (action and goto tables) with conflict detection."""
         # Compute FIRST and FOLLOW sets
         self.compute_first_sets()
         self.compute_follow_sets()
         
         # Build canonical collection
         self.build_canonical_collection()
+        
+        # Track conflicts
+        self.conflicts = {
+            'shift_reduce': [],
+            'reduce_reduce': []
+        }
         
         # Build the action and goto tables
         for i, state in enumerate(self.canonical_collection):
@@ -403,15 +409,39 @@ class LRTableGenerator:
                 if next_symbol is None:  # Dot at the end
                     # If the item is [S' -> S., $], add accept action
                     if item.production.lhs == self.augmented_grammar.start_symbol and item.production.rhs == [self.grammar.start_symbol]:
+                        if (i, self.EOF) in self.action_table:
+                            existing_action, _ = self.action_table[(i, self.EOF)]
+                            self.conflicts['shift_reduce'].append((i, self.EOF, existing_action, 'accept'))
                         self.action_table[(i, self.EOF)] = ('accept', None)
                     else:
                         # Reduce action for all symbols in the lookahead
                         for lookahead in item.lookahead:
-                            self.action_table[(i, lookahead)] = ('reduce', item.production)
+                            if (i, lookahead) in self.action_table:
+                                existing_action, existing_value = self.action_table[(i, lookahead)]
+                                if existing_action == 'shift':
+                                    # Shift-reduce conflict
+                                    self.conflicts['shift_reduce'].append(
+                                        (i, lookahead, f"{existing_action} {existing_value}", f"reduce {item.production}")
+                                    )
+                                elif existing_action == 'reduce':
+                                    # Reduce-reduce conflict
+                                    self.conflicts['reduce_reduce'].append(
+                                        (i, lookahead, f"{existing_action} {existing_value}", f"reduce {item.production}")
+                                    )
+                                # By default, we'll keep the existing action (shift preference)
+                            else:
+                                self.action_table[(i, lookahead)] = ('reduce', item.production)
                 
                 elif next_symbol.is_terminal:  # Shift action
                     if (i, next_symbol) in self.goto_table:
                         next_state = self.goto_table[(i, next_symbol)]
+                        if (i, next_symbol) in self.action_table:
+                            existing_action, existing_value = self.action_table[(i, next_symbol)]
+                            if existing_action == 'reduce':
+                                # Shift-reduce conflict
+                                self.conflicts['shift_reduce'].append(
+                                    (i, next_symbol, f"{existing_action} {existing_value}", f"shift {next_state}")
+                                )
                         self.action_table[(i, next_symbol)] = ('shift', next_state)
             
             # Add goto actions for non-terminals
@@ -420,7 +450,40 @@ class LRTableGenerator:
                     self.goto_table[(i, symbol)] = self.goto_table[(i, symbol)]
         
         return self.action_table, self.goto_table
-    
+
+    def print_conflicts(self):
+        """Print all detected conflicts in the LR table."""
+        if not hasattr(self, 'conflicts'):
+            print("Build the LR table first to detect conflicts.")
+            return
+        
+        print("\n=== LR Table Conflicts ===")
+        
+        # Print shift-reduce conflicts
+        if self.conflicts['shift_reduce']:
+            print("\nShift-Reduce Conflicts:")
+            print(f"{'State':<6}{'Symbol':<10}{'Existing Action':<20}{'New Action':<20}")
+            print("-" * 56)
+            for state, symbol, existing, new in self.conflicts['shift_reduce']:
+                print(f"{state:<6}{str(symbol):<10}{existing:<20}{new:<20}")
+        else:
+            print("\nNo shift-reduce conflicts detected.")
+        
+        # Print reduce-reduce conflicts
+        if self.conflicts['reduce_reduce']:
+            print("\nReduce-Reduce Conflicts:")
+            print(f"{'State':<6}{'Symbol':<10}{'Existing Action':<20}{'New Action':<20}")
+            print("-" * 56)
+            for state, symbol, existing, new in self.conflicts['reduce_reduce']:
+                print(f"{state:<6}{str(symbol):<10}{existing:<20}{new:<20}")
+        else:
+            print("\nNo reduce-reduce conflicts detected.")
+        
+        # Summary
+        total_conflicts = len(self.conflicts['shift_reduce']) + len(self.conflicts['reduce_reduce'])
+        print(f"\nTotal conflicts: {total_conflicts}")
+        if total_conflicts > 0:
+            print("Note: By default, shift actions take precedence over reduce actions in conflict cases.")
     def print_lr_table(self):
         """Print the LR parsing table in a readable format."""
         # Collect all symbols for table headers
@@ -653,6 +716,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate LR parsing table from EBNF grammar file.')
     parser.add_argument('grammar_file', help='Path to the EBNF grammar file')
     parser.add_argument('-o', '--output', help='Output file for the LR table', default='output.txt')
+    parser.add_argument('--log-conflicts', action='store_true', help='Log parsing conflicts to a file')
     args = parser.parse_args()
 
     # Parse grammar and build table
@@ -662,6 +726,43 @@ def main():
         print("Grammar parsed successfully.")
         print(f"Found {len(generator.augmented_grammar.non_terminals)} non-terminals and {len(generator.augmented_grammar.terminals)} terminals.")
         print(f"Generated {len(generator.canonical_collection)} LR states.")
+        
+        # Print conflicts
+        generator.print_conflicts()
+        
+        # Log conflicts to file if requested
+        if args.log_conflicts and hasattr(generator, 'conflicts'):
+            conflict_file = args.output.rsplit('.', 1)[0] + '_conflicts.txt'
+            with open(conflict_file, 'w') as f:
+                f.write("=== LR Table Conflicts ===\n")
+                
+                # Write shift-reduce conflicts
+                f.write("\nShift-Reduce Conflicts:\n")
+                if generator.conflicts['shift_reduce']:
+                    f.write(f"{'State':<6}{'Symbol':<10}{'Existing Action':<20}{'New Action':<20}\n")
+                    f.write("-" * 56 + "\n")
+                    for state, symbol, existing, new in generator.conflicts['shift_reduce']:
+                        f.write(f"{state:<6}{str(symbol):<10}{existing:<20}{new:<20}\n")
+                else:
+                    f.write("No shift-reduce conflicts detected.\n")
+                
+                # Write reduce-reduce conflicts
+                f.write("\nReduce-Reduce Conflicts:\n")
+                if generator.conflicts['reduce_reduce']:
+                    f.write(f"{'State':<6}{'Symbol':<10}{'Existing Action':<20}{'New Action':<20}\n")
+                    f.write("-" * 56 + "\n")
+                    for state, symbol, existing, new in generator.conflicts['reduce_reduce']:
+                        f.write(f"{state:<6}{str(symbol):<10}{existing:<20}{new:<20}\n")
+                else:
+                    f.write("No reduce-reduce conflicts detected.\n")
+                
+                # Summary
+                total_conflicts = len(generator.conflicts['shift_reduce']) + len(generator.conflicts['reduce_reduce'])
+                f.write(f"\nTotal conflicts: {total_conflicts}\n")
+                if total_conflicts > 0:
+                    f.write("Note: By default, shift actions take precedence over reduce actions in conflict cases.\n")
+            
+            print(f"Conflict log saved to {conflict_file}")
 
         # Determine the output format based on the file extension
         if args.output.endswith('.txt'):

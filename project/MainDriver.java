@@ -17,8 +17,10 @@ public class MainDriver {
             //Lexer prints the symbol table
             System.out.println("\nSymbol Table:");
             symbolTable.printTable();
-            //currewnt parser implementation causses infinite loop.
-            //parser.parse();
+            
+
+            System.out.println();
+            parser.parse();
 
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + filePath);

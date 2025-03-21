@@ -14,9 +14,9 @@ def main():
     expanded_grammar_file = "expanded_grammar.txt"
     expander_command = f"python ebnf_expander.py {input_file} {expanded_grammar_file}"
     subprocess.run(expander_command, shell=True, check=True)
-
+#--log-conflicts
     # Step 2: Generate the LR table using lr_generator.py
-    lr_generator_command = f"python lr_generator.py {expanded_grammar_file} -o {output_file}"
+    lr_generator_command = f"python lr_generator.py {expanded_grammar_file} -o {output_file} --log-conflicts"
     subprocess.run(lr_generator_command, shell=True, check=True)
 
     # Optionally, clean up the intermediate expanded grammar file

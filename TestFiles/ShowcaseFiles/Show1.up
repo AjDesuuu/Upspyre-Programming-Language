@@ -1,5 +1,4 @@
 start
-  number x = 10;
-  number y = 20;
+  text wow = "wow";
   
 end
