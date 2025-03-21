@@ -1,5 +1,5 @@
 start
   
-  number x = 10;
+  text x;
 
 end
