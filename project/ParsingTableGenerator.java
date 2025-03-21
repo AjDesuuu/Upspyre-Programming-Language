@@ -117,55 +117,61 @@ public class ParsingTableGenerator {
             BufferedReader br = new BufferedReader(fr);
             String line;
             int ruleNumber = 0;
-
+    
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("//")) continue; // Skip empty lines and comments
-                
+    
                 // Parse the production rule: LHS ::= RHS
                 String[] parts = line.split("::=", 2);
                 if (parts.length != 2) {
                     System.out.println("Invalid production format: " + line);
                     continue;
                 }
-                
+    
                 String lhs = parts[0].trim();
                 String rhsString = parts[1].trim();
-                
-                // Split the RHS into symbols (handling tokens enclosed in quotes as single symbols)
+    
+                // Handle epsilon (ε) explicitly
                 List<String> rhs = new ArrayList<>();
-                boolean inQuotes = false;
-                StringBuilder currentSymbol = new StringBuilder();
-                
-                for (int i = 0; i < rhsString.length(); i++) {
-                    char c = rhsString.charAt(i);
-                    
-                    if (c == '"' || c == '\'') {
-                        inQuotes = !inQuotes;
-                        currentSymbol.append(c);
-                    } else if (c == ' ' && !inQuotes) {
-                        if (currentSymbol.length() > 0) {
-                            rhs.add(currentSymbol.toString());
-                            currentSymbol = new StringBuilder();
+                if (rhsString.equals("ε")) {
+                    // If the RHS is ε, treat it as an empty production
+                    rhs = new ArrayList<>();
+                } else {
+                    // Split the RHS into symbols (handling tokens enclosed in quotes as single symbols)
+                    boolean inQuotes = false;
+                    StringBuilder currentSymbol = new StringBuilder();
+    
+                    for (int i = 0; i < rhsString.length(); i++) {
+                        char c = rhsString.charAt(i);
+    
+                        if (c == '"' || c == '\'') {
+                            inQuotes = !inQuotes;
+                            currentSymbol.append(c);
+                        } else if (c == ' ' && !inQuotes) {
+                            if (currentSymbol.length() > 0) {
+                                rhs.add(currentSymbol.toString());
+                                currentSymbol = new StringBuilder();
+                            }
+                        } else {
+                            currentSymbol.append(c);
                         }
-                    } else {
-                        currentSymbol.append(c);
+                    }
+    
+                    // Add the last symbol if it exists
+                    if (currentSymbol.length() > 0) {
+                        rhs.add(currentSymbol.toString());
                     }
                 }
-                
-                // Add the last symbol if it exists
-                if (currentSymbol.length() > 0) {
-                    rhs.add(currentSymbol.toString());
-                }
-                
+    
                 // Store the production with its rule number
                 productionTable.put(ruleNumber, new GrammarProduction(lhs, rhs));
                 ruleNumber++;
             }
-
+    
             br.close();
             fr.close();
-            
+    
             System.out.println("Generated " + ruleNumber + " grammar productions");
         } catch (IOException e) {
             System.out.println("Error reading productions file: " + e.getMessage());

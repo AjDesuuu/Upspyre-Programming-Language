@@ -20,7 +20,7 @@ public class Parser {
         // Load parsing table from CSV
         ParsingTableGenerator.generateParsingTables("GrammarProgrammer/output.csv");
         ParsingTableGenerator.generateProductionTable("GrammarProgrammer/expanded.txt");
-        //ParsingTableGenerator.generateOutputFIle("GrammarProgrammer/GrammarOut.csv");
+        ParsingTableGenerator.generateOutputFIle("GrammarProgrammer/GrammarOut.csv");
     }
     
     public void reset() {

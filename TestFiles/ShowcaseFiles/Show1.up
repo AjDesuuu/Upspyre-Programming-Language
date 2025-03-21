@@ -1,3 +1,5 @@
 start
-  id = "hello";
+  
+  number x = 10;
+
 end

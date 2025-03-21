@@ -148,7 +148,9 @@ class EBNFParser:
         alternatives = rhs_str.split('|')
         for alt in alternatives:
             alt = alt.strip()
-            if not alt:
+            if not alt or alt =='ε':
+
+                self.grammar.add_production(lhs, [])
                 continue
             
             rhs = []

@@ -1,0 +1,12 @@
+=== LR Table Conflicts ===
+
+Shift-Reduce Conflicts:
+No shift-reduce conflicts detected.
+
+Reduce-Reduce Conflicts:
+State Symbol    Existing Action     New Action          
+--------------------------------------------------------
+277   RPAREN    reduce CONST ::= BINARYreduce RELATIONAL_EXPR ::= BINARY
+
+Total conflicts: 1
+Note: By default, shift actions take precedence over reduce actions in conflict cases.
