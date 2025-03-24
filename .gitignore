@@ -43,7 +43,7 @@ parser.out
 parsetab.py
 
 TestFiles/ShowcaseFiles/Show1.up
-GrammarProgrammer/expanded.txt
+
 GrammarProgrammer/format.txt
 GrammarProgrammer/output_conflicts.txt
 GrammarProgrammer/output.csv
