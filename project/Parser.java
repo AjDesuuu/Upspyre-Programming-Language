@@ -23,7 +23,7 @@ public class Parser {
         // Load parsing table from CSV
         ParsingTableGenerator.generateParsingTables(inputGrammar);
         ParsingTableGenerator.generateProductionTable(inputGrammar);
-        //ParsingTableGenerator.generateOutputFIle("GrammarProgrammer/GrammarOut.csv");
+        
     }
     
     public void reset() {

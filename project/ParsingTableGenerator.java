@@ -9,6 +9,8 @@ import project.utils.exception.AnalysisException;
 import project.utils.parser.ParseTable;
 import project.utils.parser.Transition;
 import project.utils.symbol.AbstractSymbol;
+
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -55,7 +57,7 @@ public class ParsingTableGenerator {
     public static void generateParsingTables(String grammarFilePath) {
         try {
             // Read the grammar input from the file
-            String grammarInput = new String(Files.readAllBytes(Paths.get(grammarFilePath)));
+            String grammarInput = new String(Files.readAllBytes(Paths.get(grammarFilePath)),StandardCharsets.UTF_8);
 
             // Create the LR1Generator
             LR1Generator lr1Generator = new LR1Generator(grammarInput);
