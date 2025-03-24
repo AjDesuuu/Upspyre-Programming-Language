@@ -17,10 +17,12 @@ public class Parser {
         this.symbolStack = new Stack<>();
         stateStack.push(0); // Start state
 
+        
+
         // Load parsing table from CSV
-        ParsingTableGenerator.generateParsingTables("GrammarProgrammer/output.csv");
+        ParsingTableGenerator.generateParsingTables("GrammarProgrammer/expanded.txt");
         ParsingTableGenerator.generateProductionTable("GrammarProgrammer/expanded.txt");
-        ParsingTableGenerator.generateOutputFIle("GrammarProgrammer/GrammarOut.csv");
+        //ParsingTableGenerator.generateOutputFIle("GrammarProgrammer/GrammarOut.csv");
     }
     
     public void reset() {
@@ -66,7 +68,7 @@ public class Parser {
                 currentToken = lexer.nextToken(); 
             } else if (action.startsWith("r")) { // Reduce action
                 int ruleNumber = Integer.parseInt(action.substring(1));
-                reduce(ruleNumber);
+                reduce(ruleNumber-1);
             } else if (action.equals("acc")) { // Accept
                 System.out.println("Parsing successful!");
                 return;
@@ -87,7 +89,7 @@ public class Parser {
             return;
         }
         
-        String lhs = production.getLhs();
+        String lhs = production.getLhs().replaceAll("[<>]", "");
         int rhsSize = production.getRhsSize();
         
         System.out.println("Reducing by rule " + ruleNumber + ": " + production);

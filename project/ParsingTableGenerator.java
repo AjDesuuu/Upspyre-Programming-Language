@@ -4,6 +4,15 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import project.utils.LR1Generator;
+import project.utils.exception.AnalysisException;
+import project.utils.parser.ParseTable;
+import project.utils.parser.Transition;
+import project.utils.symbol.AbstractSymbol;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+
 
 public class ParsingTableGenerator {
     public static HashMap<Integer, HashMap<String, String>> actionTable = new HashMap<>();
@@ -43,71 +52,43 @@ public class ParsingTableGenerator {
         }
     }
 
-    public static void generateParsingTables(String filePath) {
-        StringBuilder csvData = new StringBuilder();
-
+    public static void generateParsingTables(String grammarFilePath) {
         try {
-            FileReader fr = new FileReader(filePath);
-            BufferedReader br = new BufferedReader(fr);
-            String line;
+            // Read the grammar input from the file
+            String grammarInput = new String(Files.readAllBytes(Paths.get(grammarFilePath)));
 
-            while ((line = br.readLine()) != null) {
-                csvData.append(line).append("\n");
-            }
+            // Create the LR1Generator
+            LR1Generator lr1Generator = new LR1Generator(grammarInput);
 
-            br.close();
-            fr.close();
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
-            return;
-        }
+            // Get the parse table from the LR1Generator
+            ParseTable parseTable = lr1Generator.getParseTable();
 
-        String[] lines = csvData.toString().split("\n");
-        String[] headers = lines[0].split(",");
+            // Populate the actionTable and gotoTable from the parseTable
+            for (Map.Entry<Integer, Map<AbstractSymbol, Transition>> entry : parseTable.getTable().entrySet()) {
+                int state = entry.getKey();
+                HashMap<String, String> actionRow = new HashMap<>();
+                HashMap<String, String> gotoRow = new HashMap<>();
 
-        int dollarIndex = -1;
-        for (int i = 0; i < headers.length; i++) {
-            if (headers[i].trim().equals("$")) {
-                dollarIndex = i;
-                break;
-            }
-        }
+                for (Map.Entry<AbstractSymbol, Transition> symbolEntry : entry.getValue().entrySet()) {
+                    AbstractSymbol symbol = symbolEntry.getKey();
+                    Transition transition = symbolEntry.getValue();
 
-        if (dollarIndex == -1) {
-            System.out.println("Error: '$' column not found!");
-            return;
-        }
-
-        for (int i = 1; i < lines.length; i++) {
-            String[] values = lines[i].split(",", -1);
-            if (values.length == 0 || values[0].trim().isEmpty()) continue;
-
-            int state;
-            try {
-                state = Integer.parseInt(values[0].trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Skipping invalid state at line " + (i + 1));
-                continue;
-            }
-
-            HashMap<String, String> actionRow = new HashMap<>();
-            HashMap<String, String> gotoRow = new HashMap<>();
-
-            for (int j = 1; j < headers.length; j++) {
-                if (j >= values.length) continue;
-
-                String value = values[j].trim();
-                if (!value.isEmpty()) {
-                    if (j < dollarIndex) {
-                        actionRow.put(headers[j].trim(), value);
+                    if (symbol.getType() == AbstractSymbol.TERMINAL) {
+                        actionRow.put(symbol.getName(), transition.toString());
                     } else {
-                        gotoRow.put(headers[j].trim(), value);
+                        gotoRow.put(symbol.getName(), transition.toString());
                     }
                 }
+
+                actionTable.put(state, actionRow);
+                gotoTable.put(state, gotoRow);
             }
 
-            actionTable.put(state, actionRow);
-            gotoTable.put(state, gotoRow);
+            System.out.println("Parsing tables generated successfully.");
+        } catch (IOException e) {
+            System.out.println("Error reading grammar file: " + e.getMessage());
+        } catch (AnalysisException e) {
+            System.out.println("Error generating parsing table: " + e.getMessage());
         }
     }
     
@@ -177,6 +158,7 @@ public class ParsingTableGenerator {
             System.out.println("Error reading productions file: " + e.getMessage());
         }
     }
+
     public static void generateOutputFIle(String outputFile){
         ExcelExporter.exportToTxt(outputFile);
     }
