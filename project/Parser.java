@@ -1,6 +1,7 @@
 package project;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Stack;
 import project.ParsingTableGenerator.GrammarProduction;
 
@@ -11,6 +12,10 @@ public class Parser {
     private Stack<String> symbolStack;
     private String inputGrammar = "GrammarProgrammer/expanded.txt";
 
+    private static final Set<TokenType> TOKENS_TO_IGNORE = Set.of(
+    TokenType.MCOMMENT,
+    TokenType.SCOMMENT
+);
     public Parser(Lexer lexer) {
         this.lexer = lexer;
         this.currentToken = lexer.nextToken(); // Initialize with the first token
@@ -37,7 +42,7 @@ public class Parser {
     public void parse() {
         while (true) {
             // Skip comment tokens
-            while(currentToken.getType().toString().equals("COMMENT")) {
+            while (TOKENS_TO_IGNORE.contains(currentToken.getType())) {
                 currentToken = lexer.nextToken();
             }
             
