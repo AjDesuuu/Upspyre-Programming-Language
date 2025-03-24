@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import project.utils.exception.AnalysisException;
 
+//THIS IS USED TO GENERATE THE CSV OF THE ACTION AND GOTO TABLE
 public class LR1GeneratorMainDriver {
     public static void main(String[] args) {
         try {

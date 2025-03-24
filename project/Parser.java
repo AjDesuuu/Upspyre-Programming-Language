@@ -9,6 +9,7 @@ public class Parser {
     private Token currentToken;
     private Stack<Integer> stateStack;
     private Stack<String> symbolStack;
+    private String inputGrammar = "GrammarProgrammer/expanded.txt";
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -20,8 +21,8 @@ public class Parser {
         
 
         // Load parsing table from CSV
-        ParsingTableGenerator.generateParsingTables("GrammarProgrammer/expanded.txt");
-        ParsingTableGenerator.generateProductionTable("GrammarProgrammer/expanded.txt");
+        ParsingTableGenerator.generateParsingTables(inputGrammar);
+        ParsingTableGenerator.generateProductionTable(inputGrammar);
         //ParsingTableGenerator.generateOutputFIle("GrammarProgrammer/GrammarOut.csv");
     }
     
