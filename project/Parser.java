@@ -90,7 +90,7 @@ public class Parser {
             return;
         }
         
-        String lhs = production.getLhs().replaceAll("[<>]", "");
+        String lhs = production.getLhs();
         int rhsSize = production.getRhsSize();
         
         System.out.println("Reducing by rule " + ruleNumber + ": " + production);

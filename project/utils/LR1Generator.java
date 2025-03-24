@@ -149,7 +149,7 @@ public class LR1Generator {
             for (AbstractSymbol symbol : grammar.getSymbolPool().getNonterminalSymbols()) {
                 Transition transition = entry.getValue().get(symbol);
                 if (transition != null) {
-                    writer.write(transition.toString() + ",");
+                    writer.write(transition.toString().substring(1) + ",");
                 } else {
                     writer.write(",");
                 }
