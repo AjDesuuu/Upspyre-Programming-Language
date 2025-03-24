@@ -45,10 +45,19 @@ public class Parser {
     }
 
     public void parse() {
+        
+        System.out.println("Start Symbol: " + ParsingTableGenerator.productionTable.get(1));
+        System.out.println("Accepting State: " + ParsingTableGenerator.actionTable.get(0));
+        System.out.println("Start State: " + ParsingTableGenerator.gotoTable.get(0));
+
         while (true) {
             // Skip comment tokens
             while (TOKENS_TO_IGNORE.contains(currentToken.getType())) {
                 currentToken = lexer.nextToken();
+            }
+            
+            if (currentToken.getType() == TokenType.EOF) {
+                
             }
             
     
@@ -77,7 +86,7 @@ public class Parser {
             } else if (action.startsWith("r")) { // Reduce action
                 int ruleNumber = Integer.parseInt(action.substring(1));
                 reduce(ruleNumber-1);
-            } else if (action.equals("acc")) { // Accept
+            } else if (action.equals("EOF")) { // Accept
                 System.out.println("Parsing successful!");
                 while (treeStack.size() > 1) {
                     ParseTreeNode last = treeStack.pop();
