@@ -1,6 +1,6 @@
 package project;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class MainDriver {
     public static void main(String[] args) {
@@ -21,8 +21,11 @@ public class MainDriver {
 
             System.out.println();
             parser.parse();
+            
+            //Generate image for parse tree, COMMENT THIS OUT IF YOU DON'T WANT TO GENERATE AN IMAGE
+            parser.generateParseTreeImage(filePath + ".png");
 
-        } catch (FileNotFoundException e) {
+        } catch (IOException|InterruptedException e) {
             System.err.println("File not found: " + filePath);
         }
     }

@@ -35,8 +35,8 @@ public class LR1Generator {
         "ASSIGN", "PLUS", "MINUS", "MULT", "DIV", "EXPONENT", "MOD", "FLOOR_DIV", "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN",
         "AND", "OR", "NOT", "EQ", "NEQ", "LT", "GT", "LEQ", "GEQ",
         "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR", "BITWISE_NOT", "LSHIFT", "RSHIFT", "S_NOT", "QUOTE",
-        "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LBRACKET", "RBRACKET", "COMMA", "SEMI", "COLON", "DOT",
-        "MCOMMENT", "SCOMMENT", "EOF", "ERROR"
+        "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LBRACKET", "RBRACKET", "COMMA", "SEMI", "COLON", "DOT"
+        //"MCOMMENT", "SCOMMENT", "ERROR"
         ));
 
         Set<String> nonterminalSymbols = new HashSet<>(Arrays.asList(
@@ -53,7 +53,7 @@ public class LR1Generator {
         "<PAIR_MAP_VAL>", "<PAIR_MAP_VAL_GROUP>", "<PAIR>", "<COLLECTION_ASSIGN>", "<COLLECTION_EXPR>", 
         "<LIST_VALUE>", "<PAIR_MAP_VALUE>", "<PAIR_MAP_KEY>", "<COLLECTION_METHOD>", "<DATA_TYPE>", 
         "<RELATIONAL_OP>", "<ADD_OP>", "<MULTI_OP>", "<EXP_OP>", "<ASSIGN_OP>", "<SHIFT_OP>", "<BINARY>","<CONDITIONAL_STMT_GROUP>",
-        "<BLOCK_STMT_KLEENE>","ε"
+        "<BLOCK_STMT_KLEENE>"
     ));
 
         String startSymbol = "<PROGRAM>";
@@ -97,6 +97,7 @@ public class LR1Generator {
             grammar.getProductions().add(new Production(grammar.getSymbolPool().getNonterminalSymbol(lhs), rhsSymbols));
         }
 
+        System.out.println("Start symbol: " + grammar.getStartSymbol());
         return grammar;
     }
 

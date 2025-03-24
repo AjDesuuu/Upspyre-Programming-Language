@@ -87,13 +87,13 @@ public class ParsingTableGenerator {
             // Print the ACTION table
             System.out.println("\nACTION TABLE:");
             for (Map.Entry<Integer, HashMap<String, String>> entry : actionTable.entrySet()) {
-                System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
+                //System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
             }
 
             // Print the GOTO table
             System.out.println("\nGOTO TABLE:");
             for (Map.Entry<Integer, HashMap<String, String>> entry : gotoTable.entrySet()) {
-                System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
+                //System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
             }
 
             System.out.println("Parsing tables generated successfully.");
@@ -167,13 +167,10 @@ public class ParsingTableGenerator {
             br.close();
             fr.close();
 
-            System.out.println("Generated " + ruleNumber + " grammar productions");
+            //System.out.println("Generated " + ruleNumber + " grammar productions");
         } catch (IOException e) {
             System.out.println("Error reading productions file: " + e.getMessage());
         }
     }
 
-    public static void generateOutputFIle(String outputFile) {
-        ExcelExporter.exportToTxt(outputFile);
-    }
 }
