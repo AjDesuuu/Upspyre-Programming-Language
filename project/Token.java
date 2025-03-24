@@ -19,7 +19,7 @@ class Token {
 
     @Override
     public String toString() {
-        lexeme = "'"+lexeme+"'"; //wraps the lexeme in single quotes
+        
         if (type == TokenType.ERROR) {
             return String.format("[%-12s] %s at line %d, position %d",type, lexeme, line, position);
         }

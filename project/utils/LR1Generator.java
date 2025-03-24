@@ -36,7 +36,7 @@ public class LR1Generator {
         "AND", "OR", "NOT", "EQ", "NEQ", "LT", "GT", "LEQ", "GEQ",
         "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR", "BITWISE_NOT", "LSHIFT", "RSHIFT", "S_NOT", "QUOTE",
         "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LBRACKET", "RBRACKET", "COMMA", "SEMI", "COLON", "DOT",
-        "MCOMMENT", "SCOMMENT", "EOF", "ERROR","ε"
+        "MCOMMENT", "SCOMMENT", "EOF", "ERROR"
         ));
 
         Set<String> nonterminalSymbols = new HashSet<>(Arrays.asList(
@@ -53,7 +53,7 @@ public class LR1Generator {
         "<PAIR_MAP_VAL>", "<PAIR_MAP_VAL_GROUP>", "<PAIR>", "<COLLECTION_ASSIGN>", "<COLLECTION_EXPR>", 
         "<LIST_VALUE>", "<PAIR_MAP_VALUE>", "<PAIR_MAP_KEY>", "<COLLECTION_METHOD>", "<DATA_TYPE>", 
         "<RELATIONAL_OP>", "<ADD_OP>", "<MULTI_OP>", "<EXP_OP>", "<ASSIGN_OP>", "<SHIFT_OP>", "<BINARY>","<CONDITIONAL_STMT_GROUP>",
-        "<BLOCK_STMT_KLEENE>"
+        "<BLOCK_STMT_KLEENE>","ε"
     ));
 
         String startSymbol = "<PROGRAM>";
@@ -76,16 +76,21 @@ public class LR1Generator {
             String rhs = parts[1].trim();
 
             List<AbstractSymbol> rhsSymbols = new ArrayList<>();
-            for (String symbol : rhs.split(" ")) {
-                symbol = symbol.trim();
-                if (symbol.isEmpty()) continue;
-
-                if (terminalSymbols.contains(symbol)) {
-                    rhsSymbols.add(grammar.getSymbolPool().getTerminalSymbol(symbol));
-                } else if (nonterminalSymbols.contains(symbol)) {
-                    rhsSymbols.add(grammar.getSymbolPool().getNonterminalSymbol(symbol));
-                } else {
-                    throw new AnalysisException("Unknown symbol in production: " + symbol, null);
+            if (rhs.equals("ε")) {
+                // Handle epsilon production
+                rhsSymbols.add(grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
+            } else {
+                for (String symbol : rhs.split(" ")) {
+                    symbol = symbol.trim();
+                    if (symbol.isEmpty()) continue;
+    
+                    if (terminalSymbols.contains(symbol)) {
+                        rhsSymbols.add(grammar.getSymbolPool().getTerminalSymbol(symbol));
+                    } else if (nonterminalSymbols.contains(symbol)) {
+                        rhsSymbols.add(grammar.getSymbolPool().getNonterminalSymbol(symbol));
+                    } else {
+                        throw new AnalysisException("Unknown symbol in production: " + symbol, null);
+                    }
                 }
             }
 
