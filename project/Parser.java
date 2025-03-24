@@ -51,11 +51,6 @@ public class Parser {
                 currentToken = lexer.nextToken();
             }
             
-            // Stop parsing if EOF is reached
-            if (currentToken.getType() == TokenType.EOF) {
-                System.out.println("Parsing complete.");
-                return;
-            }
     
             int state = stateStack.peek();
             String tokenType = currentToken.getType().toString();
