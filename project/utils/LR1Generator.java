@@ -35,7 +35,7 @@ public class LR1Generator {
         "ASSIGN", "PLUS", "MINUS", "MULT", "DIV", "EXPONENT", "MOD", "FLOOR_DIV", "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN",
         "AND", "OR", "NOT", "EQ", "NEQ", "LT", "GT", "LEQ", "GEQ",
         "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR", "BITWISE_NOT", "LSHIFT", "RSHIFT", "S_NOT", "QUOTE",
-        "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LBRACKET", "RBRACKET", "COMMA", "SEMI", "COLON", "DOT"
+        "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LBRACKET", "RBRACKET", "COMMA", "SEMI", "COLON", "DOT","EOF"
         //"MCOMMENT", "SCOMMENT", "ERROR"
         ));
 
@@ -62,42 +62,25 @@ public class LR1Generator {
         Grammar grammar = new Grammar(terminalSymbols, nonterminalSymbols, startSymbol);
 
         // Parse productions from the grammar input
+        List<String> productionStrings = new ArrayList<>();
         String[] lines = grammarInput.split("\n");
+        
         for (String line : lines) {
             line = line.trim();
-            if (line.isEmpty() || line.startsWith("//")) continue; // Skip empty lines and comments
-
-            String[] parts = line.split("::=");
-            if (parts.length != 2) {
-                throw new AnalysisException("Invalid production format: " + line, null);
-            }
-
-            String lhs = parts[0].trim();
-            String rhs = parts[1].trim();
-
-            List<AbstractSymbol> rhsSymbols = new ArrayList<>();
-            if (rhs.equals("ε")) {
-                // Handle epsilon production
-                rhsSymbols.add(grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
-            } else {
-                for (String symbol : rhs.split(" ")) {
-                    symbol = symbol.trim();
-                    if (symbol.isEmpty()) continue;
-    
-                    if (terminalSymbols.contains(symbol)) {
-                        rhsSymbols.add(grammar.getSymbolPool().getTerminalSymbol(symbol));
-                    } else if (nonterminalSymbols.contains(symbol)) {
-                        rhsSymbols.add(grammar.getSymbolPool().getNonterminalSymbol(symbol));
-                    } else {
-                        throw new AnalysisException("Unknown symbol in production: " + symbol, null);
-                    }
-                }
-            }
-
-            grammar.getProductions().add(new Production(grammar.getSymbolPool().getNonterminalSymbol(lhs), rhsSymbols));
+            if (line.isEmpty() || line.startsWith("//")) continue;
+            productionStrings.add(line);  // Collect raw production strings
         }
 
-        System.out.println("Start symbol: " + grammar.getStartSymbol());
+        // This will automatically handle augmentation
+        grammar.initProductions(productionStrings, startSymbol);
+        // NEW CODE ENDS HERE
+
+        // Debug output to verify augmentation
+        System.out.println("==== GRAMMAR AUGMENTATION VERIFICATION ====");
+        System.out.println("Start symbol: " + grammar.getStartSymbol());  // Should print "_S"
+        System.out.println("First production: " + grammar.getProductions().get(0));  // Should print "_S ::= <PROGRAM>"
+        System.out.println("===========================================");
+
         return grammar;
     }
 

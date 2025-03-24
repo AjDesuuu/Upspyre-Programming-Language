@@ -125,14 +125,14 @@ public class Grammar {
         mParseTable = parseTable;
     }
 
-    private void initProductions(List<String> prodStrList, String startSymbol) throws AnalysisException {
+    public void initProductions(List<String> prodStrList, String startSymbol) throws AnalysisException {
         mProductions = new ArrayList<>();
         for (final String prodStr : prodStrList) {
             System.out.println("Parsing Production: " + prodStr);
-
+            
+        
             Production production = Production.fromString(prodStr, this);
-        mProductions.add(production);
-
+            mProductions.add(production);
             System.out.println("Parsed Production: " + production);
         }
         augmentGrammar(startSymbol);

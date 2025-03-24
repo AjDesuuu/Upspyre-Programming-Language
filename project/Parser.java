@@ -81,7 +81,7 @@ public class Parser {
                 currentToken = lexer.nextToken(); 
             } else if (action.startsWith("r")) { // Reduce action
                 int ruleNumber = Integer.parseInt(action.substring(1));
-                reduce(ruleNumber);
+                reduce(ruleNumber-1);
             } else if (action.equals("acc")) { // Accept
                 System.out.println("Parsing successful!");
                 while (treeStack.size() > 1) {

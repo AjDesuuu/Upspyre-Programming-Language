@@ -31,7 +31,7 @@ public class Production {
         if (!input.contains("::=")) {
             throw new AnalysisException(AnalysisException.ILL_FORMED_PRODUCTION, null);
         }
-        final String[] parts = input.split("->");
+        final String[] parts = input.split("::=");
         if (parts.length != 2) {
             throw new AnalysisException(AnalysisException.ILL_FORMED_PRODUCTION, null);
         }
@@ -46,7 +46,7 @@ public class Production {
             throw new AnalysisException(AnalysisException.ILL_FORMED_PRODUCTION_LEFT, e);
         }
         production.mTo = new ArrayList<>();
-        if (toStr.length == 1 && toStr[0].equals(AbstractTerminalSymbol.NULL)) {
+        if (toStr.length == 1 && (toStr[0].equals(AbstractTerminalSymbol.NULL) || toStr[0].equals("ε"))) {
             production.mTo.add(grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
             return production;
         } else if (toStr.length > 0 && toStr[0].length() > 0) {
