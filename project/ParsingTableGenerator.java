@@ -99,7 +99,7 @@ public class ParsingTableGenerator {
             FileReader fr = new FileReader(filePath);
             BufferedReader br = new BufferedReader(fr);
             String line;
-            int ruleNumber = 0;
+            int ruleNumber = 1;
     
             while ((line = br.readLine()) != null) {
                 line = line.trim();
