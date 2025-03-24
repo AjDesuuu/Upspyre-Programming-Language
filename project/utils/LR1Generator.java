@@ -21,7 +21,7 @@ public class LR1Generator {
         grammar.initParseTable();
         
         this.parseTable = grammar.getParseTable();
-        System.out.println("here is the parse table" + parseTable.toString());
+        //System.out.println("here is the parse table" + parseTable.toString());
     }
 
     private Grammar parseGrammar(String grammarInput) throws AnalysisException {
