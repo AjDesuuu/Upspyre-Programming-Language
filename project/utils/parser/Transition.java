@@ -42,7 +42,7 @@ public class Transition {
     @Override
     public String toString() {
         if (mAction == REDUCE) {
-            return "r" + (mIndex + 1);
+            return "r" + (mIndex);
         } else {
             return "s" + mNextState;
         }

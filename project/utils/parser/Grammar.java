@@ -6,7 +6,6 @@ import project.utils.symbol.AbstractSymbol;
 import project.utils.symbol.AbstractTerminalSymbol;
 import project.utils.symbol.SymbolPool;
 
-
 import java.util.*;
 
 public class Grammar {
@@ -14,7 +13,6 @@ public class Grammar {
     public static final String START_SYMBOL = "_S";
 
     private AbstractNonterminalSymbol mStartSymbol;
-    
 
     private final SymbolPool mSymbolPool;
 
@@ -29,10 +27,9 @@ public class Grammar {
 
     public Grammar(Set<String> terminalSymbols, Set<String> nonterminalSymbols, String startSymbol)
             throws AnalysisException {
-
-                System.out.println("Terminal Symbols: " + terminalSymbols);
-                System.out.println("Non-terminal Symbols: " + nonterminalSymbols);
-                System.out.println("Start Symbol: " + startSymbol);        
+        System.out.println("Terminal Symbols: " + terminalSymbols);
+        System.out.println("Non-terminal Symbols: " + nonterminalSymbols);
+        System.out.println("Start Symbol: " + startSymbol);
         mSymbolPool = new SymbolPool(terminalSymbols, nonterminalSymbols);
         mStartSymbol = mSymbolPool.getNonterminalSymbol(startSymbol);
         mProductions = new ArrayList<>();
@@ -42,7 +39,6 @@ public class Grammar {
     public AbstractNonterminalSymbol getStartSymbol() {
         return mStartSymbol;
     }
-    
 
     public SymbolPool getSymbolPool() {
         return mSymbolPool;
@@ -66,17 +62,11 @@ public class Grammar {
         final List<ParseState> stateList = new ArrayList<>();
         final Map<ParseState, Integer> stateMap = new HashMap<>();
 
-        System.out.println("Productions:");
-    System.out.println(this.toString());
-    System.out.println("First Sets:");
-    System.out.println(this.getFirstSetsCSV());
-
         final ParseState startState = new ParseState(this);
         for (final Production production : mProductions) {
             if (production.from().equals(mStartSymbol)) {
                 startState.addItem(new Item(production, mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END)));
             }
-            
         }
         startState.makeClosure();
         stateList.add(startState);
@@ -106,6 +96,7 @@ public class Grammar {
                         if (item.getLookAhead().equals(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END))
                                 && item.getProduction().from().equals(mStartSymbol)) {
                             parseTable.setAcceptState(i);
+                            System.out.println("Accept State: " + i);
                         }
                     }
                 } else {
@@ -128,12 +119,11 @@ public class Grammar {
     public void initProductions(List<String> prodStrList, String startSymbol) throws AnalysisException {
         mProductions = new ArrayList<>();
         for (final String prodStr : prodStrList) {
-            System.out.println("Parsing Production: " + prodStr);
-            
-        
+            //System.out.println("Parsing Production: " + prodStr);
+
             Production production = Production.fromString(prodStr, this);
             mProductions.add(production);
-            System.out.println("Parsed Production: " + production);
+            //System.out.println("Parsed Production: " + production);
         }
         augmentGrammar(startSymbol);
     }
@@ -150,8 +140,8 @@ public class Grammar {
         mProductions.add(0, new Production(newStartSymbol, to));
         mStartSymbol = newStartSymbol;
 
-        System.out.println("Augmented Grammar:");
-    System.out.println(this.toString());
+        //System.out.println("Augmented Grammar:");
+        //System.out.println(this.toString());
     }
 
     private void initSymbolProductions() {
@@ -159,10 +149,8 @@ public class Grammar {
             final AbstractNonterminalSymbol from = (AbstractNonterminalSymbol) production.from();
             from.getProductions().add(production);
 
-            System.out.println("Non-terminal Symbol: " + from.getName() + ", Productions: " + from.getProductions());
+            //System.out.println("Non-terminal Symbol: " + from.getName() + ", Productions: " + from.getProductions());
         }
-
-        
 
     }
 
@@ -201,25 +189,24 @@ public class Grammar {
         for (final AbstractSymbol abstractSymbol : nullableSymbols) {
             ((AbstractNonterminalSymbol) abstractSymbol).setNullable(true);
         }
-        
+
     }
 
     private void initSymbolFirstSet() throws AnalysisException {
         initSymbolNullable();
 
-        System.out.println("Nullable Symbols:");
-    for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
-        if (symbol.isNullable()) {
-            System.out.println(symbol.getName() + " is nullable");
+        //System.out.println("Nullable Symbols:");
+        for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
+            if (symbol.isNullable()) {
+                //System.out.println(symbol.getName() + " is nullable");
+            }
         }
-    }
 
-    // Initialize FIRST sets for all non-terminal symbols
-    for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
-        symbol.setFirstSet(new HashSet<>()); // Ensure the FIRST set is initialized
-    }
+        // Initialize FIRST sets for all non-terminal symbols
+        for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
+            symbol.setFirstSet(new HashSet<>()); // Ensure the FIRST set is initialized
+        }
 
-        
         final Map<AbstractNonterminalSymbol, Set<AbstractNonterminalSymbol>> connections = new HashMap<>();
         final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> firstSets = new HashMap<>();
         final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> tmpFirstSets = new HashMap<>();
@@ -294,6 +281,7 @@ public class Grammar {
         }
         return stringBuilder.toString();
     }
+
     public String getFirstSetsCSV() {
         StringBuilder csv = new StringBuilder();
         csv.append("Nonterminal,FIRST Set\n");
@@ -307,6 +295,5 @@ public class Grammar {
         }
         return csv.toString();
     }
-    
 
 }

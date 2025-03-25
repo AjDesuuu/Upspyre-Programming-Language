@@ -1,5 +1,4 @@
 package project.utils.parser;
-
 import project.utils.exception.AnalysisException;
 import project.utils.symbol.AbstractNonterminalSymbol;
 import project.utils.symbol.AbstractSymbol;

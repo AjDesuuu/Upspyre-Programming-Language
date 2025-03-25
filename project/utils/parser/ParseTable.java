@@ -1,4 +1,5 @@
 package project.utils.parser;
+
 import project.utils.exception.AnalysisException;
 import project.utils.symbol.AbstractSymbol;
 import project.utils.symbol.AbstractTerminalSymbol;
@@ -32,6 +33,9 @@ public class ParseTable {
     }
 
     public void addTransition(int stateIndex, AbstractSymbol abstractSymbol, int nextStateIndex) {
+        if (abstractSymbol.getName().equals(Grammar.START_SYMBOL)) {
+            return; // Exclude the augmented start symbol from the goto table
+        }
         Transition transition;
         if (abstractSymbol.getType() == AbstractSymbol.NONTERMINAL) {
             transition = new Transition(Transition.GOTO, nextStateIndex);
@@ -62,10 +66,10 @@ public class ParseTable {
         final List<Integer> sortedStateIndices = new ArrayList<>(mTableMap.keySet());
         Collections.sort(sortedStateIndices);
         final List<AbstractSymbol> abstractSymbolList = new ArrayList<>(abstractSymbolSet);
-        final List<AbstractSymbol> abstractTerminalSymbols =
-                new ArrayList<>(mGrammar.getSymbolPool().getTerminalSymbols());
-        final List<AbstractSymbol> abstractNonterminalSymbols =
-                new ArrayList<>(mGrammar.getSymbolPool().getNonterminalSymbols());
+        final List<AbstractSymbol> abstractTerminalSymbols = new ArrayList<>(
+                mGrammar.getSymbolPool().getTerminalSymbols());
+        final List<AbstractSymbol> abstractNonterminalSymbols = new ArrayList<>(
+                mGrammar.getSymbolPool().getNonterminalSymbols());
         final List<AbstractSymbol> listForOrder = new ArrayList<>();
         listForOrder.addAll(abstractTerminalSymbols);
         listForOrder.addAll(abstractNonterminalSymbols);
@@ -81,13 +85,15 @@ public class ParseTable {
                 stringBuilder.append("\t");
                 if (mTableMap.get(i).containsKey(abstractSymbol)) {
                     try {
-                        if (mAcceptState == i && abstractSymbol.equals(mGrammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
+
+                        if (mAcceptState == i && abstractSymbol
+                                .equals(mGrammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
                             stringBuilder.append("acc");
                         } else {
                             stringBuilder.append(mTableMap.get(i).get(abstractSymbol));
                         }
                     } catch (AnalysisException e) {
-                        e.printStackTrace();
+                        stringBuilder.append("error");
                     }
                 }
             }
@@ -95,6 +101,7 @@ public class ParseTable {
         }
         return stringBuilder.toString();
     }
+
     public void toCSV(String filePath) throws IOException {
         try (FileWriter writer = new FileWriter(filePath)) {
             Set<AbstractSymbol> symbols = new HashSet<>();
@@ -117,7 +124,16 @@ public class ParseTable {
                 for (AbstractSymbol symbol : sortedSymbols) {
                     Transition transition = mTableMap.get(state).get(symbol);
                     if (transition != null) {
-                        writer.append(",").append(transition.toString());
+                        try {
+                            if (mAcceptState == state && symbol
+                                    .equals(mGrammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
+                                writer.append(",acc");
+                            } else {
+                                writer.append(",").append(transition.toString());
+                            }
+                        } catch (AnalysisException e) {
+                            writer.append(",error");
+                        }
                     } else {
                         writer.append(",");
                     }

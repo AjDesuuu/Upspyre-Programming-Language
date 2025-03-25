@@ -4,7 +4,7 @@ public class AbstractTerminalSymbol extends AbstractSymbol {
 
     public static final String NULL = "null";
 
-    public static final String END = "$";
+    public static final String END = "EOF";
 
     public AbstractTerminalSymbol(String name) {
         setName(name);

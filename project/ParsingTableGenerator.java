@@ -4,16 +4,18 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 import project.utils.LR1Generator;
 import project.utils.exception.AnalysisException;
 import project.utils.parser.ParseTable;
 import project.utils.parser.Transition;
 import project.utils.symbol.AbstractSymbol;
+import project.utils.symbol.AbstractTerminalSymbol;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
 
 public class ParsingTableGenerator {
     public static HashMap<Integer, HashMap<String, String>> actionTable = new HashMap<>();
@@ -75,7 +77,11 @@ public class ParsingTableGenerator {
                     Transition transition = symbolEntry.getValue();
 
                     if (symbol.getType() == AbstractSymbol.TERMINAL) {
-                        actionRow.put(symbol.getName(), transition.toString());
+                        if (parseTable.getAcceptState() == state && symbol.equals(lr1Generator.getGrammar().getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
+                            actionRow.put(symbol.getName(), "acc");
+                        } else {
+                            actionRow.put(symbol.getName(), transition.toString());
+                        }
                     } else {
                         gotoRow.put(symbol.getName(), transition.toString().substring(1));
                     }
@@ -84,16 +90,17 @@ public class ParsingTableGenerator {
                 actionTable.put(state, actionRow);
                 gotoTable.put(state, gotoRow);
             }
+
             // Print the ACTION table
             System.out.println("\nACTION TABLE:");
             for (Map.Entry<Integer, HashMap<String, String>> entry : actionTable.entrySet()) {
-                //System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
+                System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
             }
 
             // Print the GOTO table
             System.out.println("\nGOTO TABLE:");
             for (Map.Entry<Integer, HashMap<String, String>> entry : gotoTable.entrySet()) {
-                //System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
+                System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
             }
 
             System.out.println("Parsing tables generated successfully.");
@@ -110,7 +117,7 @@ public class ParsingTableGenerator {
             BufferedReader br = new BufferedReader(fr);
             String line;
             int ruleNumber = 1;
-    
+
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("//"))
@@ -130,10 +137,9 @@ public class ParsingTableGenerator {
                 List<String> rhs = new ArrayList<>();
                 if (rhsString.equals("ε")) {
                     // If the RHS is ε, treat it as an empty production
-                    rhs = new ArrayList<>();
+                    // rhs = new ArrayList<>();
                 } else {
-                    // Split the RHS into symbols (handling tokens enclosed in quotes as single
-                    // symbols)
+                    // Split the RHS into symbols (handling tokens enclosed in quotes as single symbols)
                     boolean inQuotes = false;
                     StringBuilder currentSymbol = new StringBuilder();
 
@@ -167,10 +173,13 @@ public class ParsingTableGenerator {
             br.close();
             fr.close();
 
-            //System.out.println("Generated " + ruleNumber + " grammar productions");
+            // Print the generated productions for debugging
+            System.out.println("Generated " + ruleNumber + " grammar productions:");
+            for (Map.Entry<Integer, GrammarProduction> entry : productionTable.entrySet()) {
+                System.out.println("Rule " + entry.getKey() + ": " + entry.getValue());
+            }
         } catch (IOException e) {
             System.out.println("Error reading productions file: " + e.getMessage());
         }
     }
-
 }
