@@ -8,24 +8,24 @@ import java.util.*;
 
 public class ParseState {
 
-    private final Set<Item> mItems = new HashSet<>();
+    private final Set<Item> Items = new HashSet<>();
 
-    private final Grammar mGrammar;
+    private final Grammar Grammar;
 
     public ParseState(Grammar grammar) {
-        mGrammar = grammar;
+        Grammar = grammar;
     }
 
     public void addItem(Item item) {
-        mItems.add(item);
+        Items.add(item);
     }
 
     public Set<Item> getItems() {
-        return mItems;
+        return Items;
     }
 
     public void makeClosure() {
-        final List<Item> itemList = new ArrayList<>(mItems);
+        final List<Item> itemList = new ArrayList<>(Items);
         for (int i = 0; i < itemList.size(); i++) {
             final Item item = itemList.get(i);
             if (item.isNotEnded()) {
@@ -40,8 +40,8 @@ public class ParseState {
                     for (final Production production : ((AbstractNonterminalSymbol) abstractSymbol).getProductions()) {
                         for (final AbstractTerminalSymbol lookAheadSymbol : headList) {
                             final Item newItem = new Item(production, lookAheadSymbol);
-                            if (!mItems.contains(newItem)) {
-                                mItems.add(newItem);
+                            if (!Items.contains(newItem)) {
+                                Items.add(newItem);
                                 itemList.add(newItem);
                             }
                         }
@@ -67,7 +67,7 @@ public class ParseState {
             }
         }
         try {
-            headSet.remove(mGrammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
+            headSet.remove(Grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
         } catch (AnalysisException e) {
             e.printStackTrace();
         }
@@ -78,7 +78,7 @@ public class ParseState {
     public boolean equals(Object obj) {
         if (obj instanceof ParseState) {
             final ParseState parseState = (ParseState) obj;
-            return mItems.size() == parseState.mItems.size() && mItems.containsAll(parseState.mItems);
+            return Items.size() == parseState.Items.size() && Items.containsAll(parseState.Items);
         }
         return false;
     }
@@ -86,7 +86,7 @@ public class ParseState {
     @Override
     public int hashCode() {
         int hash = 0;
-        for (final Item item : mItems) {
+        for (final Item item : Items) {
             hash ^= item.hashCode();
         }
         return hash;
@@ -96,7 +96,7 @@ public class ParseState {
     public String toString() {
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Items in this state:\n");
-        for (final Item item : mItems) {
+        for (final Item item : Items) {
             stringBuilder.append(item);
             stringBuilder.append("\n");
         }

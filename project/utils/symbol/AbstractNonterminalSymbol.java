@@ -5,35 +5,35 @@ import java.util.*;
 
 public class AbstractNonterminalSymbol extends AbstractSymbol {
 
-    private boolean mNullable;
+    private boolean isNullable;
 
-    private Set<AbstractTerminalSymbol> mFirstSet;
+    private Set<AbstractTerminalSymbol> FirstSet;
 
-    private final Set<Production> mProductions = new HashSet<>();
+    private final Set<Production> Prod = new HashSet<>();
 
     public AbstractNonterminalSymbol(String name) {
         setName(name);
-        this.mFirstSet = new HashSet<>();
+        this.FirstSet = new HashSet<>();
     }
 
     public boolean isNullable() {
-        return mNullable;
+        return isNullable;
     }
 
     public void setNullable(boolean nullable) {
-        mNullable = nullable;
+        isNullable = nullable;
     }
 
     public Set<AbstractTerminalSymbol> getFirstSet() {
-        return mFirstSet;
+        return FirstSet;
     }
 
     public void setFirstSet(Set<AbstractTerminalSymbol> firstSet) {
-        mFirstSet = firstSet;
+        FirstSet = firstSet;
     }
 
     public Set<Production> getProductions() {
-        return mProductions;
+        return Prod;
     }
 
     @Override

@@ -8,22 +8,22 @@ import java.util.List;
 
 public class Production {
 
-    private AbstractSymbol mFrom;
+    private AbstractSymbol From;
 
-    private List<AbstractSymbol> mTo;
+    private List<AbstractSymbol> To;
 
     protected Production() {
     }
 
     public Production(AbstractSymbol from, List<AbstractSymbol> to) {
-        mFrom = from;
-        mTo = to;
+        From = from;
+        To = to;
     }
 
     public Production(Production production) {
-        mFrom = production.mFrom;
-        mTo = new ArrayList<>();
-        mTo.addAll(production.mTo);
+        From = production.From;
+        To = new ArrayList<>();
+        To.addAll(production.To);
     }
 
     public static Production fromString(String input, Grammar grammar) throws AnalysisException {
@@ -41,18 +41,18 @@ public class Production {
             throw new AnalysisException(AnalysisException.ILL_FORMED_PRODUCTION_LEFT, null);
         }
         try {
-            production.mFrom = grammar.getSymbolPool().getNonterminalSymbol(fromStr[0]);
+            production.From = grammar.getSymbolPool().getNonterminalSymbol(fromStr[0]);
         } catch (AnalysisException e) {
             throw new AnalysisException(AnalysisException.ILL_FORMED_PRODUCTION_LEFT, e);
         }
-        production.mTo = new ArrayList<>();
+        production.To = new ArrayList<>();
         if (toStr.length == 1 && (toStr[0].equals(AbstractTerminalSymbol.NULL) || toStr[0].equals("ε"))) {
-            production.mTo.add(grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
+            production.To.add(grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.NULL));
             return production;
         } else if (toStr.length > 0 && toStr[0].length() > 0) {
             for (final String string : toStr) {
                 try {
-                    production.mTo.add(grammar.getSymbolPool().getSymbol(string));
+                    production.To.add(grammar.getSymbolPool().getSymbol(string));
                 } catch (AnalysisException e) {
                     throw new AnalysisException(String.format(AnalysisException.SYMBOL_NOT_EXIST, string), e);
                 }
@@ -64,22 +64,22 @@ public class Production {
     }
 
     public AbstractSymbol from() {
-        return mFrom;
+        return From;
     }
 
     public List<AbstractSymbol> to() {
-        return mTo;
+        return To;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Production) {
             final Production production = (Production) obj;
-            if (!mFrom.equals(production.mFrom) || mTo.size() != production.mTo.size()) {
+            if (!From.equals(production.From) || To.size() != production.To.size()) {
                 return false;
             }
-            for (int i = 0; i < mTo.size(); i++) {
-                if (!mTo.get(i).equals(production.mTo.get(i))) {
+            for (int i = 0; i < To.size(); i++) {
+                if (!To.get(i).equals(production.To.get(i))) {
                     return false;
                 }
             }
@@ -92,9 +92,9 @@ public class Production {
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append("Production: ");
-        result.append(mFrom.toString());
+        result.append(From.toString());
         result.append(" ->");
-        for (final AbstractSymbol abstractSymbol : mTo) {
+        for (final AbstractSymbol abstractSymbol : To) {
             result.append(" ");
             result.append(abstractSymbol.toString());
         }
@@ -103,8 +103,8 @@ public class Production {
 
     @Override
     public int hashCode() {
-        int hash = mFrom.hashCode();
-        for (final AbstractSymbol abstractSymbol : mTo) {
+        int hash = From.hashCode();
+        for (final AbstractSymbol abstractSymbol : To) {
             hash ^= abstractSymbol.hashCode();
         }
         return hash;

@@ -10,26 +10,26 @@ import java.util.*;
 
 public class ParseTable {
 
-    private final Map<Integer, Map<AbstractSymbol, Transition>> mTableMap = new HashMap<>();
+    private final Map<Integer, Map<AbstractSymbol, Transition>> TableMap = new HashMap<>();
 
-    private int mAcceptState;
+    private int AcceptState;
 
-    private final Grammar mGrammar;
+    private final Grammar Grammar;
 
     public ParseTable(Grammar grammar) {
-        mGrammar = grammar;
+        Grammar = grammar;
     }
 
     public Map<Integer, Map<AbstractSymbol, Transition>> getTable() {
-        return mTableMap;
+        return TableMap;
     }
 
     public int getAcceptState() {
-        return mAcceptState;
+        return AcceptState;
     }
 
     public void setAcceptState(int acceptState) {
-        this.mAcceptState = acceptState;
+        this.AcceptState = acceptState;
     }
 
     public void addTransition(int stateIndex, AbstractSymbol abstractSymbol, int nextStateIndex) {
@@ -42,34 +42,34 @@ public class ParseTable {
         } else {
             transition = new Transition(Transition.SHIFT, nextStateIndex);
         }
-        if (!mTableMap.containsKey(stateIndex)) {
-            mTableMap.put(stateIndex, new HashMap<>());
+        if (!TableMap.containsKey(stateIndex)) {
+            TableMap.put(stateIndex, new HashMap<>());
         }
-        mTableMap.get(stateIndex).put(abstractSymbol, transition);
+        TableMap.get(stateIndex).put(abstractSymbol, transition);
     }
 
     public void addTransition(int stateIndex, AbstractSymbol abstractSymbol, Production production) {
-        final Transition transition = new Transition(production, mGrammar.getProductions().indexOf(production));
-        if (!mTableMap.containsKey(stateIndex)) {
-            mTableMap.put(stateIndex, new HashMap<>());
+        final Transition transition = new Transition(production, Grammar.getProductions().indexOf(production));
+        if (!TableMap.containsKey(stateIndex)) {
+            TableMap.put(stateIndex, new HashMap<>());
         }
-        mTableMap.get(stateIndex).put(abstractSymbol, transition);
+        TableMap.get(stateIndex).put(abstractSymbol, transition);
     }
 
     @Override
     public String toString() {
         final StringBuilder stringBuilder = new StringBuilder();
         final Set<AbstractSymbol> abstractSymbolSet = new HashSet<>();
-        for (final int i : mTableMap.keySet()) {
-            abstractSymbolSet.addAll(mTableMap.get(i).keySet());
+        for (final int i : TableMap.keySet()) {
+            abstractSymbolSet.addAll(TableMap.get(i).keySet());
         }
-        final List<Integer> sortedStateIndices = new ArrayList<>(mTableMap.keySet());
+        final List<Integer> sortedStateIndices = new ArrayList<>(TableMap.keySet());
         Collections.sort(sortedStateIndices);
         final List<AbstractSymbol> abstractSymbolList = new ArrayList<>(abstractSymbolSet);
         final List<AbstractSymbol> abstractTerminalSymbols = new ArrayList<>(
-                mGrammar.getSymbolPool().getTerminalSymbols());
+                Grammar.getSymbolPool().getTerminalSymbols());
         final List<AbstractSymbol> abstractNonterminalSymbols = new ArrayList<>(
-                mGrammar.getSymbolPool().getNonterminalSymbols());
+                Grammar.getSymbolPool().getNonterminalSymbols());
         final List<AbstractSymbol> listForOrder = new ArrayList<>();
         listForOrder.addAll(abstractTerminalSymbols);
         listForOrder.addAll(abstractNonterminalSymbols);
@@ -83,14 +83,14 @@ public class ParseTable {
             stringBuilder.append(i);
             for (final AbstractSymbol abstractSymbol : abstractSymbolList) {
                 stringBuilder.append("\t");
-                if (mTableMap.get(i).containsKey(abstractSymbol)) {
+                if (TableMap.get(i).containsKey(abstractSymbol)) {
                     try {
 
-                        if (mAcceptState == i && abstractSymbol
-                                .equals(mGrammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
+                        if (AcceptState == i && abstractSymbol
+                                .equals(Grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
                             stringBuilder.append("acc");
                         } else {
-                            stringBuilder.append(mTableMap.get(i).get(abstractSymbol));
+                            stringBuilder.append(TableMap.get(i).get(abstractSymbol));
                         }
                     } catch (AnalysisException e) {
                         stringBuilder.append("error");
@@ -105,7 +105,7 @@ public class ParseTable {
     public void toCSV(String filePath) throws IOException {
         try (FileWriter writer = new FileWriter(filePath)) {
             Set<AbstractSymbol> symbols = new HashSet<>();
-            for (Map<AbstractSymbol, Transition> transitions : mTableMap.values()) {
+            for (Map<AbstractSymbol, Transition> transitions : TableMap.values()) {
                 symbols.addAll(transitions.keySet());
             }
             List<AbstractSymbol> sortedSymbols = new ArrayList<>(symbols);
@@ -119,14 +119,14 @@ public class ParseTable {
             writer.append("\n");
 
             // Data rows
-            for (int state : mTableMap.keySet()) {
+            for (int state : TableMap.keySet()) {
                 writer.append(String.valueOf(state));
                 for (AbstractSymbol symbol : sortedSymbols) {
-                    Transition transition = mTableMap.get(state).get(symbol);
+                    Transition transition = TableMap.get(state).get(symbol);
                     if (transition != null) {
                         try {
-                            if (mAcceptState == state && symbol
-                                    .equals(mGrammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
+                            if (AcceptState == state && symbol
+                                    .equals(Grammar.getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
                                 writer.append(",acc");
                             } else {
                                 writer.append(",").append(transition.toString());

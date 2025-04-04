@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import project.utils.exception.AnalysisException;
 
 //THIS IS USED TO GENERATE THE CSV OF THE ACTION AND GOTO TABLE
-public class LR1GeneratorMainDriver {
+public class LR1_CSV {
     public static void main(String[] args) {
         try {
             // Read grammar input from a file (e.g., format.txt)

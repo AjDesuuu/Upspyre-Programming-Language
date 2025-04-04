@@ -8,43 +8,43 @@ public class Transition {
 
     public static final int REDUCE = 0x03;
 
-    private final int mAction;
+    private final int Action;
 
-    private int mNextState;
+    private int NextState;
 
-    private Production mReduceProduction;
+    private Production ReduceProduction;
 
-    private int mIndex;
+    private int Index;
 
     Transition(int action, int nextState) {
-        mAction = action;
-        mNextState = nextState;
+        Action = action;
+        NextState = nextState;
     }
 
     Transition(Production reduceProduction, int index) {
-        mAction = REDUCE;
-        mReduceProduction = reduceProduction;
-        mIndex = index;
+        Action = REDUCE;
+        ReduceProduction = reduceProduction;
+        Index = index;
     }
 
     public int getAction() {
-        return mAction;
+        return Action;
     }
 
     public Integer getNextState() {
-        return mAction == SHIFT || mAction == GOTO ? mNextState : null;
+        return Action == SHIFT || Action == GOTO ? NextState : null;
     }
 
     public Production getReduceProduction() {
-        return mReduceProduction;
+        return ReduceProduction;
     }
 
     @Override
     public String toString() {
-        if (mAction == REDUCE) {
-            return "r" + (mIndex);
+        if (Action == REDUCE) {
+            return "r" + (Index);
         } else {
-            return "s" + mNextState;
+            return "s" + NextState;
         }
     }
 }

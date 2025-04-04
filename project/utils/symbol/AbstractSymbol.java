@@ -6,14 +6,14 @@ public abstract class AbstractSymbol {
 
     public static final int NONTERMINAL = 0xff;
 
-    private String mName;
+    private String symbolName;
 
     public String getName() {
-        return mName;
+        return symbolName;
     }
 
     public void setName(String name) {
-        mName = name;
+        symbolName = name;
     }
 
     public abstract int getType();
@@ -22,18 +22,18 @@ public abstract class AbstractSymbol {
     public boolean equals(Object obj) {
         if (obj instanceof AbstractSymbol) {
             final AbstractSymbol abstractSymbol = (AbstractSymbol) obj;
-            return getType() == abstractSymbol.getType() && mName.equals(abstractSymbol.mName);
+            return getType() == abstractSymbol.getType() && symbolName.equals(abstractSymbol.symbolName);
         }
         return false;
     }
 
     @Override
     public String toString() {
-        return (getType() == TERMINAL ? "Terminal symbol: " : "Nonterminal symbol: ") + mName;
+        return (getType() == TERMINAL ? "Terminal symbol: " : "Nonterminal symbol: ") + symbolName;
     }
 
     @Override
     public int hashCode() {
-        return mName.hashCode();
+        return symbolName.hashCode();
     }
 }

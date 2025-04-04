@@ -7,9 +7,9 @@ import java.util.*;
 
 public class SymbolPool {
 
-    private Map<String, AbstractTerminalSymbol> mTerminalSymbols;
+    private Map<String, AbstractTerminalSymbol> absTerminalSymbols;
 
-    private Map<String, AbstractNonterminalSymbol> mNonterminalSymbols;
+    private Map<String, AbstractNonterminalSymbol> absNonterminalSymbols;
 
     public SymbolPool(Set<String> terminalSymbols, Set<String> nonterminalSymbols)
             throws AnalysisException {
@@ -28,58 +28,58 @@ public class SymbolPool {
     }
 
     private void initTerminalSymbols(Set<String> terminalSymbols) {
-        mTerminalSymbols = new HashMap<>();
+        absTerminalSymbols = new HashMap<>();
         for (final String name : terminalSymbols) {
-            mTerminalSymbols.put(name, new AbstractTerminalSymbol(name));
+            absTerminalSymbols.put(name, new AbstractTerminalSymbol(name));
         }
-        mTerminalSymbols.put(AbstractTerminalSymbol.NULL, AbstractTerminalSymbol.Null());
-        mTerminalSymbols.put(AbstractTerminalSymbol.END, AbstractTerminalSymbol.End());
+        absTerminalSymbols.put(AbstractTerminalSymbol.NULL, AbstractTerminalSymbol.Null());
+        absTerminalSymbols.put(AbstractTerminalSymbol.END, AbstractTerminalSymbol.End());
     }
 
     private void initNonterminalSymbols(Set<String> nonterminalSymbols) {
-        mNonterminalSymbols = new HashMap<>();
+        absNonterminalSymbols = new HashMap<>();
         for (final String name : nonterminalSymbols) {
-            mNonterminalSymbols.put(name, new AbstractNonterminalSymbol(name));
+            absNonterminalSymbols.put(name, new AbstractNonterminalSymbol(name));
         }
     }
 
     public Set<AbstractTerminalSymbol> getTerminalSymbols() {
-        return new HashSet<>(mTerminalSymbols.values());
+        return new HashSet<>(absTerminalSymbols.values());
     }
 
     public AbstractTerminalSymbol getTerminalSymbol(String name) throws AnalysisException {
-        if (mTerminalSymbols.containsKey(name)) {
-            return mTerminalSymbols.get(name);
+        if (absTerminalSymbols.containsKey(name)) {
+            return absTerminalSymbols.get(name);
         }
         throw new AnalysisException(String.format(AnalysisException.TERMINAL_SYMBOL_NOT_EXIST, name), null);
     }
 
     public Set<String> getNonterminalSymbolNames() {
-        return mNonterminalSymbols.keySet();
+        return absNonterminalSymbols.keySet();
     }
 
     public Set<AbstractNonterminalSymbol> getNonterminalSymbols() {
-        return new HashSet<>(mNonterminalSymbols.values());
+        return new HashSet<>(absNonterminalSymbols.values());
     }
 
     public AbstractNonterminalSymbol getNonterminalSymbol(String name) throws AnalysisException {
-        if (mNonterminalSymbols.containsKey(name)) {
-            return mNonterminalSymbols.get(name);
+        if (absNonterminalSymbols.containsKey(name)) {
+            return absNonterminalSymbols.get(name);
         }
         throw new AnalysisException(String.format(AnalysisException.NONTERMINAL_SYMBOL_NOT_EXIST, name), null);
     }
 
     public void addNonterminalSymbol(AbstractNonterminalSymbol abstractNonterminalSymbol) {
-        if (!mNonterminalSymbols.containsKey(abstractNonterminalSymbol.getName())) {
-            mNonterminalSymbols.put(abstractNonterminalSymbol.getName(), abstractNonterminalSymbol);
+        if (!absNonterminalSymbols.containsKey(abstractNonterminalSymbol.getName())) {
+            absNonterminalSymbols.put(abstractNonterminalSymbol.getName(), abstractNonterminalSymbol);
         }
     }
 
     public AbstractSymbol getSymbol(String name) throws AnalysisException {
-        if (mTerminalSymbols.containsKey(name)) {
-            return mTerminalSymbols.get(name);
-        } else if (mNonterminalSymbols.containsKey(name)) {
-            return mNonterminalSymbols.get(name);
+        if (absTerminalSymbols.containsKey(name)) {
+            return absTerminalSymbols.get(name);
+        } else if (absNonterminalSymbols.containsKey(name)) {
+            return absNonterminalSymbols.get(name);
         }
         throw new AnalysisException(String.format(AnalysisException.SYMBOL_NOT_EXIST, name), null);
     }

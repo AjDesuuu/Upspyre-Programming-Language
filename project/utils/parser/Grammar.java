@@ -12,16 +12,16 @@ public class Grammar {
 
     public static final String START_SYMBOL = "_S";
 
-    private AbstractNonterminalSymbol mStartSymbol;
+    private AbstractNonterminalSymbol StartSymbol;
 
-    private final SymbolPool mSymbolPool;
+    private final SymbolPool SymbolPool;
 
-    private List<Production> mProductions;
+    private List<Production> Productions;
 
-    private ParseTable mParseTable;
+    private ParseTable ParseTable;
 
     public Grammar(Config config) throws AnalysisException {
-        mSymbolPool = new SymbolPool(config.getTerminalSymbols(), config.getNonterminalSymbols());
+        SymbolPool = new SymbolPool(config.getTerminalSymbols(), config.getNonterminalSymbols());
         initProductions(config.getProductions(), config.getStartSymbol());
     }
 
@@ -30,30 +30,30 @@ public class Grammar {
         System.out.println("Terminal Symbols: " + terminalSymbols);
         System.out.println("Non-terminal Symbols: " + nonterminalSymbols);
         System.out.println("Start Symbol: " + startSymbol);
-        mSymbolPool = new SymbolPool(terminalSymbols, nonterminalSymbols);
-        mStartSymbol = mSymbolPool.getNonterminalSymbol(startSymbol);
-        mProductions = new ArrayList<>();
-        System.out.println("Start Symbol Object: " + mStartSymbol);
+        SymbolPool = new SymbolPool(terminalSymbols, nonterminalSymbols);
+        StartSymbol = SymbolPool.getNonterminalSymbol(startSymbol);
+        Productions = new ArrayList<>();
+        System.out.println("Start Symbol Object: " + StartSymbol);
     }
 
     public AbstractNonterminalSymbol getStartSymbol() {
-        return mStartSymbol;
+        return StartSymbol;
     }
 
     public SymbolPool getSymbolPool() {
-        return mSymbolPool;
+        return SymbolPool;
     }
 
     public List<Production> getProductions() {
-        return mProductions;
+        return Productions;
     }
 
     public void setProductions(List<? extends Production> productions) {
-        this.mProductions = new ArrayList<>(productions);
+        this.Productions = new ArrayList<>(productions);
     }
 
     public ParseTable getParseTable() {
-        return mParseTable;
+        return ParseTable;
     }
 
     public void initParseTable() throws AnalysisException {
@@ -63,9 +63,9 @@ public class Grammar {
         final Map<ParseState, Integer> stateMap = new HashMap<>();
 
         final ParseState startState = new ParseState(this);
-        for (final Production production : mProductions) {
-            if (production.from().equals(mStartSymbol)) {
-                startState.addItem(new Item(production, mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END)));
+        for (final Production production : Productions) {
+            if (production.from().equals(StartSymbol)) {
+                startState.addItem(new Item(production, SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END)));
             }
         }
         startState.makeClosure();
@@ -83,18 +83,18 @@ public class Grammar {
                     }
                     groupedItems.get(item.getNextSymbol()).add(item);
                 } else {
-                    if (!groupedItems.containsKey(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL))) {
-                        groupedItems.put(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL), new HashSet<>());
+                    if (!groupedItems.containsKey(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL))) {
+                        groupedItems.put(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL), new HashSet<>());
                     }
-                    groupedItems.get(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL)).add(item);
+                    groupedItems.get(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL)).add(item);
                 }
             }
             for (final AbstractSymbol abstractSymbol : groupedItems.keySet()) {
-                if (abstractSymbol.equals(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL))) {
+                if (abstractSymbol.equals(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL))) {
                     for (final Item item : groupedItems.get(abstractSymbol)) {
                         parseTable.addTransition(i, item.getLookAhead(), item.getProduction());
-                        if (item.getLookAhead().equals(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END))
-                                && item.getProduction().from().equals(mStartSymbol)) {
+                        if (item.getLookAhead().equals(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END))
+                                && item.getProduction().from().equals(StartSymbol)) {
                             parseTable.setAcceptState(i);
                             System.out.println("Accept State: " + i);
                         }
@@ -113,39 +113,39 @@ public class Grammar {
                 }
             }
         }
-        mParseTable = parseTable;
+        ParseTable = parseTable;
     }
 
     public void initProductions(List<String> prodStrList, String startSymbol) throws AnalysisException {
-        mProductions = new ArrayList<>();
+        Productions = new ArrayList<>();
         for (final String prodStr : prodStrList) {
             //System.out.println("Parsing Production: " + prodStr);
 
             Production production = Production.fromString(prodStr, this);
-            mProductions.add(production);
+            Productions.add(production);
             //System.out.println("Parsed Production: " + production);
         }
         augmentGrammar(startSymbol);
     }
 
     private void augmentGrammar(String startSymbol) throws AnalysisException {
-        if (!mSymbolPool.getNonterminalSymbolNames().contains(startSymbol)) {
+        if (!SymbolPool.getNonterminalSymbolNames().contains(startSymbol)) {
             throw new AnalysisException(AnalysisException.START_SYMBOL_NOT_TERMINAL, null);
         }
-        final AbstractNonterminalSymbol oldStartSymbol = mSymbolPool.getNonterminalSymbol(startSymbol);
+        final AbstractNonterminalSymbol oldStartSymbol = SymbolPool.getNonterminalSymbol(startSymbol);
         final AbstractNonterminalSymbol newStartSymbol = new AbstractNonterminalSymbol(START_SYMBOL);
-        mSymbolPool.addNonterminalSymbol(newStartSymbol);
+        SymbolPool.addNonterminalSymbol(newStartSymbol);
         final List<AbstractSymbol> to = new ArrayList<>();
         to.add(oldStartSymbol);
-        mProductions.add(0, new Production(newStartSymbol, to));
-        mStartSymbol = newStartSymbol;
+        Productions.add(0, new Production(newStartSymbol, to));
+        StartSymbol = newStartSymbol;
 
         //System.out.println("Augmented Grammar:");
         //System.out.println(this.toString());
     }
 
     private void initSymbolProductions() {
-        for (final Production production : mProductions) {
+        for (final Production production : Productions) {
             final AbstractNonterminalSymbol from = (AbstractNonterminalSymbol) production.from();
             from.getProductions().add(production);
 
@@ -157,10 +157,10 @@ public class Grammar {
     private void initSymbolNullable() throws AnalysisException {
         Set<AbstractSymbol> tmpNullableSymbols = new HashSet<>();
         final Set<AbstractSymbol> nullableSymbols = new HashSet<>();
-        tmpNullableSymbols.add(mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL));
+        tmpNullableSymbols.add(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL));
 
         final Map<AbstractSymbol, Set<Production>> symbolProductions = new HashMap<>();
-        for (final Production production : mProductions) {
+        for (final Production production : Productions) {
             final AbstractSymbol from = production.from();
             if (!symbolProductions.containsKey(from)) {
                 symbolProductions.put(from, new HashSet<>());
@@ -196,22 +196,22 @@ public class Grammar {
         initSymbolNullable();
 
         //System.out.println("Nullable Symbols:");
-        for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
+        for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
             if (symbol.isNullable()) {
                 //System.out.println(symbol.getName() + " is nullable");
             }
         }
 
         // Initialize FIRST sets for all non-terminal symbols
-        for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
+        for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
             symbol.setFirstSet(new HashSet<>()); // Ensure the FIRST set is initialized
         }
 
         final Map<AbstractNonterminalSymbol, Set<AbstractNonterminalSymbol>> connections = new HashMap<>();
         final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> firstSets = new HashMap<>();
         final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> tmpFirstSets = new HashMap<>();
-        final AbstractTerminalSymbol nullSymbol = mSymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL);
-        for (final Production production : mProductions) {
+        final AbstractTerminalSymbol nullSymbol = SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL);
+        for (final Production production : Productions) {
             for (final AbstractSymbol abstractSymbol : production.to()) {
                 final AbstractNonterminalSymbol from = (AbstractNonterminalSymbol) production.from();
                 if (abstractSymbol.getType() == AbstractSymbol.NONTERMINAL) {
@@ -261,7 +261,7 @@ public class Grammar {
                 }
             }
         }
-        for (final AbstractNonterminalSymbol abstractNonterminalSymbol : mSymbolPool.getNonterminalSymbols()) {
+        for (final AbstractNonterminalSymbol abstractNonterminalSymbol : SymbolPool.getNonterminalSymbols()) {
             if (!firstSets.containsKey(abstractNonterminalSymbol)) {
                 firstSets.put(abstractNonterminalSymbol, new HashSet<>());
             }
@@ -275,7 +275,7 @@ public class Grammar {
     @Override
     public String toString() {
         final StringBuilder stringBuilder = new StringBuilder("Productions in this grammar:");
-        for (final Production production : mProductions) {
+        for (final Production production : Productions) {
             stringBuilder.append("\n");
             stringBuilder.append(production);
         }
@@ -285,7 +285,7 @@ public class Grammar {
     public String getFirstSetsCSV() {
         StringBuilder csv = new StringBuilder();
         csv.append("Nonterminal,FIRST Set\n");
-        for (AbstractNonterminalSymbol symbol : mSymbolPool.getNonterminalSymbols()) {
+        for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
             csv.append(symbol.getName()).append(",");
             Set<AbstractTerminalSymbol> firstSet = symbol.getFirstSet();
             for (AbstractTerminalSymbol terminal : firstSet) {
