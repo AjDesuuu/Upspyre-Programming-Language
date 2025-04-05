@@ -67,15 +67,18 @@ public class Parser {
      */
     public void parse() {
         // Print initial parsing setup information
-        System.out.println("Start Symbol: " + ParsingTableGenerator.productionTable.get(1));
+        //System.out.println("Start Symbol: " + ParsingTableGenerator.productionTable.get(1));
+        outputFormatter.updateCurrentLine(currentToken);
 
         int errorCount = 0;
         final int MAX_ERRORS = 10; // Limit error count to prevent infinite loops
 
         while (errorCount < MAX_ERRORS) {
+            outputFormatter.updateCurrentLine(currentToken);
             // Skip comment tokens to focus on actual code
             while (TOKENS_TO_IGNORE.contains(currentToken.getType())) {
                 currentToken = lexer.nextToken();
+                outputFormatter.updateCurrentLine(currentToken);
             }
 
             int state = stateStack.peek();
@@ -110,6 +113,7 @@ public class Parser {
 
             if (action.startsWith("s")) { 
                 // Shift action - move to next token
+                outputFormatter.updateCurrentLine(currentToken);
                 int nextState = Integer.parseInt(action.substring(1));
                 stateStack.push(nextState);
                 symbolStack.push(tokenType);
@@ -132,7 +136,7 @@ public class Parser {
                 // Print the trace and error summary
                 outputFormatter.printTrace();
                 if (!errorMessages.isEmpty()) {
-                    outputFormatter.printErrorSummary(errorMessages);
+                    outputFormatter.printErrorSummary();
                 }
                 
                 System.out.println("Parse tree nodes: " + treeStack.size());
@@ -169,15 +173,13 @@ public class Parser {
         // Reached max errors - print summary and exit
         System.out.println("Maximum error count reached. Stopping parsing.");
         outputFormatter.printTrace();
-        outputFormatter.printErrorSummary(errorMessages);
+        outputFormatter.printErrorSummary();
     }
 
     /**
      * Prints a summarized report of all parsing errors encountered.
      */
-    private void printErrorSummary() {
-        outputFormatter.printErrorSummary(errorMessages);
-    }
+  
 
     /**
      * Performs a reduction operation according to a grammar rule.
@@ -339,11 +341,14 @@ public class Parser {
      */
     private void panicModeRecovery() {
         // Keep track of starting token for error reporting
+        outputFormatter.updateCurrentLine(currentToken);
         Token errorToken = currentToken;
         int tokensSkipped = 0;
         
+        
         // Skip tokens until we find one that can be processed in the current state
         while (currentToken.getType() != TokenType.EOF) {
+            outputFormatter.updateCurrentLine(currentToken);
             int state = stateStack.peek();
             HashMap<String, String> actionRow = ParsingTableGenerator.actionTable.get(state);
             

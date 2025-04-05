@@ -9,81 +9,127 @@ import java.util.Stack;
  * by providing cleaner formatting and removing redundancy.
  */
 public class ParserOutputFormatter {
-    private static int LINE_WIDTH = 80; // Now non-final to allow dynamic adjustment
-    private static final boolean SHOW_DETAILED_MOVES = false; // Set to true for verbose mode
+    private static int LINE_WIDTH = 120;
+    private static final boolean SHOW_DETAILED_MOVES = true;
     
+    // Column widths for consistent formatting
+    private static final int STEP_WIDTH = 8;
+    private static final int ACTION_WIDTH = 8;
+    private static final int STATE_WIDTH = 10;
+    private static final int LINE_WIDTH_COL = 8;
+    private static final int TOKEN_WIDTH = 10;
+    private static final int DETAILS_WIDTH = 30;
+
+    private final List<String> errorMessages = new ArrayList<>();
     private final List<String> messages = new ArrayList<>();
-    private final List<Integer> contentLengths = new ArrayList<>(); // Track content lengths
+    private final List<Integer> contentLengths = new ArrayList<>();
     private int currentStep = 0;
     private boolean isSuccessful = false;
+    private int currentLine = 1;
+    private Token lastToken;
+    private final List<Integer> lineNumbers = new ArrayList<>();
+    private int endTokenLine = -1;
     
     /**
      * Records a shift action in the parsing process.
-     * 
-     * @param state Current state
-     * @param nextState State after shifting
-     * @param token Token being shifted
      */
     public void recordShift(int state, int nextState, Token token) {
-        String message;
-        if (SHOW_DETAILED_MOVES) {
-            message = String.format("%-4d| SHIFT  | State %-3d → %-3d | Token: %-10s | Lexeme: %-15s | Line: %d:%d",
-                    ++currentStep, state, nextState, token.getType(), 
-                    token.lexeme, token.line, token.position);
-        } else {
-            message = String.format("%-4d| SHIFT  | %-3d → %-3d | %-10s | %s",
-                    ++currentStep, state, nextState, token.getType(), token.lexeme);
-        }
+        lineNumbers.add(token.line);
+        String message = String.format(
+            "%-" + STEP_WIDTH + "d| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
+            LINE_WIDTH_COL + "d | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
+            ++currentStep,
+            "SHIFT",
+            state + " → " + nextState,
+            token.line,
+            token.getType(),
+            token.lexeme
+        );
         messages.add(message);
         contentLengths.add(message.length());
     }
     
     /**
      * Records a reduce action in the parsing process.
-     * 
-     * @param state Current state
-     * @param ruleNumber Grammar rule number used for reduction
-     * @param production String representation of the production
-     * @param nextState State after reduction and goto
-     * @param nonTerminal The non-terminal resulting from reduction
      */
     public void recordReduce(int state, int ruleNumber, String production, 
                           int nextState, String nonTerminal) {
-        String message;
-        if (SHOW_DETAILED_MOVES) {
-            message = String.format("%-4d| REDUCE | Rule %-3d | %-40s | State: %d → %d with %s", 
-                    ++currentStep, ruleNumber, production, state, nextState, nonTerminal);
-        } else {
-            message = String.format("%-4d| REDUCE | Rule %-3d | %s", 
-                    ++currentStep, ruleNumber, production);
-        }
+        int line = (ruleNumber == 1 && endTokenLine != -1) ? endTokenLine : currentLine;
+        lineNumbers.add(line);
+        
+        String message = String.format(
+            "%-" + STEP_WIDTH + "d| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
+            LINE_WIDTH_COL + "s | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
+            ++currentStep,
+            "REDUCE",
+            state + " → " + nextState,
+            line > 0 ? String.valueOf(line) : "",
+            "",
+            production
+        );
         messages.add(message);
         contentLengths.add(message.length());
     }
     
     /**
      * Records an error encountered during parsing.
-     * 
-     * @param state Current state
-     * @param token The token that caused the error
-     * @param expectedTokens Set of tokens that would have been valid
      */
     public void recordError(int state, Token token, String expectedTokens) {
-        String message = String.format("%-4d| ERROR  | State %-3d | Token: %-10s | Expected: %s", 
-                ++currentStep, state, token.getType(), expectedTokens);
+        lineNumbers.add(token.line);
+        
+        // Clean up expected tokens display
+        String cleanExpected = expectedTokens.replace("[", "").replace("]", "");
+        
+        String message = String.format(
+            "%-" + STEP_WIDTH + "d| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
+            LINE_WIDTH_COL + "d | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
+            ++currentStep,
+            "ERROR",
+            "State " + state,
+            token.line,
+            token.getType(),
+            "Unexpected: " + token.getType() + " | Expected: " + cleanExpected
+        );
         messages.add(message);
         contentLengths.add(message.length());
+        
+        // Store simplified error message for summary
+        String errorMsg = String.format("Line %d:%d - Unexpected token: '%s'",
+                                      token.line, token.position, 
+                                      token.getType());
+        errorMessages.add(errorMsg + "\n    Expected token/s type: '" + cleanExpected+"'");
+    }
+
+    public void updateCurrentLine(Token token) {
+        if (token != null && (lastToken == null || token.line != lastToken.line)) {
+            currentLine = token.line;
+            lastToken = token;
+        }
+
+        if (token != null && token.getType() != null && token.getType().toString().equals("END")) {
+            endTokenLine = token.line;
+        }
+    }
+
+    public int getCurrentLine() {
+        return currentLine;
     }
     
     /**
      * Records an error recovery action.
-     * 
-     * @param action The type of recovery performed
-     * @param details Additional details about the recovery
      */
     public void recordRecovery(String action, String details) {
-        String message = String.format("%-4d| RECOVER| %-8s | %s", 
-                ++currentStep, action, details);
+        lineNumbers.add(currentLine);
+        String message = String.format(
+            "%-" + STEP_WIDTH + "d| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
+            LINE_WIDTH_COL + "d | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
+            ++currentStep,
+            "RECOVER",
+            action,
+            currentLine,
+            "",
+            details
+        );
         messages.add(message);
         contentLengths.add(message.length());
     }
@@ -92,58 +138,60 @@ public class ParserOutputFormatter {
      * Records a successful completion of parsing.
      */
     public void recordSuccess() {
-        String message = String.format("%-4d| ACCEPT | Parsing completed successfully", 
-                ++currentStep);
+        int line = endTokenLine != -1 ? endTokenLine : currentLine;
+        lineNumbers.add(line);
+        
+        String message = String.format(
+            "%-" + STEP_WIDTH + "d| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
+            LINE_WIDTH_COL + "s | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
+            ++currentStep,
+            "ACCEPT",
+            "",
+            "",
+            "",
+            "Parsing completed successfully"
+        );
         messages.add(message);
         contentLengths.add(message.length());
         isSuccessful = true;
     }
     
-    /**
-     * Calculates the optimal width for the table based on content.
-     * @return The width to use for the table
-     */
-    private int calculateOptimalWidth() {
-        // Find the longest content
-        int maxContentLength = contentLengths.stream()
-                .mapToInt(Integer::intValue)
-                .max()
-                .orElse(50);  // Default if no messages
-        
-        // Add padding for table borders
-        int optimalWidth = maxContentLength + 4;  // 4 = space on each side + '│' characters
-        
-        // Minimum width to maintain readability
-        return Math.max(optimalWidth, 80);
-    }
+    
     
     /**
      * Prints the formatted parsing trace.
      */
     public void printTrace() {
-        // Determine optimal width for table
-        LINE_WIDTH = calculateOptimalWidth();
+    
+        System.out.println(String.format("%-" + LINE_WIDTH + "s", "PARSER TRACE OUTPUT"));
+        System.out.println("-".repeat(LINE_WIDTH));
         
-        System.out.println(separator());
-        System.out.println("│ " + centerText("PARSER TRACE OUTPUT", LINE_WIDTH - 4) + " │");
-        System.out.println(separator());
+        // Header with new column order
+        String header = String.format(
+            "%-" + STEP_WIDTH + "s| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
+            LINE_WIDTH_COL + "s | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
+            "Step", "Action", "States", "Line", "Token", "Details"
+        );
+        System.out.println(header);
+        System.out.println("-".repeat(LINE_WIDTH));
         
-        // Create header with appropriate width
-        String header = "│ Step | Action | Details";
-        System.out.println(header + " ".repeat(Math.max(0, LINE_WIDTH - header.length() - 1)) + "│");
-        System.out.println(separator());
-        
-        for (String msg : messages) {
-            System.out.println("│ " + msg + " ".repeat(Math.max(0, LINE_WIDTH - msg.length() - 4)) + " │");
+        int lastLineNumber = -1;
+        for (int i = 0; i < messages.size(); i++) {
+            String msg = messages.get(i);
+            int lineNum = lineNumbers.get(i);
+            
+            if (lineNum != lastLineNumber && lineNum > 0) {
+                System.out.println("-".repeat(LINE_WIDTH));
+                System.out.println("Current Line: " + lineNum);
+                lastLineNumber = lineNum;
+            }
+            
+            System.out.println(msg);
         }
         
-        System.out.println(separator());
-        if (isSuccessful) {
-            System.out.println("│ " + centerText("✓ PARSING SUCCESSFUL", LINE_WIDTH - 4) + " │");
-        } else {
-            System.out.println("│ " + centerText("✗ PARSING FAILED", LINE_WIDTH - 4) + " │");
-        }
-        System.out.println(separator());
+        System.out.println("-".repeat(LINE_WIDTH));
+        System.out.println(isSuccessful ? "✓ PARSING SUCCESSFUL" : "✗ PARSING FAILED");
+        System.out.println("-".repeat(LINE_WIDTH));
     }
     
     /**
@@ -151,58 +199,40 @@ public class ParserOutputFormatter {
      * 
      * @param errorMessages List of error messages
      */
-    public void printErrorSummary(List<String> errorMessages) {
+    public void printErrorSummary() {
         if (errorMessages.isEmpty()) {
             return;
         }
+    
         
-        // Calculate optimal width based on error messages too
-        for (String error : errorMessages) {
-            int errorLength = error.length() + 10; // Add some space for error numbering
-            if (errorLength + 4 > LINE_WIDTH) {
-                LINE_WIDTH = errorLength + 4;
-            }
-        }
         
-        System.out.println(separator());
-        System.out.println("│ " + centerText("ERROR SUMMARY", LINE_WIDTH - 4) + " │");
-        System.out.println(separator());
+        System.out.println("\n" + centerText("ERROR SUMMARY", LINE_WIDTH));
+        System.out.println("-".repeat(LINE_WIDTH));
         
         for (int i = 0; i < errorMessages.size(); i++) {
-            String msg = "[Error " + (i+1) + "] " + errorMessages.get(i);
+            String[] parts = errorMessages.get(i).split("\n");
             
-            // Split long messages across multiple lines
-            while (msg.length() > LINE_WIDTH - 4) {
-                String currentLine = msg.substring(0, LINE_WIDTH - 4);
-                System.out.println("│ " + currentLine + " │");
-                msg = "  " + msg.substring(LINE_WIDTH - 4);
+            System.out.println("Error " + (i+1) + ":");
+            System.out.println("  " + parts[0]);  // Location and unexpected token
+            System.out.println("  " + parts[1]);  // Expected tokens
+            
+            if (i < errorMessages.size() - 1) {
+                System.out.println("-".repeat(Math.min(LINE_WIDTH, 30)));
             }
-            
-            System.out.println("│ " + msg + " ".repeat(Math.max(0, LINE_WIDTH - msg.length() - 4)) + " │");
         }
         
-        System.out.println(separator());
+        System.out.println("-".repeat(LINE_WIDTH));
     }
     
-    /**
-     * Creates a horizontal separator line.
-     */
-    private String separator() {
-        return "├" + "─".repeat(LINE_WIDTH - 2) + "┤";
-    }
-    
-    /**
-     * Centers text in a field of the specified width.
-     */
+    // Helper method to center text
     private String centerText(String text, int width) {
-        int padding = width - text.length();
-        int padLeft = padding / 2;
-        int padRight = padding - padLeft;
-        return " ".repeat(padLeft) + text + " ".repeat(padRight);
+        int padding = (width - text.length()) / 2;
+        if (padding <= 0) return text;
+        return " ".repeat(padding) + text + " ".repeat(padding);
     }
     
     /**
-     * Creates a representation of the parsing stacks.
+     * Creates a string representation of the parsing stacks.
      * 
      * @param stateStack The state stack
      * @param symbolStack The symbol stack

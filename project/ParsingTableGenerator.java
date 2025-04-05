@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 import project.utils.LR1Generator;
 import project.utils.exception.AnalysisException;
 import project.utils.parser.ParseTable;
