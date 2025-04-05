@@ -50,7 +50,7 @@ public class LR1Generator {
                 "<PAIR_MAP_VAL>", "<PAIR_MAP_VAL_GROUP>", "<PAIR>", "<COLLECTION_ASSIGN>", "<COLLECTION_EXPR>", 
                 "<LIST_VALUE>", "<PAIR_MAP_VALUE>", "<PAIR_MAP_KEY>", "<COLLECTION_METHOD>", "<DATA_TYPE>", 
                 "<RELATIONAL_OP>", "<ADD_OP>", "<MULTI_OP>", "<EXP_OP>", "<ASSIGN_OP>", "<SHIFT_OP>", "<BINARY>","<CONDITIONAL_STMT_GROUP>",
-                "<BLOCK_STMT_KLEENE>"
+                "<BLOCK_STMT_KLEENE>", "<CONTINUE_STMT>", "<STOP_STMT>"
         ));
 
         String startSymbol = "<PROGRAM>";
