@@ -26,6 +26,7 @@ public class Production {
         To.addAll(production.To);
     }
 
+    /// Creates a new production from a string representation.
     public static Production fromString(String input, Grammar grammar) throws AnalysisException {
         final Production production = new Production();
         if (!input.contains("::=")) {
@@ -101,7 +102,9 @@ public class Production {
         return result.toString();
     }
 
+    
     @Override
+    // Returns a hash code for the production.
     public int hashCode() {
         int hash = From.hashCode();
         for (final AbstractSymbol abstractSymbol : To) {

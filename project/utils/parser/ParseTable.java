@@ -8,8 +8,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Represents the LR(1) parse table, containing shift, reduce, and goto actions.
+ * This table guides the parser's decisions at each state.
+ */
+
 public class ParseTable {
 
+    /// A map representing the parse table, where each state maps to a set of transitions.
     private final Map<Integer, Map<AbstractSymbol, Transition>> TableMap = new HashMap<>();
 
     private int AcceptState;
@@ -32,24 +38,30 @@ public class ParseTable {
         this.AcceptState = acceptState;
     }
 
+    /// Adds a transition to the parse table for a given state and symbol.
     public void addTransition(int stateIndex, AbstractSymbol abstractSymbol, int nextStateIndex) {
         if (abstractSymbol.getName().equals(Grammar.START_SYMBOL)) {
             return; // Exclude the augmented start symbol from the goto table
         }
         Transition transition;
+        /// Check if the symbol is a terminal or non-terminal
         if (abstractSymbol.getType() == AbstractSymbol.NONTERMINAL) {
             transition = new Transition(Transition.GOTO, nextStateIndex);
         } else {
             transition = new Transition(Transition.SHIFT, nextStateIndex);
         }
+        /// Add the transition to the table
         if (!TableMap.containsKey(stateIndex)) {
             TableMap.put(stateIndex, new HashMap<>());
         }
         TableMap.get(stateIndex).put(abstractSymbol, transition);
     }
 
+    /// Adds a reduce action to the parse table for a given state and production.
     public void addTransition(int stateIndex, AbstractSymbol abstractSymbol, Production production) {
+        //
         final Transition transition = new Transition(production, Grammar.getProductions().indexOf(production));
+        /// Check if the symbol is a terminal or non-terminal
         if (!TableMap.containsKey(stateIndex)) {
             TableMap.put(stateIndex, new HashMap<>());
         }

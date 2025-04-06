@@ -6,8 +6,13 @@ import project.utils.symbol.AbstractTerminalSymbol;
 
 import java.util.*;
 
+/**
+ * Represents a state in the LR(1) parse automaton.
+ * Each state contains a set of items and provides methods for closure computation.
+ */
 public class ParseState {
 
+    /// A set of items in this state.
     private final Set<Item> Items = new HashSet<>();
 
     private final Grammar Grammar;
@@ -24,6 +29,10 @@ public class ParseState {
         return Items;
     }
 
+    /**
+     * Computes the closure of the items in this state.
+     * This involves adding items for non-terminal symbols that appear after a dot.
+     */
     public void makeClosure() {
         final List<Item> itemList = new ArrayList<>(Items);
         for (int i = 0; i < itemList.size(); i++) {
@@ -31,11 +40,14 @@ public class ParseState {
             if (item.isNotEnded()) {
                 final AbstractSymbol abstractSymbol = item.getNextSymbol();
                 if (abstractSymbol.getType() == AbstractSymbol.NONTERMINAL) {
+                    // If the next symbol is a non-terminal, we need to add its productions to the closure.
                     final List<AbstractSymbol> lookAheadSymbols = new ArrayList<>();
                     for (int j = item.getDot() + 1; j < item.getProduction().to().size(); j++) {
                         lookAheadSymbols.add(item.getProduction().to().get(j));
                     }
                     lookAheadSymbols.add(item.getLookAhead());
+
+                    // Compute the first set of the lookahead symbols.
                     final Set<AbstractTerminalSymbol> headList = getHeadSet(lookAheadSymbols);
                     for (final Production production : ((AbstractNonterminalSymbol) abstractSymbol).getProductions()) {
                         for (final AbstractTerminalSymbol lookAheadSymbol : headList) {
@@ -51,6 +63,12 @@ public class ParseState {
         }
     }
 
+    /**
+     * Computes the head set (FIRST set) for a sequence of symbols.
+     * 
+     * @param abstractSymbols List of symbols to compute the head set for
+     * @return Set of terminal symbols that can appear first in the sequence
+     */
     private Set<AbstractTerminalSymbol> getHeadSet(List<AbstractSymbol> abstractSymbols) {
         final Set<AbstractTerminalSymbol> headSet = new HashSet<>();
         for (final AbstractSymbol abstractSymbol : abstractSymbols) {

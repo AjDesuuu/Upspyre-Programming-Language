@@ -8,18 +8,26 @@ import project.utils.symbol.SymbolPool;
 
 import java.util.*;
 
+/**
+ * Represents a context-free grammar and provides methods for parsing and analysis.
+ * Handles grammar augmentation, FIRST set calculation, and LR parse table construction.
+ */
+
 public class Grammar {
 
+    //augmented grammar start symbol
     public static final String START_SYMBOL = "_S";
 
     private AbstractNonterminalSymbol StartSymbol;
 
+    //pool of symbols used in the grammar
     private final SymbolPool SymbolPool;
 
     private List<Production> Productions;
 
     private ParseTable ParseTable;
 
+    // Constructor for Grammar class that initializes the grammar with a configuration object.
     public Grammar(Config config) throws AnalysisException {
         SymbolPool = new SymbolPool(config.getTerminalSymbols(), config.getNonterminalSymbols());
         initProductions(config.getProductions(), config.getStartSymbol());
@@ -56,11 +64,20 @@ public class Grammar {
         return ParseTable;
     }
 
+    /**
+     * Initializes the LR parse table for this grammar.
+     * Uses the LR(1) algorithm to construct states and transitions.
+     * 
+     * @throws AnalysisException If there are errors during parse table construction
+     */
+
     public void initParseTable() throws AnalysisException {
         initSymbolProductions();
         initSymbolFirstSet();
         final List<ParseState> stateList = new ArrayList<>();
         final Map<ParseState, Integer> stateMap = new HashMap<>();
+
+        // Create the start state with items derived from the start symbol
 
         final ParseState startState = new ParseState(this);
         for (final Production production : Productions) {
@@ -76,6 +93,8 @@ public class Grammar {
         for (int i = 0; i < stateList.size(); i++) {
             final Set<Item> items = stateList.get(i).getItems();
             final Map<AbstractSymbol, Set<Item>> groupedItems = new HashMap<>();
+
+            // Group items by the next symbol
             for (final Item item : items) {
                 if (item.isNotEnded()) {
                     if (!groupedItems.containsKey(item.getNextSymbol())) {
@@ -89,6 +108,8 @@ public class Grammar {
                     groupedItems.get(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL)).add(item);
                 }
             }
+
+            // Process each group of items to create transitions
             for (final AbstractSymbol abstractSymbol : groupedItems.keySet()) {
                 if (abstractSymbol.equals(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL))) {
                     for (final Item item : groupedItems.get(abstractSymbol)) {
@@ -100,6 +121,7 @@ public class Grammar {
                         }
                     }
                 } else {
+                    // Create a new state by shifting over the next symbol
                     final ParseState parseState = new ParseState(this);
                     for (final Item item : groupedItems.get(abstractSymbol)) {
                         parseState.addItem(item.getNextItem());
@@ -116,6 +138,14 @@ public class Grammar {
         ParseTable = parseTable;
     }
 
+    /**
+     * Initializes the production rules from string representations.
+     * 
+     * @param prodStrList List of production rule strings
+     * @param startSymbol The start symbol for the grammar
+     * @throws AnalysisException If a production rule is malformed
+     */
+
     public void initProductions(List<String> prodStrList, String startSymbol) throws AnalysisException {
         Productions = new ArrayList<>();
         for (final String prodStr : prodStrList) {
@@ -127,6 +157,14 @@ public class Grammar {
         }
         augmentGrammar(startSymbol);
     }
+
+    /**
+     * Augments the grammar by adding a new start symbol and production.
+     * This ensures the grammar has a single production from the start symbol.
+     * 
+     * @param startSymbol The original start symbol
+     * @throws AnalysisException If the start symbol does not exist in the grammar
+     */
 
     private void augmentGrammar(String startSymbol) throws AnalysisException {
         if (!SymbolPool.getNonterminalSymbolNames().contains(startSymbol)) {
@@ -144,6 +182,7 @@ public class Grammar {
         //System.out.println(this.toString());
     }
 
+    // Initializes the productions for each non-terminal symbol in the grammar.
     private void initSymbolProductions() {
         for (final Production production : Productions) {
             final AbstractNonterminalSymbol from = (AbstractNonterminalSymbol) production.from();
@@ -153,6 +192,8 @@ public class Grammar {
         }
 
     }
+
+    // Initializes the nullable symbols in the grammar.
 
     private void initSymbolNullable() throws AnalysisException {
         Set<AbstractSymbol> tmpNullableSymbols = new HashSet<>();
@@ -167,7 +208,8 @@ public class Grammar {
             }
             symbolProductions.get(from).add(new Production(production));
         }
-
+        
+        //Iteratively find nullable symbols
         while (!tmpNullableSymbols.isEmpty()) {
             final Set<AbstractSymbol> nextTmpNullableSymbols = new HashSet<>();
             for (final AbstractSymbol from : symbolProductions.keySet()) {
@@ -186,11 +228,20 @@ public class Grammar {
             nullableSymbols.addAll(nextTmpNullableSymbols);
             tmpNullableSymbols = nextTmpNullableSymbols;
         }
+
+        //Mark all nullable symbols in the grammar
         for (final AbstractSymbol abstractSymbol : nullableSymbols) {
             ((AbstractNonterminalSymbol) abstractSymbol).setNullable(true);
         }
 
     }
+
+    /**
+     * Computes the FIRST sets for all non-terminal symbols in the grammar.
+     * The FIRST set contains all terminals that can begin strings derived from a symbol.
+     * 
+     * @throws AnalysisException If there's an error during computation
+     */
 
     private void initSymbolFirstSet() throws AnalysisException {
         initSymbolNullable();
@@ -207,10 +258,13 @@ public class Grammar {
             symbol.setFirstSet(new HashSet<>()); // Ensure the FIRST set is initialized
         }
 
+        // Track symbol connections for propagating FIRST sets
         final Map<AbstractNonterminalSymbol, Set<AbstractNonterminalSymbol>> connections = new HashMap<>();
         final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> firstSets = new HashMap<>();
         final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> tmpFirstSets = new HashMap<>();
         final AbstractTerminalSymbol nullSymbol = SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL);
+
+        // Analyze productions to build initial FIRST sets
         for (final Production production : Productions) {
             for (final AbstractSymbol abstractSymbol : production.to()) {
                 final AbstractNonterminalSymbol from = (AbstractNonterminalSymbol) production.from();
@@ -235,6 +289,8 @@ public class Grammar {
                 }
             }
         }
+
+        // Propagate FIRST sets through symbol connections until fixed point
         while (!tmpFirstSets.isEmpty()) {
             final Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> newTmpFirstSets = new HashMap<>();
             for (final AbstractNonterminalSymbol abstractNonterminalSymbol : tmpFirstSets.keySet()) {
@@ -261,6 +317,8 @@ public class Grammar {
                 }
             }
         }
+
+        // Finalize FIRST sets and handle nullable symbols
         for (final AbstractNonterminalSymbol abstractNonterminalSymbol : SymbolPool.getNonterminalSymbols()) {
             if (!firstSets.containsKey(abstractNonterminalSymbol)) {
                 firstSets.put(abstractNonterminalSymbol, new HashSet<>());

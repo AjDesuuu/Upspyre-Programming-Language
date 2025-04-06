@@ -15,8 +15,8 @@ public class ParserOutputFormatter {
     // Column widths for consistent formatting
     private static final int STEP_WIDTH = 8;
     private static final int ACTION_WIDTH = 8;
-    private static final int STATE_WIDTH = 10;
-    private static final int LINE_WIDTH_COL = 8;
+    private static final int STATE_WIDTH = 12;
+    private static final int LINE_WIDTH_COL = 5;
     private static final int TOKEN_WIDTH = 10;
     private static final int DETAILS_WIDTH = 30;
 
@@ -40,7 +40,7 @@ public class ParserOutputFormatter {
             LINE_WIDTH_COL + "d | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
             ++currentStep,
             "SHIFT",
-            state + " → " + nextState,
+            state + " -> " + nextState,
             token.line,
             token.getType(),
             token.lexeme
@@ -62,7 +62,7 @@ public class ParserOutputFormatter {
             LINE_WIDTH_COL + "s | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
             ++currentStep,
             "REDUCE",
-            state + " → " + nextState,
+            state + " -> " + nextState,
             line > 0 ? String.valueOf(line) : "",
             "",
             production
@@ -190,7 +190,7 @@ public class ParserOutputFormatter {
         }
         
         System.out.println("-".repeat(LINE_WIDTH));
-        System.out.println(isSuccessful ? "✓ PARSING SUCCESSFUL" : "✗ PARSING FAILED");
+        System.out.println(isSuccessful ? "[/] PARSING SUCCESSFUL" : "[X] PARSING FAILED");
         System.out.println("-".repeat(LINE_WIDTH));
     }
     

@@ -16,11 +16,13 @@ public class Transition {
 
     private int Index;
 
+    /// Constructor for shift and goto actions
     Transition(int action, int nextState) {
         Action = action;
         NextState = nextState;
     }
 
+    /// Constructor for reduce action
     Transition(Production reduceProduction, int index) {
         Action = REDUCE;
         ReduceProduction = reduceProduction;
@@ -31,6 +33,7 @@ public class Transition {
         return Action;
     }
 
+    /// Returns the next state for shift or goto actions.
     public Integer getNextState() {
         return Action == SHIFT || Action == GOTO ? NextState : null;
     }

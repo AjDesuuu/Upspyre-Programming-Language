@@ -7,7 +7,7 @@ public class ParseTreeNode {
     private final String symbol;       // Grammar symbol or token type
     private final String value;       // Lexeme for leaf nodes (null for non-terminals)
     private final List<ParseTreeNode> children = new ArrayList<>();
-    private final int ruleNumber;      // -1 for terminals, rule number for reductions
+    private final int ruleNumber;      
 
     public ParseTreeNode(String symbol, String value, int ruleNumber) {
         this.symbol = symbol;

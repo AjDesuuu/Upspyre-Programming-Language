@@ -13,6 +13,7 @@ public class Config {
     private String startSymbol;
     private List<String> productions;
 
+    //Creates a new Config by reading grammar rules from the specified file path.
     public Config(String path) {
         nonterminalSymbols = new HashSet<>();
         terminalSymbols = new HashSet<>();
@@ -46,7 +47,7 @@ public class Config {
             e.printStackTrace();
         }
 
-        // Assuming the first nonterminal symbol is the start symbol
+        // the first nonterminal symbol is the start symbol
         startSymbol = nonterminalSymbols.iterator().next();
     }
 

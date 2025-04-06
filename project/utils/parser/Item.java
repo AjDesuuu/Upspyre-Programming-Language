@@ -2,6 +2,11 @@ package project.utils.parser;
 import project.utils.symbol.AbstractSymbol;
 import project.utils.symbol.AbstractTerminalSymbol;
 
+/**
+ * Represents an LR(1) item in the parser.
+ * An item consists of a production rule, a position marker (dot), and a lookahead symbol.
+ */
+
 public class Item {
 
     private int Dot = 0;
@@ -10,11 +15,19 @@ public class Item {
 
     private final AbstractTerminalSymbol LookAhead;
 
+    /**
+     * Creates a new item with the specified production and lookahead.
+     * 
+     * @param production The production rule
+     * @param lookAhead The lookahead terminal symbol
+     */
+
     public Item(Production production, AbstractTerminalSymbol lookAhead) {
         Production = production;
         LookAhead = lookAhead;
     }
 
+    /// Returns the next symbol after the dot in the production rule.
     public AbstractSymbol getNextSymbol() {
         return Production.to().get(Dot);
     }
@@ -31,10 +44,13 @@ public class Item {
         return LookAhead;
     }
 
+    /// Returns true if the item has not reached the end of the production rule.
+
     public boolean isNotEnded() {
         return Dot < Production.to().size() && !Production.to().get(0).getName().equals(AbstractTerminalSymbol.NULL);
     }
 
+    // Creates a new item with the dot moved one position to the right.
     public Item getNextItem() {
         final Item item = new Item(Production, LookAhead);
         item.Dot = Dot + 1;

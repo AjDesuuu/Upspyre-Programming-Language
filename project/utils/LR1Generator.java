@@ -12,6 +12,11 @@ public class LR1Generator {
     private Grammar grammar;
     private ParseTable parseTable;
 
+    /**
+     * Constructor for LR1Generator.
+     * @param grammarInput The input string representing the grammar.
+     * @throws AnalysisException If there is an error in parsing the grammar or generating the parse table.
+     */
     public LR1Generator(String grammarInput) throws AnalysisException {
         // Parse the grammar input
         this.grammar = parseGrammar(grammarInput);
@@ -22,6 +27,7 @@ public class LR1Generator {
         this.parseTable = grammar.getParseTable();
     }
 
+    /// Method to parse the grammar input and create a Grammar object.
     private Grammar parseGrammar(String grammarInput) throws AnalysisException {
         // Define terminal and non-terminal symbols
         Set<String> terminalSymbols = new HashSet<>(Arrays.asList(
@@ -92,6 +98,7 @@ public class LR1Generator {
         }
     }
 
+    /// Write the action table to the CSV file.
     private void writeActionTable(FileWriter writer) throws IOException {
         // Write headers
         writer.write("State,");
@@ -131,6 +138,7 @@ public class LR1Generator {
         return this.grammar;
     }
     
+    /// Write the goto table to the CSV file.
     private void writeGotoTable(FileWriter writer) throws IOException {
         // Write headers
         writer.write("State,");

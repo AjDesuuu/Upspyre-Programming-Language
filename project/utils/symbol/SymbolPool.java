@@ -11,12 +11,15 @@ public class SymbolPool {
 
     private Map<String, AbstractNonterminalSymbol> absNonterminalSymbols;
 
+
+    /// Constructor to initialize the symbol pool with terminal and non-terminal symbols.
     public SymbolPool(Set<String> terminalSymbols, Set<String> nonterminalSymbols)
             throws AnalysisException {
         final Map<String, String> keywords = Map.of(
                 AbstractTerminalSymbol.NULL, "an empty string",
                 AbstractTerminalSymbol.END, "the end of a production",
                 Grammar.START_SYMBOL, "the start symbol of the augmented grammar");
+        // Check for invalid names in terminal and non-terminal symbols
         for (final String name : keywords.keySet()) {
             if (terminalSymbols.contains(name) || nonterminalSymbols.contains(name)) {
                 throw new AnalysisException(
@@ -27,6 +30,7 @@ public class SymbolPool {
         initNonterminalSymbols(nonterminalSymbols);
     }
 
+    /// Initialize terminal symbols in the symbol pool.
     private void initTerminalSymbols(Set<String> terminalSymbols) {
         absTerminalSymbols = new HashMap<>();
         for (final String name : terminalSymbols) {
@@ -35,18 +39,18 @@ public class SymbolPool {
         absTerminalSymbols.put(AbstractTerminalSymbol.NULL, AbstractTerminalSymbol.Null());
         absTerminalSymbols.put(AbstractTerminalSymbol.END, AbstractTerminalSymbol.End());
     }
-
+    /// Initialize non-terminal symbols in the symbol pool.
     private void initNonterminalSymbols(Set<String> nonterminalSymbols) {
         absNonterminalSymbols = new HashMap<>();
         for (final String name : nonterminalSymbols) {
             absNonterminalSymbols.put(name, new AbstractNonterminalSymbol(name));
         }
     }
-
+    /// Add a non-terminal symbol to the symbol pool.
     public Set<AbstractTerminalSymbol> getTerminalSymbols() {
         return new HashSet<>(absTerminalSymbols.values());
     }
-
+    /// Get the names of all terminal symbols in the symbol pool.
     public AbstractTerminalSymbol getTerminalSymbol(String name) throws AnalysisException {
         if (absTerminalSymbols.containsKey(name)) {
             return absTerminalSymbols.get(name);
@@ -75,6 +79,7 @@ public class SymbolPool {
         }
     }
 
+    /// Add a terminal symbol to the symbol pool.
     public AbstractSymbol getSymbol(String name) throws AnalysisException {
         if (absTerminalSymbols.containsKey(name)) {
             return absTerminalSymbols.get(name);
