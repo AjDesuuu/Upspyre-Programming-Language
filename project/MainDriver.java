@@ -12,6 +12,7 @@ public class MainDriver {
             Lexer lexer = new Lexer(filePath, symbolTable);
             Parser parser = new Parser(lexer);
 
+            System.out.println("\nLexer Tokens:");
             // Parser Prints the tokens
             parser.printTokens();
             //Lexer prints the symbol table

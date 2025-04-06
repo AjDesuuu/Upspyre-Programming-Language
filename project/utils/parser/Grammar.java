@@ -35,9 +35,9 @@ public class Grammar {
 
     public Grammar(Set<String> terminalSymbols, Set<String> nonterminalSymbols, String startSymbol)
             throws AnalysisException {
-        System.out.println("Terminal Symbols: " + terminalSymbols);
-        System.out.println("Non-terminal Symbols: " + nonterminalSymbols);
-        System.out.println("Start Symbol: " + startSymbol);
+        //System.out.println("Terminal Symbols: " + terminalSymbols);
+        //System.out.println("Non-terminal Symbols: " + nonterminalSymbols);
+        //System.out.println("Start Symbol: " + startSymbol);
         SymbolPool = new SymbolPool(terminalSymbols, nonterminalSymbols);
         StartSymbol = SymbolPool.getNonterminalSymbol(startSymbol);
         Productions = new ArrayList<>();
@@ -328,6 +328,8 @@ public class Grammar {
             }
             abstractNonterminalSymbol.setFirstSet(firstSets.get(abstractNonterminalSymbol));
         }
+        //System.out.println("FIRST Sets:");
+        //System.out.println(getFirstSetsCSV());
     }
 
     @Override

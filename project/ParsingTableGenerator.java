@@ -75,13 +75,17 @@ public class ParsingTableGenerator {
                     AbstractSymbol symbol = symbolEntry.getKey();
                     Transition transition = symbolEntry.getValue();
 
+                    // Check if the symbol is a terminal or non-terminal
                     if (symbol.getType() == AbstractSymbol.TERMINAL) {
                         if (parseTable.getAcceptState() == state && symbol.equals(lr1Generator.getGrammar().getSymbolPool().getTerminalSymbol(AbstractTerminalSymbol.END))) {
+                            // If it's the accept state, add it to the ACTION table
                             actionRow.put(symbol.getName(), "acc");
                         } else {
+                            // If it's a terminal, add it to the ACTION table
                             actionRow.put(symbol.getName(), transition.toString());
                         }
                     } else {
+                        // If it's a non-terminal, add it to the GOTO table
                         gotoRow.put(symbol.getName(), transition.toString().substring(1));
                     }
                 }
@@ -89,7 +93,7 @@ public class ParsingTableGenerator {
                 actionTable.put(state, actionRow);
                 gotoTable.put(state, gotoRow);
             }
-
+            /* 
             // Print the ACTION table
             System.out.println("\nACTION TABLE:");
             for (Map.Entry<Integer, HashMap<String, String>> entry : actionTable.entrySet()) {
@@ -101,7 +105,7 @@ public class ParsingTableGenerator {
             for (Map.Entry<Integer, HashMap<String, String>> entry : gotoTable.entrySet()) {
                 //System.out.println("State " + entry.getKey() + " -> " + entry.getValue());
             }
-
+            */
             System.out.println("Parsing tables generated successfully.");
         } catch (IOException e) {
             System.out.println("Error reading grammar file: " + e.getMessage());
@@ -173,9 +177,9 @@ public class ParsingTableGenerator {
             fr.close();
 
             // Print the generated productions for debugging
-            System.out.println("Generated " + ruleNumber + " grammar productions:");
+            System.out.println("Generated " + ruleNumber + " grammar productions");
             for (Map.Entry<Integer, GrammarProduction> entry : productionTable.entrySet()) {
-                System.out.println("Rule " + entry.getKey() + ": " + entry.getValue());
+                //System.out.println("Rule " + entry.getKey() + ": " + entry.getValue());
             }
         } catch (IOException e) {
             System.out.println("Error reading productions file: " + e.getMessage());
