@@ -11,6 +11,16 @@ public class AbstractNonterminalSymbol extends AbstractSymbol {
 
     private final Set<Production> Prod = new HashSet<>();
 
+    private Set<AbstractTerminalSymbol> followSet = new HashSet<>();
+
+    public Set<AbstractTerminalSymbol> getFollowSet() {
+        return followSet;
+    }
+
+    public void setFollowSet(Set<AbstractTerminalSymbol> followSet) {
+        this.followSet = followSet;
+    }
+
     public AbstractNonterminalSymbol(String name) {
         setName(name);
         this.FirstSet = new HashSet<>();
@@ -40,4 +50,6 @@ public class AbstractNonterminalSymbol extends AbstractSymbol {
     public int getType() {
         return NONTERMINAL;
     }
+
+    
 }

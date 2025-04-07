@@ -245,6 +245,7 @@ public class Grammar {
 
     private void initSymbolFirstSet() throws AnalysisException {
         initSymbolNullable();
+        initSymbolFollowSet();
 
         //System.out.println("Nullable Symbols:");
         for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
@@ -330,6 +331,8 @@ public class Grammar {
         }
         //System.out.println("FIRST Sets:");
         //System.out.println(getFirstSetsCSV());
+        System.out.println("FOLLOW Sets:");
+        System.out.println(getFollowSetsCSV());
     }
 
     @Override
@@ -349,6 +352,90 @@ public class Grammar {
             csv.append(symbol.getName()).append(",");
             Set<AbstractTerminalSymbol> firstSet = symbol.getFirstSet();
             for (AbstractTerminalSymbol terminal : firstSet) {
+                csv.append(terminal.getName()).append(" ");
+            }
+            csv.append("\n");
+        }
+        return csv.toString();
+    }
+
+    /**
+     * Computes the FOLLOW sets for all non-terminal symbols in the grammar.
+     */
+    private void initSymbolFollowSet() throws AnalysisException {
+        // Initialize FOLLOW sets
+        Map<AbstractNonterminalSymbol, Set<AbstractTerminalSymbol>> followSets = new HashMap<>();
+        for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
+            followSets.put(symbol, new HashSet<>());
+        }
+        
+        // Add $ to FOLLOW of start symbol
+        AbstractTerminalSymbol endSymbol = SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.END);
+        followSets.get(StartSymbol).add(endSymbol);
+        
+        boolean changed;
+        do {
+            changed = false;
+            for (Production production : Productions) {
+                AbstractNonterminalSymbol A = (AbstractNonterminalSymbol) production.from();
+                List<AbstractSymbol> beta = production.to();
+                
+                // Traverse the right-hand side of the production
+                for (int i = 0; i < beta.size(); i++) {
+                    if (beta.get(i).getType() == AbstractSymbol.NONTERMINAL) {
+                        AbstractNonterminalSymbol B = (AbstractNonterminalSymbol) beta.get(i);
+                        
+                        // Get FIRST of the symbols after B
+                        Set<AbstractTerminalSymbol> firstBeta = new HashSet<>();
+                        boolean nullable = true;
+                        for (int j = i + 1; j < beta.size() && nullable; j++) {
+                            if (beta.get(j).getType() == AbstractSymbol.NONTERMINAL) {
+                                firstBeta.addAll(((AbstractNonterminalSymbol) beta.get(j)).getFirstSet());
+                            } else {
+                                firstBeta.add((AbstractTerminalSymbol) beta.get(j));
+                            }
+                            
+                            // Remove ε from FIRST set (if present)
+                            firstBeta.remove(SymbolPool.getTerminalSymbol(AbstractTerminalSymbol.NULL));
+                            
+                            // Check if current symbol is nullable
+                            nullable = beta.get(j).getType() == AbstractSymbol.NONTERMINAL && 
+                                    ((AbstractNonterminalSymbol) beta.get(j)).isNullable();
+                        }
+                        
+                        // Add FIRST(beta) to FOLLOW(B)
+                        int oldSize = followSets.get(B).size();
+                        followSets.get(B).addAll(firstBeta);
+                        if (followSets.get(B).size() > oldSize) {
+                            changed = true;
+                        }
+                        
+                        // If all symbols after B are nullable, add FOLLOW(A) to FOLLOW(B)
+                        if (nullable) {
+                            oldSize = followSets.get(B).size();
+                            followSets.get(B).addAll(followSets.get(A));
+                            if (followSets.get(B).size() > oldSize) {
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+        } while (changed);
+        
+        // Store the FOLLOW sets in the symbols
+        for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
+            symbol.setFollowSet(followSets.get(symbol));
+        }
+    }
+
+    public String getFollowSetsCSV() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("Nonterminal,FOLLOW Set\n");
+        for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
+            csv.append(symbol.getName()).append(",");
+            Set<AbstractTerminalSymbol> followSet = symbol.getFollowSet();
+            for (AbstractTerminalSymbol terminal : followSet) {
                 csv.append(terminal.getName()).append(" ");
             }
             csv.append("\n");
