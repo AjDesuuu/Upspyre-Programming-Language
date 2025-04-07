@@ -1,0 +1,13 @@
+start
+    show("Welcome to UpSpyre!")  / Missing semicolon/
+    
+    name = "Mark";  
+    age = 21        // Missing semicolon
+    height = 5.7;  
+    isStudent  true; // Unexpected token, missing assignment operator
+
+    show(name; // Missing closing parenthesis
+    show age); // Missing opening parenthesis
+    show(height);
+    show(isStudent);
+end 

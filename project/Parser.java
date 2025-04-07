@@ -417,11 +417,61 @@ public class Parser {
      * Utility method to print all tokens from the lexer.
      * Useful for debugging the lexical analysis.
      */
+    /**
+ * Prints tokens in two formats:
+ * 1. First in a line-aligned format similar to the original program structure
+ * 2. Then in the detailed format with all token information
+ */
     public void printTokens() {
+        
+        reset();
+        
+        System.out.println("=== Tokens (Aligned with Source) ===");
+        
+        // Track current line to handle line breaks
+        int currentLine = 1;
+        
+        // Print aligned version first
         while (currentToken.getType() != TokenType.EOF) {
-            System.out.println(currentToken);
+            // Skip comments if needed
+            if (TOKENS_TO_IGNORE.contains(currentToken.getType())) {
+                currentToken = lexer.nextToken();
+                continue;
+            }
+            
+            // Handle line breaks
+            if (currentToken.line > currentLine) {
+                // Print newlines for empty lines if needed
+                while (currentLine < currentToken.line) {
+                    System.out.println();
+                    currentLine++;
+                }
+            }
+            
+            // Print the token type in brackets
+            System.out.print("[" + currentToken.getType() + "]");
+            
+            // Add space between tokens on same line (except for certain tokens)
+            if (!currentToken.getType().toString().matches("RPAREN|LPAREN|RBACE|LBRACE|SEMI")) {
+                System.out.print(" ");
+            }
+            
             currentToken = lexer.nextToken();
         }
+        
+        System.out.println("\n\n=== Detailed Token Information ===");
+        
+        // Now print detailed version
+        reset();  // Use reset() again to start from beginning
+        while (currentToken.getType() != TokenType.EOF) {
+            if (!TOKENS_TO_IGNORE.contains(currentToken.getType())) {
+                System.out.println(currentToken);
+            }
+            currentToken = lexer.nextToken();
+        }
+        
+        // Restore original state by resetting and fast-forwarding
         reset();
-    }
+        
+}
 }

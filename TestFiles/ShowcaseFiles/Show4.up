@@ -1,0 +1,13 @@
+start
+  number x = 10;   
+if (x > 5) {
+    show ("x is greater than 5");
+    if (x > 8) {      
+ show ("x is also greater than 8");
+    } otherwise {
+      show ("x is not greater than 8");
+    }
+  } otherwise {
+    show ("x is 5 or less");
+  }
+end
