@@ -1,0 +1,8 @@
+start  
+  show "Enter your age:";  
+  text numberText;  
+  get text numberText();  
+
+  number num = numberText.convertTo(number);  
+  show (num + 1);
+end 

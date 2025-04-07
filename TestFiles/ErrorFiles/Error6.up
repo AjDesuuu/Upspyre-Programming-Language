@@ -1,0 +1,21 @@
+start
+  number count = 0;  
+  repeat {  // ERROR: 'until (condition);' is missing
+    count = count + 1;
+    if (count == 3) {  
+      continue;
+    }
+
+    show(count);
+    
+    if (count == 4) {
+      stop;
+    }  
+  }
+
+  list_of text colors = ["Red", "Green", "Blue"]; 
+  for (number i = 0; i <= 2; i + 1) {  
+    show(i);
+    show(colors[i]);
+  }
+end

@@ -1,0 +1,8 @@
+start  
+  list_of text fruits = ["Apple", "Banana", "Cherry"];  
+    show (fruits[1]);
+
+
+  pair_map (text:text) studentAges = [("Mark":20), ("AJ":22)];
+    show (studentAges["Mark"]);
+end

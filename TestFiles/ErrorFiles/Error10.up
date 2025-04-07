@@ -1,0 +1,4 @@
+start  
+  number result = 5 ** 2 + * 4 * 2 / (1 - 5) ** 2;   // ERROR: Unexpected '*' operator without a left operand
+ show(result);
+end  

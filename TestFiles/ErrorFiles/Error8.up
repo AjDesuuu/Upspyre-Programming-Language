@@ -1,0 +1,10 @@
+start
+  list_of text fruits = ["Apple", "Banana" "Cherry"];  // ERROR: Missing comma between elements
+  show(fruits[1]);
+
+  pair_map text:number studentAges = [("Mark" 20), ("AJ": 22)];  // ERROR: Missing colon in pair
+  show(studentAges.key["Mark"]);
+
+  pair_map text:number studentScores = [("Alice": 95), ("Bob": 88;  // ERROR: Missing closing parenthesis and bracket
+  show(studentScores.value["Alice"]);
+end  

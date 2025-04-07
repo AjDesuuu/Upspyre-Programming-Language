@@ -1,0 +1,8 @@
+start  
+    method greet {  //Error: Missing parentheses for method parameters  
+    show ("Hello!");  
+    method add(number a, number b) { output a + b; }  
+
+    number sum = add(3, 7);  
+    show (sum);  
+end

@@ -1,0 +1,6 @@
+start  
+  get text;  //ERROR: Missing variable name for input
+
+  number num = numberText.convertTo(number);  
+  show (num + 1);
+end  

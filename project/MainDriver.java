@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class MainDriver {
     public static void main(String[] args) {
-        String fileName = "Show1.up";
+        String fileName = "Error6.up";
         String filePath = getFilePath(fileName);
         SymbolTable symbolTable = new SymbolTable();
 

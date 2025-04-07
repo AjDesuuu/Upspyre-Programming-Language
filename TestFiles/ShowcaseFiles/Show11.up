@@ -1,0 +1,18 @@
+start
+    number x = 1;
+    show(x);  // 1
+    
+    if (true) {
+        number x = 2;
+        show(x);  // 2
+        
+        if (true) {
+            number x = 3;
+            show(x);  // 3
+        }
+        
+        show(x);  // 2 (middle scope)
+    }
+    
+    show(x);  // 1 (outer scope)
+end

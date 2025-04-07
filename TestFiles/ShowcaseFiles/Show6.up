@@ -1,0 +1,10 @@
+start  
+    method square(number x) { output x * x; }  
+    method add(number a, number b) { output a + b; }  
+
+    number squared = square(5);  
+    number sum = add(3, 7);  
+
+    show (squared); 
+    show (sum);  
+end
