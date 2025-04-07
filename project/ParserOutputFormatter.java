@@ -120,6 +120,19 @@ public class ParserOutputFormatter {
      */
     public void recordRecovery(String action, String details) {
         lineNumbers.add(currentLine);
+
+        String cleanDetails = details
+        // Format token display with single quotes around lexeme
+        .replaceAll("lexeme:\\s*([^\\s]+)", "'$1'")
+        // Clean up token type brackets
+        .replaceAll("\\[([A-Z]+)\\s+\\]", "[$1]")
+        // Remove extra spaces
+        .replaceAll("\\s+", " ")
+        // Clean up line/position formatting
+        .replaceAll("Line:\\s*(\\d+)", "L$1")
+        .replaceAll("position:\\s*(\\d+)", "P$1")
+        .trim();
+
         String message = String.format(
             "%-" + STEP_WIDTH + "d| %-" + ACTION_WIDTH + "s | %-" + STATE_WIDTH + "s | %-" + 
             LINE_WIDTH_COL + "d | %-" + TOKEN_WIDTH + "s | %-" + DETAILS_WIDTH + "s",
@@ -128,7 +141,7 @@ public class ParserOutputFormatter {
             action,
             currentLine,
             "",
-            details
+            "\nAttempting recovery: " + cleanDetails
         );
         messages.add(message);
         contentLengths.add(message.length());
@@ -199,30 +212,29 @@ public class ParserOutputFormatter {
      * 
      * @param errorMessages List of error messages
      */
-    public void printErrorSummary() {
-        if (errorMessages.isEmpty()) {
-            return;
-        }
-    
-        
-        
-        System.out.println("\n" + centerText("ERROR SUMMARY", LINE_WIDTH));
-        System.out.println("-".repeat(LINE_WIDTH));
-        
-        for (int i = 0; i < errorMessages.size(); i++) {
-            String[] parts = errorMessages.get(i).split("\n");
-            
-            System.out.println("Error " + (i+1) + ":");
-            System.out.println("  " + parts[0]);  // Location and unexpected token
-            System.out.println("  " + parts[1]);  // Expected tokens
-            
-            if (i < errorMessages.size() - 1) {
-                System.out.println("-".repeat(Math.min(LINE_WIDTH, 30)));
-            }
-        }
-        
-        System.out.println("-".repeat(LINE_WIDTH));
+    // In ParserOutputFormatter.java
+public void printErrorSummary(List<String> originalErrors) {
+    if (originalErrors.isEmpty()) {
+        return;
     }
+    
+    System.out.println("\n" + centerText("ERROR SUMMARY", LINE_WIDTH));
+    System.out.println("-".repeat(LINE_WIDTH));
+    
+    for (int i = 0; i < originalErrors.size(); i++) {
+        String[] parts = originalErrors.get(i).split("\n");
+        
+        System.out.println("Error " + (i+1) + ":");
+        System.out.println("  " + parts[0]);  // Location and unexpected token
+        System.out.println("  " + parts[1]);  // Expected tokens
+        
+        if (i < originalErrors.size() - 1) {
+            System.out.println("-".repeat(Math.min(LINE_WIDTH, 30)));
+        }
+    }
+    
+    System.out.println("-".repeat(LINE_WIDTH));
+}
     
     // Helper method to center text
     private String centerText(String text, int width) {

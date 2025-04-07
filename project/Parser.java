@@ -23,9 +23,9 @@ public class Parser {
     private String inputGrammar = "GrammarProgrammer/expanded.txt";
     private final Stack<ParseTreeNode> treeStack = new Stack<>();
     private final ParserOutputFormatter outputFormatter = new ParserOutputFormatter();
-    
-    // Track parsing errors for summary reporting
+    private final List<String> originalErrors = new ArrayList<>(); 
     private final List<String> errorMessages = new ArrayList<>();
+    private Token lastErrorToken = null;
 
     // Tokens to be ignored during parsing (comments)
     private static final Set<TokenType> TOKENS_TO_IGNORE = Set.of(
@@ -71,9 +71,9 @@ public class Parser {
         outputFormatter.updateCurrentLine(currentToken);
 
         int errorCount = 0;
-        final int MAX_ERRORS = 10; // Limit error count to prevent infinite loops
+        final int MAX_ERRORS = 40; // Limit error count to prevent infinite loops
 
-        while (errorCount < MAX_ERRORS) {
+        while (errorCount < MAX_ERRORS  ) {
             outputFormatter.updateCurrentLine(currentToken);
             // Skip comment tokens to focus on actual code
             while (TOKENS_TO_IGNORE.contains(currentToken.getType())) {
@@ -88,6 +88,19 @@ public class Parser {
             HashMap<String, String> actionRow = ParsingTableGenerator.actionTable.get(state);
             if (actionRow == null || !actionRow.containsKey(tokenType)) {
                 // Syntax error detected - no valid action for current state and token
+
+                if (lastErrorToken == null || 
+                    currentToken.line != lastErrorToken.line || 
+                    currentToken.position != lastErrorToken.position) {
+                    
+                    String errorMsg = String.format("Line %d:%d - Unexpected token: '%s'", 
+                                                currentToken.line, currentToken.position, 
+                                                currentToken.getType());
+                    originalErrors.add(errorMsg + "\n    Expected: " + 
+                                    (actionRow != null ? actionRow.keySet() : "none"));
+                    lastErrorToken = currentToken;
+                }
+    
                 errorCount++;
                 String errorMsg = String.format("Syntax Error at line %d, position %d: %s", 
                                                currentToken.line, currentToken.position, currentToken);
@@ -136,7 +149,7 @@ public class Parser {
                 // Print the trace and error summary
                 outputFormatter.printTrace();
                 if (!errorMessages.isEmpty()) {
-                    outputFormatter.printErrorSummary();
+                    outputFormatter.printErrorSummary(originalErrors);
                 }
                 
                 System.out.println("Parse tree nodes: " + treeStack.size());
@@ -173,7 +186,7 @@ public class Parser {
         // Reached max errors - print summary and exit
         System.out.println("Maximum error count reached. Stopping parsing.");
         outputFormatter.printTrace();
-        outputFormatter.printErrorSummary();
+        outputFormatter.printErrorSummary(originalErrors);
     }
 
     /**
@@ -313,7 +326,7 @@ public class Parser {
      */
     private boolean tryPhraseLevelRecovery(int state, String tokenType) {
         // Try inserting common tokens that would allow progress
-        String[] commonTokens = {"SEMICOLON", "RPAREN", "RBRACE", "COMMA"};
+        String[] commonTokens = {"SEMI", "RPAREN", "RBRACE", "COMMA"};
         
         // First check if action table exists for this state
         HashMap<String, String> actionRow = ParsingTableGenerator.actionTable.get(state);
@@ -355,7 +368,7 @@ public class Parser {
             // Check if current token can be processed in current state
             if (actionRow != null && actionRow.containsKey(currentToken.getType().toString())) {
                 outputFormatter.recordRecovery("SYNC", 
-                    "Found synchronization point at token " + currentToken + " after skipping " + tokensSkipped + " tokens");
+                    "Found synchronization point at token " + currentToken + " skipped " + tokensSkipped + " tokens");
                 break;
             }
             

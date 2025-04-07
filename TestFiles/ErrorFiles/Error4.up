@@ -1,5 +1,5 @@
 start
-    show("Welcome to UpSpyre!")  / Missing semicolon/
+    show("Welcome to UpSpyre!")  // Missing semicolon
     
     name = "Mark";  
     age = 21        // Missing semicolon
