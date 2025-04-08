@@ -10,13 +10,6 @@ start
     number quotient = a / b;     // 2
     number remainder = a % b;    // 0
     number power = a ** b;       // 100000
-    
-    show(sum);
-    show(diff);
-    show(product);
-    show(quotient);
-    show(remainder);
-    show(power);
 
     // Bitwise operations
     number x = 100;  // 12 in binary
@@ -29,13 +22,6 @@ start
     number leftShift = x << 2;  // 48 (0b110000)
     number rightShift = x >> 1; // 6 (0b0110)
     
-    show(bitAnd);
-    show(bitOr);
-    show(bitXor);
-    show(bitNot);
-    show(leftShift);
-    show(rightShift);
-
     // Logical operations
     binary t = true;
     binary f = false;
@@ -43,11 +29,6 @@ start
     binary logicalAnd = t AND f;  // false
     binary logicalOr = t OR f;    // true
     binary logicalNot = NOT t;    // false
-    
-    show(logicalAnd);
-    show(logicalOr);
-    show(logicalNot);
-
     // Relational operations
     binary isEqual = (a == 10);          // true
     binary notEqual = (a != b);          // true
@@ -56,13 +37,6 @@ start
     binary lessOrEqual = (a <= 10);      // true
     binary greaterOrEqual = (a >= 20);   // false
     
-    show(isEqual);
-    show(notEqual);
-    show(lessThan);
-    show(greaterThan);
-    show(lessOrEqual);
-    show(greaterOrEqual);
-
     // Mixed expressions
     decimal result = (a + b) * c - (x | y) / 2;
     show(result);  // (10 + 5) * 2.5 - (12 | 10)/2 = 37.5 - 7 = 30.5

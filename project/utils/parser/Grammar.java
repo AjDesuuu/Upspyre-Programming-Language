@@ -245,7 +245,7 @@ public class Grammar {
 
     private void initSymbolFirstSet() throws AnalysisException {
         initSymbolNullable();
-        //initSymbolFollowSet();
+        initSymbolFollowSet();
 
         //System.out.println("Nullable Symbols:");
         for (AbstractNonterminalSymbol symbol : SymbolPool.getNonterminalSymbols()) {
@@ -329,10 +329,10 @@ public class Grammar {
             }
             abstractNonterminalSymbol.setFirstSet(firstSets.get(abstractNonterminalSymbol));
         }
-        //System.out.println("FIRST Sets:");
-        //System.out.println(getFirstSetsCSV());
-        //System.out.println("FOLLOW Sets:");
-        //System.out.println(getFollowSetsCSV());
+        System.out.println("FIRST Sets:");
+        System.out.println(getFirstSetsCSV());
+        System.out.println("FOLLOW Sets:");
+        System.out.println(getFollowSetsCSV());
     }
 
     @Override

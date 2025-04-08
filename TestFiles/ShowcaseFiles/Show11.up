@@ -1,18 +1,22 @@
 start
-    number x = 1;
-    show(x);  // 1
-    
-    if (true) {
-        number x = 2;
-        show(x);  // 2
-        
-        if (true) {
-            number x = 3;
-            show(x);  // 3
-        }
-        
-        show(x);  // 2 (middle scope)
+  number count = 0;  
+  repeat {
+    count = count + 1;
+    if (count == 3) {  
+      continue;
     }
+
+    show(count);
     
-    show(x);  // 1 (outer scope)
+    if (count == 4) {
+      stop;
+    }  
+
+  } until (count == 4)
+
+  list_of text colors = ["Red", "Green", "Blue"]; 
+  for (number i = 0; i <= 2; i = i + 1) {  
+    show(i);
+    show(colors[i]);
+  }
 end
