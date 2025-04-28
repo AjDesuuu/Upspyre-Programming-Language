@@ -15,6 +15,18 @@ public class ParseTreeNode {
         this.ruleNumber = ruleNumber;
     }
 
+    public String getType() {
+        // Remove wrapping "<>" if present
+        if (symbol.startsWith("<") && symbol.endsWith(">")) {
+            return symbol.substring(1, symbol.length() - 1);
+        }
+        return symbol;
+    }
+
+    public List<ParseTreeNode> getChildren() {
+        return children;
+    }
+    
     public String getSymbol() {
         return symbol;
     }

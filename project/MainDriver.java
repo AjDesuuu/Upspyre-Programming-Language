@@ -1,10 +1,11 @@
 package project;
 
 import java.io.IOException;
+import project.utils.parser.ParseTreeNode; // Ensure this import matches the actual location of ParseTreeNode
 
 public class MainDriver {
     public static void main(String[] args) {
-        String fileName = "Show11.up";
+        String fileName = "Show1.up";
         String filePath = getFilePath(fileName);
         SymbolTable symbolTable = new SymbolTable();
 
@@ -13,20 +14,31 @@ public class MainDriver {
             Parser parser = new Parser(lexer);
 
             System.out.println("\nLexer Tokens:");
-            // Parser Prints the tokens
             parser.printTokens();
-            //Lexer prints the symbol table
+
             System.out.println("\nSymbol Table:");
             symbolTable.printTable();
-            
 
-            System.out.println();
+            System.out.println("\nParsing...");
             parser.parse();
-            
-            //Generate image for parse tree, COMMENT THIS OUT IF YOU DON'T WANT TO GENERATE AN IMAGE
+
+            ParseTreeNode parseTree = parser.getParseTree();
+            if (parseTree == null) {
+                System.err.println("Error: Failed to generate parse tree.");
+                return;
+            }
             parser.generateParseTreeImage(filePath + ".png");
 
-        } catch (IOException|InterruptedException e) {
+           
+
+            System.out.println("\nInterpreting...");
+            Interpreter interpreter = new Interpreter(symbolTable);
+            interpreter.interpret(parseTree);
+
+            System.out.println("\nUpdated Symbol Table:");
+            symbolTable.printTable();
+
+        } catch (IOException | InterruptedException e) {
             System.err.println("File not found: " + filePath);
         }
     }

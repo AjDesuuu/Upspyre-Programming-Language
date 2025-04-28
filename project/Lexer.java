@@ -122,7 +122,7 @@ public class Lexer {
 
         // Add identifier to symbol table if it's not a keyword
         if (type == TokenType.IDENTIFIER && !symbolTable.containsIdentifier(lexeme)) {
-            symbolTable.addIdentifier(lexeme, type);
+            symbolTable.addIdentifier(lexeme, type,null);
         }
 
         return new Token(type, lexeme, line, startPos);
