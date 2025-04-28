@@ -52,6 +52,9 @@ public class ASTNode {
                     }
                 }
                 return programNode;
+            case "IDENTIFIER":
+                // Preserve the identifier's lexeme value
+                return new ASTNode("IDENTIFIER", cstNode.getValue());
 
             case "OUTPUT_STMT":
                 // Create an OUTPUT node with the expression as its child

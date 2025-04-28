@@ -58,6 +58,12 @@ public class Interpreter {
     }
 
     private void executeASTNode(ASTNode node) {
+        System.out.println("[DEBUG] Processing " + node.getType() + 
+                  ", children: " + node.getChildren().size());
+        for (ASTNode child : node.getChildren()) {
+            System.out.println("  - " + child.getType() + 
+                            (child.getValue() != null ? " (" + child.getValue() + ")" : ""));
+        }
         switch (node.getType()) {
             case "PROGRAM":
             case "PROGRAM_KLEENE":
@@ -71,63 +77,59 @@ public class Interpreter {
                 break;
     
             case "ASSIGNMENT_STMT":
-                // Handle both forms of assignment
                 String variable = null;
                 Object value = null;
                 TokenType type = null;
-    
+            
                 for (ASTNode child : node.getChildren()) {
                     switch (child.getType()) {
                         case "TEXT_TYPE":
                             type = TokenType.TEXT;
+                            break;
+                        case "NUMBER_TYPE":
+                            type = TokenType.NUMBER;
                             break;
                         case "IDENTIFIER":
                             variable = child.getValue();
                             break;
                         case "TEXT":
                             value = child.getValue();
-                            if (value != null) {
+                            if (type == TokenType.NUMBER) {
                                 try {
-                                    value = Integer.parseInt((String)value);
+                                    value = Integer.parseInt((String) value);
                                 } catch (NumberFormatException e) {
-                                    // Keep as string if not a number
+                                    // Keep as string if parsing fails
                                 }
                             }
                             break;
                         case "ASSIGN":
-                            // Skip assignment operator
+                            // Skip the "=" operator
                             break;
                         default:
-                            // Handle complex expressions
+                            // Handle complex expressions (e.g., "numberText = 5 + 3")
                             value = evaluateASTNode(child);
                             break;
                     }
                 }
-    
-                if (variable != null) {
+            
+                if (variable != null && value != null) {
                     if (type == null) {
-                        // For assignments without type declaration, infer type from value
-                        type = inferType(value);
+                        type = inferType(value);  // Infer type if not declared
                     }
-                    symbolTable.addIdentifier(variable, type, value);
+                    symbolTable.addIdentifier(variable, type, value);  // Use the REAL value
                     System.out.println("Assigned " + variable + " = " + value);
                 }
                 break;
-    
             case "OUTPUT":
-                // Handle output statements
                 for (ASTNode child : node.getChildren()) {
                     if (child.getType().equals("IDENTIFIER")) {
-                        SymbolDetails details = symbolTable.getIdentifier(child.getValue());
+                        String varName = child.getValue();  // Get actual variable name
+                        SymbolDetails details = symbolTable.getIdentifier(varName);
                         if (details != null) {
                             System.out.println("Output: " + details.getValue());
                         } else {
-                            System.out.println("Error: Undefined variable " + child.getValue());
+                            System.out.println("Error: Undefined variable " + varName);
                         }
-                    } else {
-                        // Handle direct value output
-                        Object outputValue = evaluateASTNode(child);
-                        System.out.println("Output: " + outputValue);
                     }
                 }
                 break;

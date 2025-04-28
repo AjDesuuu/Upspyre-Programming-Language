@@ -12,7 +12,7 @@ digraph ParseTree {
   n224816360 [label="TEXT_TYPE\ntext"];
   n797988875 -> n224816360;
   n1622999186 -> n797988875;
-  n1203303700 [label="IDENTIFIER\nnumberText"];
+  n1203303700 [label="IDENTIFIER\na"];
   n1622999186 -> n1203303700;
   n1326044385 [label="<ASSIGN_OP>\n(R132)"];
   n1651805451 [label="ASSIGN\n="];
@@ -33,7 +33,7 @@ digraph ParseTree {
   n1942767280 [label="<FACTOR>\n(R46)"];
   n1324363789 [label="<BASE>\n(R50)"];
   n467075582 [label="<CONST>\n(R20)"];
-  n1001938270 [label="TEXT\n123"];
+  n1001938270 [label="TEXT\nHello World!"];
   n467075582 -> n1001938270;
   n1324363789 -> n467075582;
   n1942767280 -> n1324363789;
@@ -77,8 +77,10 @@ digraph ParseTree {
   n890193541 [label="<BIT_BASE>\n(R42)"];
   n581216808 [label="<TERM>\n(R44)"];
   n886686587 [label="<FACTOR>\n(R46)"];
-  n1341458267 [label="<BASE>\n(R48)"];
-  n88910 [label="IDENTIFIER\nnumberText"];
+  n1341458267 [label="<BASE>\n(R50)"];
+  n88910 [label="<CONST>\n(R20)"];
+  n124998796 [label="TEXT\na"];
+  n88910 -> n124998796;
   n1341458267 -> n88910;
   n886686587 -> n1341458267;
   n581216808 -> n886686587;
@@ -94,18 +96,18 @@ digraph ParseTree {
   n669921661 -> n1335232309;
   n1579161743 -> n669921661;
   n157158691 -> n1579161743;
-  n124998796 [label="RPAREN\n)"];
-  n157158691 -> n124998796;
+  n2110491906 [label="RPAREN\n)"];
+  n157158691 -> n2110491906;
   n384625398 -> n157158691;
   n1061132995 -> n384625398;
   n1175743986 -> n1061132995;
-  n2110491906 [label="SEMI\n;"];
-  n1175743986 -> n2110491906;
+  n451121727 [label="SEMI\n;"];
+  n1175743986 -> n451121727;
   n1710180416 -> n1175743986;
-  n451121727 [label="<PROGRAM_KLEENE>\n(R3)"];
-  n1710180416 -> n451121727;
+  n280129798 [label="<PROGRAM_KLEENE>\n(R3)"];
+  n1710180416 -> n280129798;
   n1951884968 -> n1710180416;
   n1260246585 -> n1951884968;
-  n280129798 [label="END\nend"];
-  n1260246585 -> n280129798;
+  n234393768 [label="END\nend"];
+  n1260246585 -> n234393768;
 }
