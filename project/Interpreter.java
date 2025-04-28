@@ -59,10 +59,10 @@ public class Interpreter {
 
     private void executeASTNode(ASTNode node) {
         System.out.println("[DEBUG] Processing " + node.getType() + 
-                  ", children: " + node.getChildren().size());
+                      ", children: " + node.getChildren().size());
         for (ASTNode child : node.getChildren()) {
             System.out.println("  - " + child.getType() + 
-                            (child.getValue() != null ? " (" + child.getValue() + ")" : ""));
+                                (child.getValue() != null ? " (" + child.getValue() + ")" : ""));
         }
         switch (node.getType()) {
             case "PROGRAM":
@@ -89,18 +89,21 @@ public class Interpreter {
                         case "NUMBER_TYPE":
                             type = TokenType.NUMBER;
                             break;
+                        case "DECIMAL_TYPE":
+                            type = TokenType.DECIMAL;
+                            break;
+                        case "BINARY_TYPE":
+                            type = TokenType.BINARY_TYPE;
+                            break;
                         case "IDENTIFIER":
                             variable = child.getValue();
                             break;
                         case "TEXT":
-                            value = child.getValue();
-                            if (type == TokenType.NUMBER) {
-                                try {
-                                    value = Integer.parseInt((String) value);
-                                } catch (NumberFormatException e) {
-                                    // Keep as string if parsing fails
-                                }
-                            }
+                        case "NUMBER":
+                        case "DECIMAL":
+                        case "TRUE":
+                        case "FALSE":
+                            value = evaluateASTNode(child);
                             break;
                         case "ASSIGN":
                             // Skip the "=" operator
@@ -120,6 +123,7 @@ public class Interpreter {
                     System.out.println("Assigned " + variable + " = " + value);
                 }
                 break;
+    
             case "OUTPUT":
                 for (ASTNode child : node.getChildren()) {
                     if (child.getType().equals("IDENTIFIER")) {
@@ -133,7 +137,7 @@ public class Interpreter {
                     }
                 }
                 break;
-    
+            
             default:
                 // Process other nodes
                 for (ASTNode child : node.getChildren()) {
@@ -157,7 +161,12 @@ public class Interpreter {
                 Object left = evaluateASTNode(node.getChildren().get(0));
                 Object right = evaluateASTNode(node.getChildren().get(1));
                 return evaluateBinaryOperation(left, node.getType(), right);
-    
+            case "DECIMAL":
+                return Double.parseDouble(node.getValue());
+            case "TRUE":
+                return true;
+            case "FALSE":
+                return false;
             case "IDENTIFIER":
                 // Retrieve the value of the identifier from the symbol table
                 SymbolDetails details = symbolTable.getIdentifier(node.getValue());

@@ -56,6 +56,17 @@ public class ASTNode {
                 // Preserve the identifier's lexeme value
                 return new ASTNode("IDENTIFIER", cstNode.getValue());
 
+            case "NUMBER":
+                // Preserve the number's lexeme value
+                return new ASTNode("NUMBER", cstNode.getValue());  
+            
+            case "DECIMAL":
+                // Preserve the decimal's lexeme value
+                return new ASTNode("DECIMAL", cstNode.getValue());
+            case "TRUE":
+                // Preserve the boolean's lexeme value
+                return new ASTNode("TRUE", cstNode.getValue());
+
             case "OUTPUT_STMT":
                 // Create an OUTPUT node with the expression as its child
                 ASTNode outputNode = new ASTNode("OUTPUT");
