@@ -69,6 +69,40 @@ public class ASTNode {
                 outputNode.addChild(fromCST(expressionNode));
                 return outputNode;
 
+            case "IF":
+                ASTNode ifNode = new ASTNode("IF");
+                if (!cstNode.getChildren().isEmpty()) {
+                    // Extract the condition (assuming it's the second child of the IF node in the CST)
+                    if (cstNode.getChildren().size() > 1) {
+                        ParseTreeNode conditionCST = cstNode.getChildren().get(1); // Adjust index if necessary
+                        ASTNode conditionAST = fromCST(conditionCST);
+                        if (conditionAST != null) {
+                            ifNode.addChild(conditionAST); // Add the condition as a child of the IF node
+                        } else {
+                            throw new RuntimeException("Error: Failed to parse condition in IF statement.");
+                        }
+                    }
+            
+                    // Extract the IF block (assuming it's the third child of the IF node in the CST)
+                    if (cstNode.getChildren().size() > 2) {
+                        ParseTreeNode ifBlockCST = cstNode.getChildren().get(2);
+                        ASTNode ifBlockAST = fromCST(ifBlockCST);
+                        if (ifBlockAST != null) {
+                            ifNode.addChild(ifBlockAST); // Add the IF block as a child of the IF node
+                        }
+                    }
+            
+                    // Extract the OTHERWISE block (if it exists, assuming it's the fifth child in the CST)
+                    if (cstNode.getChildren().size() > 4) {
+                        ParseTreeNode otherwiseBlockCST = cstNode.getChildren().get(4);
+                        ASTNode otherwiseBlockAST = fromCST(otherwiseBlockCST);
+                        if (otherwiseBlockAST != null) {
+                            ifNode.addChild(otherwiseBlockAST); // Add the OTHERWISE block as a child of the IF node
+                        }
+                    }
+                }
+                return ifNode;
+
             case "EXPRESSION":
             case "CONST":
                 return fromCST(cstNode.getChildren().get(0));

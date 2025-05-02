@@ -58,8 +58,8 @@ public class Interpreter {
     }
 
     private void executeASTNode(ASTNode node) {
-        System.out.println("[DEBUG] Processing " + node.getType() + 
-                      ", children: " + node.getChildren().size());
+        //System.out.println("[DEBUG] Processing " + node.getType() + 
+        //              ", children: " + node.getChildren().size());
         for (ASTNode child : node.getChildren()) {
             System.out.println("  - " + child.getType() + 
                                 (child.getValue() != null ? " (" + child.getValue() + ")" : ""));
@@ -134,10 +134,61 @@ public class Interpreter {
                         } else {
                             System.out.println("Error: Undefined variable " + varName);
                         }
+                    } else if (child.getType().equals("TEXT")) {
+                        // Handle direct text output
+                        System.out.println("Output: " + child.getValue());
                     }
                 }
                 break;
             
+            case "CONDITIONAL_STMT":
+                ASTNode conditionNode = null;
+                ASTNode ifBlock = null;
+                ASTNode otherwiseBlock = null;
+            
+                for (ASTNode child : node.getChildren()) {
+                    switch (child.getType()) {
+                        case "GT":
+                        case "LT":
+                        case "GTE":
+                        case "LTE":
+                        case "GEQ":
+                        case "LEQ":
+                        case "EQ":
+                        case "NEQ":
+                        case "RELATIONAL_EXPR":
+                            conditionNode = child;
+                            break;
+                        case "BLOCK_STMT":
+                            if (ifBlock == null) {
+                                ifBlock = child;
+                            }
+                            break;
+                        case "CONDITIONAL_STMT_GROUP":
+                            // Look for OTHERWISE inside
+                            for (ASTNode groupChild : child.getChildren()) {
+                                if (groupChild.getType().equals("BLOCK_STMT")) {
+                                    otherwiseBlock = groupChild;
+                                }
+                            }
+                            break;
+                    }
+                }
+            
+                if (conditionNode == null) {
+                    throw new RuntimeException("Error: Missing or invalid condition in IF statement.");
+                }
+            
+                boolean conditionResult = (boolean) evaluateASTNode(conditionNode);
+            
+                if (conditionResult) {
+                    executeASTNode(ifBlock);
+                } else if (otherwiseBlock != null) {
+                    executeASTNode(otherwiseBlock);
+                }
+                break;
+            
+
             default:
                 // Process other nodes
                 for (ASTNode child : node.getChildren()) {
@@ -152,14 +203,41 @@ public class Interpreter {
     
             case "TEXT":
                 return node.getValue();
-    
+            case "GT": // Greater Than
+            case "LT": // Less Than
+            case "GTE": // Greater Than or Equal
+            case "LTE": // Less Than or Equal
+            case "EQ":
+            case "GEQ":
+            case "LEQ": // Equal
+            case "NEQ": // Not Equal
+                Object left = evaluateASTNode(node.getChildren().get(0));
+                Object right = evaluateASTNode(node.getChildren().get(1));
+
+                if (left instanceof Integer && right instanceof Integer) {
+                    int l = (Integer) left;
+                    int r = (Integer) right;
+                    return switch (node.getType()) {
+                        case "GT" -> l > r;
+                        case "LT" -> l < r;
+                        case "GTE", "GEQ" -> l >= r;
+                        case "LTE", "LEQ" -> l <= r;
+                        case "EQ" -> l == r;
+                        case "NEQ" -> l != r;
+                        default -> throw new RuntimeException("Unknown comparison operator: " + node.getType());
+                    };
+                }
+
+                throw new RuntimeException("Type mismatch in relational operation.");
+
+                        
             case "+":
             case "-":
             case "*":
             case "/":
                 // Binary operation
-                Object left = evaluateASTNode(node.getChildren().get(0));
-                Object right = evaluateASTNode(node.getChildren().get(1));
+                left = evaluateASTNode(node.getChildren().get(0));
+                right = evaluateASTNode(node.getChildren().get(1));
                 return evaluateBinaryOperation(left, node.getType(), right);
             case "DECIMAL":
                 return Double.parseDouble(node.getValue());
