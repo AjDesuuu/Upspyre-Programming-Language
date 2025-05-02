@@ -5,7 +5,7 @@ import project.utils.parser.ParseTreeNode; // Ensure this import matches the act
 
 public class MainDriver {
     public static void main(String[] args) {
-        String fileName = "Show4.up";
+        String fileName = "Show5.up";
         String filePath = getFilePath(fileName);
         SymbolTable symbolTable = new SymbolTable();
 

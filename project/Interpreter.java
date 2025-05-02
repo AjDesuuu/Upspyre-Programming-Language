@@ -1,6 +1,9 @@
 package project;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import project.utils.parser.ASTNode;
 import project.utils.parser.ParseTreeNode; 
 
@@ -39,8 +42,8 @@ public class Interpreter {
             int l = (Integer) left;
             int r = (Integer) right;
             return switch (operator) {
-                case "+" -> l + r;
-                case "-" -> l - r;
+                case "PLUS" -> l + r;
+                case "MINUS" -> l - r;
                 case "*" -> l * r;
                 case "/" -> l / r;
                 default -> throw new RuntimeException("Unsupported operator: " + operator);
@@ -137,6 +140,9 @@ public class Interpreter {
                     } else if (child.getType().equals("TEXT")) {
                         // Handle direct text output
                         System.out.println("Output: " + child.getValue());
+                    } else if (child.getType().equals("LIST_VALUE")) {
+                        Object result = evaluateASTNode(child);
+                        System.out.println("Output: " + result);
                     }
                 }
                 break;
@@ -187,13 +193,114 @@ public class Interpreter {
                     executeASTNode(otherwiseBlock);
                 }
                 break;
-            
+            case "LIST_DECL":
+                String listName = null;
+                List<Object> elements = new ArrayList<>();
+                TokenType listType = null;
 
+                for (ASTNode child : node.getChildren()) {
+                    switch (child.getType()) {
+                        case "TEXT_TYPE":
+                            listType = TokenType.TEXT;
+                            break;
+                        case "NUMBER_TYPE":
+                            listType = TokenType.NUMBER;
+                            break;
+                        case "IDENTIFIER":
+                            listName = child.getValue();
+                            break;
+                        case "TEXT":
+                        case "NUMBER":
+                            elements.add(evaluateASTNode(child));
+                            break;
+                        case "LIST_DECL_GROUP":
+                            collectListElements(child, elements);  // Helper defined below
+                            break;
+                    }
+                }
+
+                if (listName != null && listType != null) {
+                    symbolTable.addIdentifier(listName, listType, elements);
+                    System.out.println("Assigned list " + listName + " = " + elements);
+                }
+                break;
+
+            case "STOP":
+                throw new BreakException();
+            
+            case "CONTINUE":
+                throw new ContinueException();
+            
+            case "FOR_LOOP":
+                ASTNode init = null;
+                ASTNode condition = null;
+                ASTNode increment = null;
+                ASTNode body = null;
+            
+                for (ASTNode child : node.getChildren()) {
+                    switch (child.getType()) {
+                        case "ASSIGNMENT_STMT":
+                            if (init == null) init = child;
+                            else increment = child;
+                            break;
+                        case "LEQ":
+                        case "LT":
+                        case "GT":
+                        case "GEQ":
+                        case "EQ":
+                        case "NEQ":
+                            condition = child;
+                            break;
+                        case "BLOCK_STMT":
+                            body = child;
+                            break;
+                    }
+                }
+            
+                if (init == null || condition == null || increment == null || body == null) {
+                    throw new RuntimeException("Incomplete FOR loop structure.");
+                }
+            
+                executeASTNode(init);  // Run initialization once
+            
+                while (true) {
+                    Object cond = evaluateASTNode(condition);
+                    if (!(cond instanceof Boolean)) {
+                        throw new RuntimeException("For-loop condition did not evaluate to a boolean.");
+                    }
+                    if (!(Boolean) cond) break;
+            
+                    try {
+                        executeASTNode(body);
+                    } catch (BreakException be) {
+                        break;
+                    } catch (ContinueException ce) {
+                        // Skip increment, go straight to next iteration
+                        executeASTNode(increment);
+                        continue;
+                    }
+            
+                    executeASTNode(increment);
+                }
+                break;
             default:
                 // Process other nodes
                 for (ASTNode child : node.getChildren()) {
                     executeASTNode(child);
                 }
+        }
+    }
+    private void collectListElements(ASTNode groupNode, List<Object> elements) {
+        for (ASTNode child : groupNode.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT":
+                case "NUMBER":
+                    elements.add(evaluateASTNode(child));
+                    break;
+                case "LIST_DECL_GROUP":
+                    collectListElements(child, elements);  // Recursive
+                    break;
+            }
         }
     }
     private Object evaluateASTNode(ASTNode node) {
@@ -231,8 +338,8 @@ public class Interpreter {
                 throw new RuntimeException("Type mismatch in relational operation.");
 
                         
-            case "+":
-            case "-":
+            case "PLUS":
+            case "MINUS":
             case "*":
             case "/":
                 // Binary operation
@@ -253,9 +360,32 @@ public class Interpreter {
                 }
                 return details.getValue(); // Return the value of the identifier
     
+            case "LIST_VALUE":
+                String listVar = node.getChildren().get(0).getValue();  // colors
+                Object indexVal = evaluateASTNode(node.getChildren().get(2)); // i
+            
+                if (!(indexVal instanceof Integer)) {
+                    throw new RuntimeException("List index must be an integer.");
+                }
+            
+                SymbolDetails listDetails = symbolTable.getIdentifier(listVar);
+                if (listDetails == null || !(listDetails.getValue() instanceof List)) {
+                    throw new RuntimeException("Undefined or invalid list: " + listVar);
+                }
+            
+                List<?> list = (List<?>) listDetails.getValue();
+                int index = (Integer) indexVal;
+            
+                if (index < 0 || index >= list.size()) {
+                    throw new RuntimeException("List index out of bounds: " + index);
+                }
+            
+                return list.get(index);
             default:
                 throw new RuntimeException("Unsupported AST node type: " + node.getType());
         }
     }
     
 }
+
+
