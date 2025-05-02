@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-
 public class ASTNode {
     private String type;
     private String value;
@@ -38,7 +37,6 @@ public class ASTNode {
         return children;
     }
 
-    // Static method to convert CST to AST
     public static ASTNode fromCST(ParseTreeNode cstNode) {
         if (cstNode == null) return null;
 
@@ -52,39 +50,57 @@ public class ASTNode {
                     }
                 }
                 return programNode;
+
             case "IDENTIFIER":
-                // Preserve the identifier's lexeme value
                 return new ASTNode("IDENTIFIER", cstNode.getValue());
 
             case "NUMBER":
-                // Preserve the number's lexeme value
-                return new ASTNode("NUMBER", cstNode.getValue());  
-            
+                return new ASTNode("NUMBER", cstNode.getValue());
+
             case "DECIMAL":
-                // Preserve the decimal's lexeme value
                 return new ASTNode("DECIMAL", cstNode.getValue());
+
             case "TRUE":
-                // Preserve the boolean's lexeme value
                 return new ASTNode("TRUE", cstNode.getValue());
 
             case "OUTPUT_STMT":
-                // Create an OUTPUT node with the expression as its child
                 ASTNode outputNode = new ASTNode("OUTPUT");
-                ParseTreeNode expressionNode = cstNode.getChildren().get(2); // <EXPRESSION> is the 3rd child
+                ParseTreeNode expressionNode = cstNode.getChildren().get(2);
                 outputNode.addChild(fromCST(expressionNode));
                 return outputNode;
 
             case "EXPRESSION":
             case "CONST":
-                // Directly return the value of the expression or constant
                 return fromCST(cstNode.getChildren().get(0));
 
+            // Left-associative binary expressions
+            case "LOGICOR_EXPR":
+            case "LOGICAND_EXPR":
+            case "RELATIONAL_EXPR":
+            case "BITOR_EXPR":
+            case "BITXOR_EXPR":
+            case "BITAND_EXPR":
+            case "BITSHIFT_EXPR":
+            case "BIT_BASE":
+            case "TERM":
+                return buildLeftAssociativeBinaryExpressionAST(cstNode);
+
+            // Right-associative binary expressions (e.g., exponentiation)
+            case "FACTOR":
+                return buildRightAssociativeBinaryExpressionAST(cstNode);
+
+            case "BASE":
+                if (cstNode.getChildren().size() == 1) {
+                    return fromCST(cstNode.getChildren().get(0));
+                } else if (cstNode.getChildren().size() == 3) {
+                    return fromCST(cstNode.getChildren().get(1));
+                }
+                break;
+
             case "TEXT":
-                // Leaf node for text
                 return new ASTNode("TEXT", cstNode.getValue());
 
             default:
-                // Recursively process other nodes
                 if (cstNode.getChildren().size() == 1) {
                     return fromCST(cstNode.getChildren().get(0));
                 } else {
@@ -98,35 +114,96 @@ public class ASTNode {
                     return defaultNode;
                 }
         }
+
+        return null;
     }
-    // Print the AST structure
+
+    // Helper: Build left-associative binary operator AST for BIT_BASE, TERM, FACTOR
+    private static ASTNode buildLeftAssociativeBinaryExpressionAST(ParseTreeNode node) {
+        List<ParseTreeNode> children = node.getChildren();
+        if (children.size() == 1) {
+            return fromCST(children.get(0));
+        }
+
+        ASTNode left = fromCST(children.get(0));
+        for (int i = 1; i < children.size(); i += 2) {
+            ParseTreeNode opNode = children.get(i);
+            String opType = extractOperatorTerminal(opNode);
+
+            ASTNode opAST = new ASTNode(opType);
+            ASTNode right = fromCST(children.get(i + 1));
+
+            opAST.addChild(left);
+            opAST.addChild(right);
+            left = opAST;
+        }
+        return left;
+    }
+
+    private static ASTNode buildRightAssociativeBinaryExpressionAST(ParseTreeNode node) {
+        List<ParseTreeNode> children = node.getChildren();
+
+        // Base case: If there's only one child, return that node as is
+        if (children.size() == 1) {
+            return fromCST(children.get(0));
+        }
+
+        // The right-associative rule should start from the last operator
+        String opType = extractOperatorTerminal(children.get(children.size() - 2));
+
+        // Recursively process the right side of the expression first (right-to-left)
+        ParseTreeNode rightNode = children.get(children.size() - 1);
+        ASTNode right = fromCST(rightNode);
+
+        // Recursively process the left side of the expression (right-associative)
+        // The left side is everything before the last operator
+        List<ParseTreeNode> leftChildren = children.subList(0, children.size() - 2);
+
+        // Create a new ParseTreeNode for the left children, preserving the parent rule number
+        ParseTreeNode leftNode = new ParseTreeNode(node.getSymbol(), null, node.getRuleNumber());
+        for (ParseTreeNode leftChild : leftChildren) {
+            leftNode.addChild(leftChild);
+        }
+
+        ASTNode left = buildRightAssociativeBinaryExpressionAST(leftNode);
+
+        // Build the operator AST and return it
+        ASTNode opAST = new ASTNode(opType);
+        opAST.addChild(left);
+        opAST.addChild(right);
+        return opAST;
+    }
+
+
+
+    private static String extractOperatorTerminal(ParseTreeNode opNode) {
+        if (opNode.getChildren().isEmpty()) {
+            return opNode.getType(); // terminal
+        } else {
+            return extractOperatorTerminal(opNode.getChildren().get(0)); // dig until terminal
+        }
+    }
+
+
     public void printAST(int depth) {
-        // Indentation for readability
         for (int i = 0; i < depth; i++) {
             System.out.print("  ");
         }
-
-        // Print the current node
         System.out.println(type + (value != null ? " (" + value + ")" : ""));
-
-        // Recursively print children
         for (ASTNode child : children) {
             child.printAST(depth + 1);
         }
     }
 
-    // Generate a Graphviz-compatible .dot representation of the AST
     public String toDot() {
         StringBuilder sb = new StringBuilder();
         String nodeId = "n" + System.identityHashCode(this);
 
-        // Node definition
         String label = type;
         if (value != null) label += "\\n" + value;
 
         sb.append(String.format("  %s [label=\"%s\"];\n", nodeId, label));
 
-        // Child connections
         for (ASTNode child : children) {
             sb.append(child.toDot());
             sb.append(String.format("  %s -> %s;\n", nodeId, "n" + System.identityHashCode(child)));
@@ -135,10 +212,8 @@ public class ASTNode {
         return sb.toString();
     }
 
-    // Generate a PNG image of the AST
     public void generateImage(String outputFilePath) {
         try {
-            // Step 1: Create a temporary .dot file
             File dotFile = File.createTempFile("ast", ".dot");
             try (FileWriter writer = new FileWriter(dotFile)) {
                 writer.write("digraph AST {\n");
@@ -146,7 +221,6 @@ public class ASTNode {
                 writer.write("}\n");
             }
 
-            // Step 2: Use Graphviz to generate the PNG
             String command = String.format("dot -Tpng %s -o %s", dotFile.getAbsolutePath(), outputFilePath);
             Process process = Runtime.getRuntime().exec(command);
             int exitCode = process.waitFor();
@@ -156,8 +230,6 @@ public class ASTNode {
             }
 
             System.out.println("AST image generated: " + outputFilePath);
-
-            // Step 3: Delete the temporary .dot file
             dotFile.delete();
 
         } catch (IOException | InterruptedException e) {
