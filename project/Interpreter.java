@@ -705,6 +705,37 @@ public class Interpreter {
             }
         }
     }
+
+    private List<ASTNode> getParamIdentifiers(ASTNode paramList) {
+        List<ASTNode> params = new ArrayList<>();
+        
+        for (ASTNode child : paramList.getChildren()) {
+            if (child.getType().equals("IDENTIFIER")) {
+                params.add(child);
+            } else if (child.getType().equals("PARAM_LIST_GROUP")) {
+                params.addAll(getParamIdentifiers(child));
+            }
+        }
+        
+        return params;
+    }
+
+    private List<ASTNode> getArgNodes(ASTNode argList) {
+        List<ASTNode> args = new ArrayList<>();
+        
+        for (ASTNode child : argList.getChildren()) {
+            if (child.getType().equals("NUMBER") || 
+                child.getType().equals("TEXT") || 
+                child.getType().equals("IDENTIFIER")) {
+                args.add(child);
+            } else if (child.getType().equals("ARG_LIST_GROUP")) {
+                args.addAll(getArgNodes(child));
+            }
+        }
+        
+        return args;
+    }
+    
     private Object evaluateASTNode(ASTNode node) {
         switch (node.getType()) {
             case "NUMBER":
@@ -916,48 +947,25 @@ public class Interpreter {
                 left = evaluateASTNode(node.getChildren().get(0));
                 right = evaluateASTNode(node.getChildren().get(1));
                 return evaluateBinaryOperation(left, "MOD", right);
+
             case "FUNC_CALL":
-                String calledFunctionName = node.getChildren().get(0).getValue(); // Function name
-                ASTNode argList = node.getChildren().get(2); // Arguments
+                String calledFunctionName = node.getChildren().get(0).getValue();
+                ASTNode argList = node.getChildren().get(2);
             
                 ASTNode functionNode = functions.get(calledFunctionName);
                 if (functionNode == null) {
                     throw new RuntimeException("Undefined function: " + calledFunctionName);
                 }
             
+                ASTNode paramList = functionNode.getChildren().get(3);
             
-                // Get the parameter list from the method node
-                ASTNode paramList = functionNode.getChildren().get(3); // PARAM_LIST
-            
-                // Extract parameters from the PARAM_LIST node
-                List<ASTNode> params = new ArrayList<>();
-                for (ASTNode param : paramList.getChildren()) {
-                    if (param.getType().equals("PARAM_LIST_GROUP")) {
-                        params.addAll(param.getChildren());
-                    } else {
-                        // Skip type tokens like NUMBER_TYPE and keep only identifiers
-                        if (param.getType().equals("IDENTIFIER")) {
-                            params.add(param);
-                        }
-                    }
-                }
-            
-                // Extract arguments from the function call
-                List<ASTNode> args = new ArrayList<>();
-                for (ASTNode arg : argList.getChildren()) {
-                    if (arg.getType().equals("ARG_LIST_GROUP")) {
-                        args.addAll(arg.getChildren());
-                    } else {
-                        args.add(arg);
-                    }
-                }
-            
-                // Ensure the argument count matches the parameter count
+                List<ASTNode> params = getParamIdentifiers(paramList);
+                List<ASTNode> args = getArgNodes(argList);
+
                 if (params.size() != args.size()) {
                     throw new RuntimeException("Argument count mismatch for function: " + calledFunctionName);
                 }
             
-                // Evaluate and bind arguments to parameter names
                 Map<String, Object> tempSymbolTable = new HashMap<>();
                 for (int i = 0; i < params.size(); i++) {
                     String paramName = params.get(i).getValue();
@@ -965,12 +973,11 @@ public class Interpreter {
                     tempSymbolTable.put(paramName, argValue);
                 }
             
-                // Create and switch to a new symbol table for function execution
                 SymbolTable newSymbolTable = new SymbolTable();
                 for (Map.Entry<String, Object> entry : tempSymbolTable.entrySet()) {
                     String name = entry.getKey();
                     Object value = entry.getValue();
-                    TokenType type = inferType(value); // Infer type dynamically
+                    TokenType type = inferType(value);
                     newSymbolTable.addIdentifier(name, type, value);
                 }
             
@@ -981,15 +988,27 @@ public class Interpreter {
                 try {
                     for (ASTNode child : functionNode.getChildren()) {
                         if (child.getType().equals("BLOCK_STMT")) {
-                            executeASTNode(child);
+                            try {
+                                executeASTNode(child);
+                            } catch (ReturnException re) {
+                                returnValue = re.value;
+                                break;
+                            }
                         }
                     }
                 } finally {
-                    symbolTable = oldSymbolTable; // Restore previous symbol table
+                    symbolTable = oldSymbolTable;
                 }
             
                 return returnValue;
             
+            case "OUTPUT":
+                // If OUTPUT is used as an expression (e.g., in a function), return the value
+                if (!node.getChildren().isEmpty()) {
+                    Object outputValue = evaluateASTNode(node.getChildren().get(0));
+                    throw new ReturnException(outputValue);
+                }
+                return null;
 
             default:
                 throw new RuntimeException("Unsupported AST node type: " + node.getType());
