@@ -1,8 +1,8 @@
 start
-  number x = 5;   
+  number x = 2;   
 if (x >= 5) {
     show ("x is greater than 5");
   } otherwise {
-    show ("x is less than or equal to 5");
+    show ("x is less than  5");
   }
 end

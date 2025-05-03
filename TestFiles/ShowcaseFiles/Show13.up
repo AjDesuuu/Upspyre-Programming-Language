@@ -1,0 +1,14 @@
+start
+    // Bitwise operations
+    number x = 100;  // 12 in binary
+    number y = 010;  // 10 in binary
+    number bitAnd = x & y;      // 8 (0b1000)
+    number bitOr = x | y;       // 14 (0b1110)
+    number bitXor = x ^ y;      // 6 (0b0110)
+    number bitNot = ~x;         // -13 (in 32-bit signed)
+    number leftShift = x << 2;  // 48 (0b110000)
+    number rightShift = x >> 1; // 6 (0b0110)
+    
+    
+
+end

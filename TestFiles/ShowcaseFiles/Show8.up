@@ -4,5 +4,6 @@ start
   get text numberText();  
 
   number num = numberText.convertTo(number);  
-  show (num + 1);
+  show ("Your age next year is: " + num + 1);
+  show ("Your age next year is: " + (num + 1));
 end 

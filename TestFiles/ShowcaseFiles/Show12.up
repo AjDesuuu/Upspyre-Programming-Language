@@ -11,33 +11,4 @@ start
     number remainder = a % b;    // 0
     number power = a ** b;       // 100000
 
-    // Bitwise operations
-    number x = 100;  // 12 in binary
-    number y = 010;  // 10 in binary
-    
-    number bitAnd = x & y;      // 8 (0b1000)
-    number bitOr = x | y;       // 14 (0b1110)
-    number bitXor = x ^ y;      // 6 (0b0110)
-    number bitNot = ~x;         // -13 (in 32-bit signed)
-    number leftShift = x << 2;  // 48 (0b110000)
-    number rightShift = x >> 1; // 6 (0b0110)
-    
-    // Logical operations
-    binary t = true;
-    binary f = false;
-    
-    binary logicalAnd = t AND f;  // false
-    binary logicalOr = t OR f;    // true
-    binary logicalNot = NOT t;    // false
-    // Relational operations
-    binary isEqual = (a == 10);          // true
-    binary notEqual = (a != b);          // true
-    binary lessThan = (a < 15);          // true
-    binary greaterThan = (b > 10);       // false
-    binary lessOrEqual = (a <= 10);      // true
-    binary greaterOrEqual = (a >= 20);   // false
-    
-    // Mixed expressions
-    decimal result = (a + b) * c - (x | y) / 2;
-    show(result);  // (10 + 5) * 2.5 - (12 | 10)/2 = 37.5 - 7 = 30.5
 end

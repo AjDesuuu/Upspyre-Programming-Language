@@ -1,0 +1,14 @@
+start
+
+    number a = 10;
+    number b = 5;
+    decimal c = 2.5;
+    
+    // Relational operations
+    binary isEqual = (a == 10);          // true
+    binary notEqual = (a != b);          // true
+    binary lessThan = (a < 15);          // true
+    binary greaterThan = (b > 10);       // false
+    binary lessOrEqual = (a <= 10);      // true
+    binary greaterOrEqual = (a >= 20);   // false
+end

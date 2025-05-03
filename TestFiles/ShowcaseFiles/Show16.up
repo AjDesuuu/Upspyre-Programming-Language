@@ -1,0 +1,23 @@
+start
+    number a = 6;
+    number b = 3;
+    decimal d = 2.0;
+    binary t = true;
+    binary f = false;
+
+    // Arithmetic + Relational
+    binary arithRel = (a + b * 2 == 12);      // true
+
+    // Bitwise + Relational
+    binary bitRel = ((a & b) < b);            // true (6 & 3 = 2 < 3)
+
+    // Logical + Relational
+    binary logRel = (t AND (a > b));          // true
+
+    // Arithmetic + Bitwise + Relational
+    binary mix = ((a * b) | 1) == 19;         // true (6*3=18, 18|1=19)
+
+    // Mixed arithmetic, bitwise, and logical
+    binary test10 = ((a + b) > (d << 2)) AND (a != b); // true ((10+5) > (3<<2)) AND true
+
+end

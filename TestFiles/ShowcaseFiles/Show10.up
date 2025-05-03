@@ -1,5 +1,5 @@
 start  
-  choose_what (3) {  
+  choose_what (5) {  
     pick 1: { show("Monday"); }  
     pick 3: { show("Wednesday"); }  
     pick 5: { show("Friday"); }  

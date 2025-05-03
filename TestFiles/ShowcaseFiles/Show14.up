@@ -1,0 +1,14 @@
+start
+    // Logical operations
+    binary t = true;
+    binary f = false;
+    
+    binary logicalAnd = t AND f;  // false
+    binary logicalOr = t OR f;    // true
+    binary logicalNot = NOT t;    // false
+    
+    show(logicalAnd);   // Output: false
+    show(logicalOr);    // Output: true
+    show(logicalNot);   // Output: false
+    
+end

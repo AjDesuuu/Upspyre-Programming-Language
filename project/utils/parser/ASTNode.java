@@ -10,6 +10,7 @@ public class ASTNode {
     private String type;
     private String value;
     private List<ASTNode> children;
+    private ASTNode parent;
 
     public ASTNode(String type) {
         this(type, null);
@@ -22,7 +23,16 @@ public class ASTNode {
     }
 
     public void addChild(ASTNode child) {
+        child.setParent(this);
         children.add(child);
+    }
+
+    public ASTNode getParent() {
+        return parent;
+    }
+
+    private void setParent(ASTNode parent) {
+        this.parent = parent;
     }
 
     public String getType() {
@@ -69,6 +79,7 @@ public class ASTNode {
                 outputNode.addChild(fromCST(expressionNode));
                 return outputNode;
 
+           
             case "IF":
                 ASTNode ifNode = new ASTNode("IF");
                 if (!cstNode.getChildren().isEmpty()) {
@@ -134,6 +145,8 @@ public class ASTNode {
             case "TEXT":
                 return new ASTNode("TEXT", cstNode.getValue());
 
+            
+                
             default:
                 if (cstNode.getChildren().size() == 1) {
                     return fromCST(cstNode.getChildren().get(0));
