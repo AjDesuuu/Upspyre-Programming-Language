@@ -143,7 +143,18 @@ public class Executor {
                     type = TokenType.BINARY_TYPE;
                     break;
                 case "IDENTIFIER":
-                    variable = child.getValue();
+                    if (variable == null) {
+                        variable = child.getValue();
+                    } else {
+                        SymbolDetails rhsDetails = symbolTableManager.getIdentifier(child.getValue());
+                        if (rhsDetails == null) {
+                            throw new InterpreterException(
+                                "Variable '" + child.getValue() + "' is not defined.",
+                                getNodeLineNumber(node)
+                            );
+                        }
+                        value = rhsDetails.getValue();
+                    }
                     break;
                 case "TEXT":
                 case "NUMBER":
@@ -153,20 +164,33 @@ public class Executor {
                     value = evaluator.evaluateASTNode(child);
                     break;
                 case "ASSIGN":
-                    // Skip the "=" operator
                     break;
                 default:
-                    // Handle complex expressions (e.g., "numberText = 5 + 3")
                     value = evaluator.evaluateASTNode(child);
                     break;
             }
         }
     
-        if (variable != null && value != null) {
-            if (type == null) {
-                type = evaluator.inferType(value);  // Infer type if not declared
+        // ENFORCE: Variable and type declaration
+        if (type == null) {
+            // Assignment to existing variable
+            SymbolDetails existing = symbolTableManager.getIdentifier(variable);
+            if (existing == null) {
+                throw new InterpreterException(
+                    "Variable '" + variable + "' must be declared with a type before assignment.",
+                    getNodeLineNumber(node)
+                );
             }
-            // --- Type checking logic ---
+            type = existing.getType();
+            if (type == null || type == TokenType.IDENTIFIER) {
+                throw new InterpreterException(
+                    "Variable '" + variable + "' must be declared with a valid type before assignment.",
+                    getNodeLineNumber(node)
+                );
+            }
+        }
+    
+        if (variable != null && value != null) {
             TokenType valueType = evaluator.inferType(value);
             if (type != valueType) {
                 throw new InterpreterException(
@@ -174,16 +198,18 @@ public class Executor {
                     getNodeLineNumber(node)
                 );
             }
-            // --- End type checking logic ---
-
             if (type == TokenType.DECIMAL && value instanceof Integer) {
-                value = ((Integer) value).doubleValue(); // Convert Integer to Double
+                value = ((Integer) value).doubleValue();
             }
             if (type == TokenType.NUMBER && value instanceof Double) {
-                value = ((Double) value).intValue(); // Cast Double to Integer
+                value = ((Double) value).intValue();
             }
-
-            symbolTableManager.addIdentifier(variable, type, value);
+            // Only declare if type is specified (declaration), otherwise update
+            if (node.getChildren().stream().anyMatch(c -> c.getType().endsWith("_TYPE"))) {
+                symbolTableManager.addIdentifier(variable, type, value);
+            } else {
+                symbolTableManager.updateIdentifier(variable, value);
+            }
             System.out.println("Assigned " + variable + " = " + value);
         } else if (variable != null && value == null) {
             throw new InterpreterException(

@@ -20,6 +20,10 @@ public class SymbolDetails {
         return type;
     }
 
+    public void setType(TokenType type) {
+        this.type = type;
+    }
+
     public Object getValue() {
         return value;
     }

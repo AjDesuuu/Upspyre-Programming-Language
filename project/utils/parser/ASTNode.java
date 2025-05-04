@@ -12,7 +12,7 @@ public class ASTNode {
     private String value;
     private List<ASTNode> children;
     private ASTNode parent;
-    private int lineNumber;
+    private int lineNumber = 0;
     
 
     public ASTNode(String type) {
@@ -61,10 +61,48 @@ public class ASTNode {
 
     public static ASTNode fromCST(ParseTreeNode cstNode) {
         if (cstNode == null) return null;
-
-        switch (cstNode.getType()) {
+    
+        // List of all terminal token types in your language
+        final java.util.Set<String> TERMINALS = java.util.Set.of(
+            "START", "END", "IF", "OTHERWISE", "FOR", "REPEAT", "UNTIL", "CONTINUE", "STOP", "METHOD", "OUTPUT", "GET", "SHOW", "CHOOSE_WHAT", "CONVERT_TO",
+            "NUMBER_TYPE", "DECIMAL_TYPE", "TEXT_TYPE", "BINARY_TYPE", "LIST_TYPE", "PAIR_MAP_TYPE", "PICK",
+            "TRUE", "FALSE", "NONE",
+            "LEN", "SORT", "KEY", "VALUE", "TO_TEXT",
+            "IDENTIFIER", "NUMBER", "DECIMAL", "TEXT",
+            "ASSIGN", "PLUS", "MINUS", "MULT", "DIV", "EXPONENT", "MOD", "FLOOR_DIV", "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN",
+            "AND", "OR", "NOT", "EQ", "NEQ", "LT", "GT", "LEQ", "GEQ",
+            "BITWISE_AND", "BITWISE_OR", "BITWISE_XOR", "BITWISE_NOT", "LSHIFT", "RSHIFT", "S_NOT", "QUOTE",
+            "LPAREN", "RPAREN", "LCURLY", "RCURLY", "LBRACKET", "RBRACKET", "COMMA", "SEMI", "COLON", "DOT"
+        );
+    
+        String type = cstNode.getType();
+    
+        // If this is a terminal, always create an ASTNode with the token and line number
+        if (TERMINALS.contains(type)) {
+            return new ASTNode(type, cstNode.getValue(), cstNode.getToken());
+        }
+    
+        // Helper: get the first non-zero line number from children
+        int lineNumber = 0;
+        if (cstNode.getToken() != null && cstNode.getToken().getLine() > 0) {
+            lineNumber = cstNode.getToken().getLine();
+        } else {
+            for (ParseTreeNode child : cstNode.getChildren()) {
+                if (child.getToken() != null && child.getToken().getLine() > 0) {
+                    lineNumber = child.getToken().getLine();
+                    break;
+                }
+            }
+        }
+        Token fakeToken = null;
+        if (lineNumber > 0) {
+            // Create a dummy token just for line number propagation
+            fakeToken = new Token(null, null, lineNumber, 0);
+        }
+    
+        switch (type) {
             case "PROGRAM":
-                ASTNode programNode = new ASTNode("PROGRAM");
+                ASTNode programNode = new ASTNode("PROGRAM", null, fakeToken);
                 for (ParseTreeNode child : cstNode.getChildren()) {
                     ASTNode childAST = fromCST(child);
                     if (childAST != null) {
@@ -72,67 +110,38 @@ public class ASTNode {
                     }
                 }
                 return programNode;
-
-            case "IDENTIFIER":
-                return new ASTNode("IDENTIFIER", cstNode.getValue(), cstNode.getToken());
-
-            case "NUMBER":
-                return new ASTNode("NUMBER", cstNode.getValue(), cstNode.getToken());
-
-            case "DECIMAL":
-                return new ASTNode("DECIMAL", cstNode.getValue(), cstNode.getToken());
-
-            case "TRUE":
-                return new ASTNode("TRUE", cstNode.getValue(), cstNode.getToken());
-            
-            case "FALSE":
-                return new ASTNode("FALSE", cstNode.getValue(), cstNode.getToken());
-            
+    
             case "OUTPUT_STMT":
-                ASTNode outputNode = new ASTNode("OUTPUT");
-                ParseTreeNode expressionNode = cstNode.getChildren().get(2);
-                outputNode.addChild(fromCST(expressionNode));
+                ASTNode outputNode = new ASTNode("OUTPUT", null, fakeToken);
+                if (cstNode.getChildren().size() >= 3) {
+                    ASTNode exprAST = fromCST(cstNode.getChildren().get(2));
+                    if (exprAST != null) outputNode.addChild(exprAST);
+                }
                 return outputNode;
-
-           
+    
             case "IF":
-                ASTNode ifNode = new ASTNode("IF");
+                ASTNode ifNode = new ASTNode("IF", null, fakeToken);
                 if (!cstNode.getChildren().isEmpty()) {
-                    // Extract the condition (assuming it's the second child of the IF node in the CST)
                     if (cstNode.getChildren().size() > 1) {
-                        ParseTreeNode conditionCST = cstNode.getChildren().get(1); // Adjust index if necessary
-                        ASTNode conditionAST = fromCST(conditionCST);
-                        if (conditionAST != null) {
-                            ifNode.addChild(conditionAST); // Add the condition as a child of the IF node
-                        } else {
-                            throw new RuntimeException("Error: Failed to parse condition in IF statement.");
-                        }
+                        ASTNode conditionAST = fromCST(cstNode.getChildren().get(1));
+                        if (conditionAST != null) ifNode.addChild(conditionAST);
                     }
-            
-                    // Extract the IF block (assuming it's the third child of the IF node in the CST)
                     if (cstNode.getChildren().size() > 2) {
-                        ParseTreeNode ifBlockCST = cstNode.getChildren().get(2);
-                        ASTNode ifBlockAST = fromCST(ifBlockCST);
-                        if (ifBlockAST != null) {
-                            ifNode.addChild(ifBlockAST); // Add the IF block as a child of the IF node
-                        }
+                        ASTNode ifBlockAST = fromCST(cstNode.getChildren().get(2));
+                        if (ifBlockAST != null) ifNode.addChild(ifBlockAST);
                     }
-            
-                    // Extract the OTHERWISE block (if it exists, assuming it's the fifth child in the CST)
                     if (cstNode.getChildren().size() > 4) {
-                        ParseTreeNode otherwiseBlockCST = cstNode.getChildren().get(4);
-                        ASTNode otherwiseBlockAST = fromCST(otherwiseBlockCST);
-                        if (otherwiseBlockAST != null) {
-                            ifNode.addChild(otherwiseBlockAST); // Add the OTHERWISE block as a child of the IF node
-                        }
+                        ASTNode otherwiseBlockAST = fromCST(cstNode.getChildren().get(4));
+                        if (otherwiseBlockAST != null) ifNode.addChild(otherwiseBlockAST);
                     }
                 }
                 return ifNode;
-
+    
+            // Expression flattening for single-child nodes
             case "EXPRESSION":
             case "CONST":
                 return fromCST(cstNode.getChildren().get(0));
-
+    
             // Left-associative binary expressions
             case "LOGICOR_EXPR":
             case "LOGICAND_EXPR":
@@ -144,11 +153,11 @@ public class ASTNode {
             case "BIT_BASE":
             case "TERM":
                 return buildLeftAssociativeBinaryExpressionAST(cstNode);
-
+    
             // Right-associative binary expressions (e.g., exponentiation)
             case "FACTOR":
                 return buildRightAssociativeBinaryExpressionAST(cstNode);
-
+    
             case "BASE":
                 if (cstNode.getChildren().size() == 1) {
                     return fromCST(cstNode.getChildren().get(0));
@@ -156,17 +165,17 @@ public class ASTNode {
                     return fromCST(cstNode.getChildren().get(1));
                 }
                 break;
-
-            case "TEXT":
-                return new ASTNode("TEXT", cstNode.getValue(), cstNode.getToken());
-
-            
-                
+    
             default:
                 if (cstNode.getChildren().size() == 1) {
-                    return fromCST(cstNode.getChildren().get(0));
+                    ASTNode childAST = fromCST(cstNode.getChildren().get(0));
+                    // Propagate line number if this node has a token or child has one
+                    if (childAST != null && lineNumber > 0) {
+                        childAST.lineNumber = lineNumber;
+                    }
+                    return childAST;
                 } else {
-                    ASTNode defaultNode = new ASTNode(cstNode.getType());
+                    ASTNode defaultNode = new ASTNode(type, null, fakeToken);
                     for (ParseTreeNode child : cstNode.getChildren()) {
                         ASTNode childAST = fromCST(child);
                         if (childAST != null) {
@@ -176,10 +185,9 @@ public class ASTNode {
                     return defaultNode;
                 }
         }
-
+    
         return null;
     }
-
     // Helper: Build left-associative binary operator AST for BIT_BASE, TERM, FACTOR
     private static ASTNode buildLeftAssociativeBinaryExpressionAST(ParseTreeNode node) {
         List<ParseTreeNode> children = node.getChildren();

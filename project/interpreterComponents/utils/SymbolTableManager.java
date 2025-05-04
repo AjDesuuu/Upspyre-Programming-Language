@@ -28,7 +28,14 @@ public class SymbolTableManager {
     }
     
     public void addIdentifier(String name, TokenType type, Object value) {
-        currentSymbolTable.addIdentifier(name, type, value);
+        SymbolDetails existing = currentSymbolTable.getIdentifier(name);
+        if (existing == null) {
+            // Only add if not already present
+            currentSymbolTable.addIdentifier(name, type, value);
+        } else {
+            // Update both value AND type
+            currentSymbolTable.updateIdentifier(name, type, value);
+        }
     }
     
     public void addIdentifierToScope(SymbolTable scope, String name, TokenType type, Object value) {
