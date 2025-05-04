@@ -32,9 +32,14 @@ public class SymbolTableManager {
         if (existing == null) {
             // Only add if not already present
             currentSymbolTable.addIdentifier(name, type, value);
+            SymbolDetails details = currentSymbolTable.getIdentifier(name);
+            if (details != null) {
+                details.setExplicitlyDeclared(true);
+            }
         } else {
             // Update both value AND type
             currentSymbolTable.updateIdentifier(name, type, value);
+            existing.setExplicitlyDeclared(true);
         }
     }
     
@@ -43,7 +48,15 @@ public class SymbolTableManager {
     }
     
     public SymbolDetails getIdentifier(String name) {
-        return currentSymbolTable.getIdentifier(name);
+        SymbolTable current = currentSymbolTable;
+        while (current != null) {
+            SymbolDetails details = current.getIdentifier(name);
+            if (details != null) {
+                return details;
+            }
+            current = current.getParent();
+        }
+        return null; // Make sure this returns null for undefined variables
     }
     
     public void updateIdentifier(String name, Object value) {

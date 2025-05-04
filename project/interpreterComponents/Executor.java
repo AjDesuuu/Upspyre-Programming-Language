@@ -57,6 +57,10 @@ public class Executor {
             case "ASSIGNMENT_STMT":
                 executeAssignment(node);
                 break;
+
+            case "DECL_STMT":
+                executeDeclaration(node);
+                break;
     
             case "OUTPUT":
                 executeOutput(node);
@@ -128,6 +132,7 @@ public class Executor {
         Object value = null;
         TokenType type = null;
     
+        // Extract information from children
         for (ASTNode child : node.getChildren()) {
             switch (child.getType()) {
                 case "TEXT_TYPE":
@@ -156,13 +161,6 @@ public class Executor {
                         value = rhsDetails.getValue();
                     }
                     break;
-                case "TEXT":
-                case "NUMBER":
-                case "DECIMAL":
-                case "TRUE":
-                case "FALSE":
-                    value = evaluator.evaluateASTNode(child);
-                    break;
                 case "ASSIGN":
                     break;
                 default:
@@ -171,51 +169,112 @@ public class Executor {
             }
         }
     
-        // ENFORCE: Variable and type declaration
+        // Handle value validation and type checking
+        if (variable == null) {
+            throw new InterpreterException(
+                "Invalid assignment: missing variable name",
+                getNodeLineNumber(node)
+            );
+        }
+    
+        if (value == null) {
+            throw new InterpreterException(
+                "Assignment to variable '" + variable + "' failed: right-hand side is null or undefined.",
+                getNodeLineNumber(node)
+            );
+        }
+    
+        // Get or verify type
         if (type == null) {
             // Assignment to existing variable
             SymbolDetails existing = symbolTableManager.getIdentifier(variable);
             if (existing == null) {
                 throw new InterpreterException(
-                    "Variable '" + variable + "' must be declared with a type before assignment.",
+                    "Variable '" + variable + "' must be declared before assignment.",
                     getNodeLineNumber(node)
                 );
             }
             type = existing.getType();
-            if (type == null || type == TokenType.IDENTIFIER) {
-                throw new InterpreterException(
-                    "Variable '" + variable + "' must be declared with a valid type before assignment.",
-                    getNodeLineNumber(node)
-                );
+        }
+    
+        // Type checking
+        TokenType valueType = evaluator.inferType(value);
+        if (type != valueType) {
+            throw new InterpreterException(
+                "Type mismatch: cannot assign value of type " + valueType + " to variable '" + variable + "' of type " + type,
+                getNodeLineNumber(node)
+            );
+        }
+    
+        // Type conversion if needed
+        if (type == TokenType.DECIMAL && value instanceof Integer) {
+            value = ((Integer) value).doubleValue();
+        }
+        if (type == TokenType.NUMBER && value instanceof Double) {
+            value = ((Double) value).intValue();
+        }
+    
+        // Update or declare the variable
+        if (node.getChildren().stream().anyMatch(c -> c.getType().endsWith("_TYPE"))) {
+            symbolTableManager.addIdentifier(variable, type, value);
+            SymbolDetails details = symbolTableManager.getIdentifier(variable);
+            if (details != null) {
+                details.setExplicitlyDeclared(true);
+            }
+        } else {
+            symbolTableManager.updateIdentifier(variable, value);
+        }
+    
+        System.out.println("Assigned " + variable + " = " + value);
+    }
+    
+    private void executeDeclaration(ASTNode node) {
+        String varName = null;
+        TokenType type = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT_TYPE":
+                    type = TokenType.TEXT;
+                    break;
+                case "NUMBER_TYPE":
+                    type = TokenType.NUMBER;
+                    break;
+                case "IDENTIFIER":
+                    varName = child.getValue();
+                    break;
             }
         }
     
-        if (variable != null && value != null) {
-            TokenType valueType = evaluator.inferType(value);
-            if (type != valueType) {
-                throw new InterpreterException(
-                    "Type mismatch: cannot assign value of type " + valueType + " to variable '" + variable + "' of type " + type,
-                    getNodeLineNumber(node)
-                );
-            }
-            if (type == TokenType.DECIMAL && value instanceof Integer) {
-                value = ((Integer) value).doubleValue();
-            }
-            if (type == TokenType.NUMBER && value instanceof Double) {
-                value = ((Double) value).intValue();
-            }
-            // Only declare if type is specified (declaration), otherwise update
-            if (node.getChildren().stream().anyMatch(c -> c.getType().endsWith("_TYPE"))) {
-                symbolTableManager.addIdentifier(variable, type, value);
-            } else {
-                symbolTableManager.updateIdentifier(variable, value);
-            }
-            System.out.println("Assigned " + variable + " = " + value);
-        } else if (variable != null && value == null) {
+        // Error checking for declarations
+        if (varName == null) {
             throw new InterpreterException(
-                "Assignment to variable '" + variable + "' failed: right-hand side is null or undefined.",
+                "Invalid declaration: missing variable name",
                 getNodeLineNumber(node)
             );
+        }
+    
+        if (type == null) {
+            throw new InterpreterException(
+                "Invalid declaration: missing type for variable '" + varName + "'",
+                getNodeLineNumber(node)
+            );
+        }
+    
+        // Check if variable is already declared
+        SymbolDetails existing = symbolTableManager.getIdentifier(varName);
+        if (existing != null && existing.isExplicitlyDeclared()) {
+            throw new InterpreterException(
+                "Variable '" + varName + "' is already declared",
+                getNodeLineNumber(node)
+            );
+        }
+    
+        // Add the variable with proper type but null value
+        symbolTableManager.addIdentifier(varName, type, null);
+        SymbolDetails details = symbolTableManager.getIdentifier(varName);
+        if (details != null) {
+            details.setExplicitlyDeclared(true);
         }
     }
 
@@ -224,24 +283,38 @@ public class Executor {
             if (child.getType().equals("IDENTIFIER")) {
                 String varName = child.getValue();
                 SymbolDetails details = symbolTableManager.getIdentifier(varName);
-                if (details != null) {
-                    System.out.println("Output: " + details.getValue());
-                } else {
-                    System.out.println("Error: Undefined variable " + varName);
+            
+                
+                // First check if the variable exists at all
+                if (details == null) {
+                    throw new InterpreterException(
+                        "Cannot show undefined variable: " + varName,
+                        getNodeLineNumber(node)
+                    );
                 }
+                
+                // Then check if it has a proper type (was declared)
+                if (details.getType() == TokenType.IDENTIFIER) {
+                    throw new InterpreterException(
+                        "Cannot show undefined variable: " + varName,
+                        getNodeLineNumber(node)
+                    );
+                }
+                
+                // Finally check if it has a value (was initialized)
+                if (details.getValue() == null) {
+                    throw new InterpreterException(
+                        "Cannot show uninitialized variable: " + varName,
+                        getNodeLineNumber(node)
+                    );
+                }
+                
+                System.out.println("Output: " + details.getValue());
             } else if (child.getType().equals("TEXT")) {
                 System.out.println("Output: " + child.getValue());
-            } else if (child.getType().equals("LIST_VALUE") ||  child.getType().equals("COLLECTION_METHOD")) {
+            } else if (child.getType().equals("LIST_VALUE") || child.getType().equals("COLLECTION_METHOD")) {
                 Object result = evaluator.evaluateASTNode(child);
                 System.out.println("Output: " + result);
-            } else if (child.getType().equals("PLUS")) {
-                Object leftVal = evaluator.evaluateASTNode(child.getChildren().get(0));
-                Object rightVal = evaluator.evaluateASTNode(child.getChildren().get(1));
-                if (leftVal instanceof Integer && rightVal instanceof Integer) {
-                    System.out.println("Output: " + ((Integer) leftVal + (Integer) rightVal));
-                } else {
-                    System.out.println("Output: " + leftVal.toString() + rightVal.toString());
-                }
             }
         }
     }

@@ -47,9 +47,11 @@ public class InterpreterN {
             executor.executeASTNode(astRoot);
         } catch (InterpreterException e) {
             System.err.println("Interpreter error at line " + e.getLineNumber() + ": " + e.getMessage());
+            return;
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
             e.printStackTrace();
+            return;
         }
     }
 }
