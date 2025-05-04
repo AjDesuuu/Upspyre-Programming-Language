@@ -1,6 +1,6 @@
 package project;
 // Token.java
-class Token {
+public class Token {
     TokenType type;
     String lexeme;
     int line;
@@ -11,6 +11,13 @@ class Token {
         this.lexeme = lexeme;
         this.line = line;
         this.position = position;
+    }
+    public int getLine() {
+        return line;
+    }
+
+    public int getPosition() {
+        return position;
     }
     // Getter for the token type
     public TokenType getType() {

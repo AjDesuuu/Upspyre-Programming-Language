@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+
+import project.interpreterComponents.utils.BreakException;
+import project.interpreterComponents.utils.ContinueException;
+import project.interpreterComponents.utils.ReturnException;
 import project.utils.parser.ASTNode;
 import project.utils.parser.ParseTreeNode; 
 

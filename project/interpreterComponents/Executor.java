@@ -1,0 +1,684 @@
+package project.interpreterComponents;
+
+
+import project.SymbolTable;
+import project.TokenType;
+import project.interpreterComponents.utils.InterpreterException;
+import project.interpreterComponents.utils.SymbolTableManager;
+import project.interpreterComponents.utils.BreakException;
+import project.interpreterComponents.utils.ContinueException;
+import project.interpreterComponents.utils.ReturnException;
+import project.SymbolDetails;
+import project.utils.parser.ASTNode;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class Executor {
+    private final SymbolTableManager symbolTableManager;
+    private final Evaluator evaluator;
+    private final Scanner scanner;
+    private final Map<String, ASTNode> functions = new HashMap<>();
+    private final boolean debugMode;
+
+    public Executor(SymbolTableManager symbolTableManager, Evaluator evaluator, Scanner scanner, boolean debugMode) {
+        this.symbolTableManager = symbolTableManager;
+        this.evaluator = evaluator;
+        this.scanner = scanner;
+        this.debugMode = debugMode;
+    }
+
+    public void executeASTNode(ASTNode node) {
+        if (node == null) {
+            throw new InterpreterException("Cannot execute null node", 0);
+        }
+
+        if (debugMode) {
+            System.out.println("[DEBUG] Executing node: " + node.getType() +
+                (node.getValue() != null ? " (" + node.getValue() + ")" : "") +
+                ", children: " + node.getChildren().size());
+        }
+
+
+        switch (node.getType()) {
+            case "PROGRAM":
+            case "PROGRAM_KLEENE":
+            case "STMT":
+            case "START":
+            case "END":
+                // Process structural nodes
+                for (ASTNode child : node.getChildren()) {
+                    executeASTNode(child);
+                }
+                break;
+    
+            case "ASSIGNMENT_STMT":
+                executeAssignment(node);
+                break;
+    
+            case "OUTPUT":
+                executeOutput(node);
+                break;
+
+            case "BLOCK_STMT":
+            case "BLOCK_STMT_KLEENE":
+                for (ASTNode child : node.getChildren()) {
+                    executeASTNode(child);
+                }
+                break;
+
+            case "CONDITIONAL_STMT":
+                executeConditional(node);
+                break;
+
+            case "LIST_DECL":
+                executeListDeclaration(node);
+                break;
+
+            case "STOP":
+                throw new BreakException();
+            
+            case "CONTINUE":
+                throw new ContinueException();
+            
+            case "FOR_LOOP":
+                executeForLoop(node);
+                break;
+            
+            case "REPEAT_UNTIL":
+                executeRepeatUntil(node);
+                break;
+            
+            case "REPEAT_LOOP":
+                executeRepeatLoop(node);
+                break;
+            
+            case "FUNC_DECL":
+                executeFunctionDeclaration(node);
+                break;
+            
+            case "PAIR_MAP_DECL":
+                executePairMapDeclaration(node);
+                break;
+
+            case "RETURN_STMT":
+                executeReturnStatement(node);
+                break;
+
+            case "INPUT_STMT":
+                executeInputStatement(node);
+                break;
+            
+            case "CHOOSE_WHAT_STMT":
+                executeChooseWhatStatement(node);
+                break;
+
+            default:
+                // Process other nodes
+                for (ASTNode child : node.getChildren()) {
+                    executeASTNode(child);
+                }
+        }
+    }
+
+    private void executeAssignment(ASTNode node) {
+        String variable = null;
+        Object value = null;
+        TokenType type = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT_TYPE":
+                    type = TokenType.TEXT;
+                    break;
+                case "NUMBER_TYPE":
+                    type = TokenType.NUMBER;
+                    break;
+                case "DECIMAL_TYPE":
+                    type = TokenType.DECIMAL;
+                    break;
+                case "BINARY_TYPE":
+                    type = TokenType.BINARY_TYPE;
+                    break;
+                case "IDENTIFIER":
+                    variable = child.getValue();
+                    break;
+                case "TEXT":
+                case "NUMBER":
+                case "DECIMAL":
+                case "TRUE":
+                case "FALSE":
+                    value = evaluator.evaluateASTNode(child);
+                    break;
+                case "ASSIGN":
+                    // Skip the "=" operator
+                    break;
+                default:
+                    // Handle complex expressions (e.g., "numberText = 5 + 3")
+                    value = evaluator.evaluateASTNode(child);
+                    break;
+            }
+        }
+    
+        if (variable != null && value != null) {
+            if (type == null) {
+                type = evaluator.inferType(value);  // Infer type if not declared
+            }
+            // --- Type checking logic ---
+            TokenType valueType = evaluator.inferType(value);
+            if (type != valueType) {
+                throw new InterpreterException(
+                    "Type mismatch: cannot assign value of type " + valueType + " to variable '" + variable + "' of type " + type,
+                    getNodeLineNumber(node)
+                );
+            }
+            // --- End type checking logic ---
+
+            if (type == TokenType.DECIMAL && value instanceof Integer) {
+                value = ((Integer) value).doubleValue(); // Convert Integer to Double
+            }
+            if (type == TokenType.NUMBER && value instanceof Double) {
+                value = ((Double) value).intValue(); // Cast Double to Integer
+            }
+
+            symbolTableManager.addIdentifier(variable, type, value);
+            System.out.println("Assigned " + variable + " = " + value);
+        } else if (variable != null && value == null) {
+            throw new InterpreterException(
+                "Assignment to variable '" + variable + "' failed: right-hand side is null or undefined.",
+                getNodeLineNumber(node)
+            );
+        }
+    }
+
+    private void executeOutput(ASTNode node) {
+        for (ASTNode child : node.getChildren()) {
+            if (child.getType().equals("IDENTIFIER")) {
+                String varName = child.getValue();
+                SymbolDetails details = symbolTableManager.getIdentifier(varName);
+                if (details != null) {
+                    System.out.println("Output: " + details.getValue());
+                } else {
+                    System.out.println("Error: Undefined variable " + varName);
+                }
+            } else if (child.getType().equals("TEXT")) {
+                System.out.println("Output: " + child.getValue());
+            } else if (child.getType().equals("LIST_VALUE") ||  child.getType().equals("COLLECTION_METHOD")) {
+                Object result = evaluator.evaluateASTNode(child);
+                System.out.println("Output: " + result);
+            } else if (child.getType().equals("PLUS")) {
+                Object leftVal = evaluator.evaluateASTNode(child.getChildren().get(0));
+                Object rightVal = evaluator.evaluateASTNode(child.getChildren().get(1));
+                if (leftVal instanceof Integer && rightVal instanceof Integer) {
+                    System.out.println("Output: " + ((Integer) leftVal + (Integer) rightVal));
+                } else {
+                    System.out.println("Output: " + leftVal.toString() + rightVal.toString());
+                }
+            }
+        }
+    }
+
+    private void executeConditional(ASTNode node) {
+        ASTNode conditionNode = null;
+        ASTNode ifBlock = null;
+        ASTNode otherwiseBlock = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR":
+                    conditionNode = child;
+                    break;
+                case "BLOCK_STMT":
+                    if (ifBlock == null) {
+                        ifBlock = child;
+                    }
+                    break;
+                case "CONDITIONAL_STMT_GROUP":
+                    for (ASTNode groupChild : child.getChildren()) {
+                        if (groupChild.getType().equals("BLOCK_STMT")) {
+                            otherwiseBlock = groupChild;
+                        }
+                    }
+                    break;
+            }
+        }
+    
+        if (conditionNode == null) {
+            throw new InterpreterException("Missing or invalid condition in IF statement", getNodeLineNumber(node));
+        }
+    
+        boolean conditionResult = (boolean) evaluator.evaluateASTNode(conditionNode);
+    
+        if (conditionResult) {
+            executeASTNode(ifBlock);
+        } else if (otherwiseBlock != null) {
+            executeASTNode(otherwiseBlock);
+        }
+    }
+
+    private void executeListDeclaration(ASTNode node) {
+        String listName = null;
+        List<Object> elements = new ArrayList<>();
+        TokenType listType = null;
+
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT_TYPE":
+                    listType = TokenType.TEXT;
+                    break;
+                case "NUMBER_TYPE":
+                    listType = TokenType.NUMBER;
+                    break;
+                case "IDENTIFIER":
+                    listName = child.getValue();
+                    break;
+                case "TEXT":
+                case "NUMBER":
+                    elements.add(evaluator.evaluateASTNode(child));
+                    break;
+                case "LIST_DECL_GROUP":
+                    collectListElements(child, elements);
+                    break;
+            }
+        }
+
+        if (listName != null && listType != null) {
+            symbolTableManager.addIdentifier(listName, listType, elements);
+            System.out.println("Assigned list " + listName + " = " + elements);
+        }
+    }
+
+    private void executeForLoop(ASTNode node) {
+        ASTNode init = null;
+        ASTNode condition = null;
+        ASTNode increment = null;
+        ASTNode body = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "ASSIGNMENT_STMT":
+                    if (init == null) init = child;
+                    else increment = child;
+                    break;
+                case "LEQ":
+                case "LT":
+                case "GT":
+                case "GEQ":
+                case "EQ":
+                case "NEQ":
+                    condition = child;
+                    break;
+                case "BLOCK_STMT":
+                    body = child;
+                    break;
+            }
+        }
+    
+        if (init == null || condition == null || increment == null || body == null) {
+            throw new InterpreterException("Incomplete FOR loop structure", getNodeLineNumber(node));
+        }
+    
+        executeASTNode(init);  // Run initialization once
+    
+        while (true) {
+            Object cond = evaluator.evaluateASTNode(condition);
+            if (!(cond instanceof Boolean)) {
+                throw new InterpreterException("For-loop condition did not evaluate to a boolean", getNodeLineNumber(node));
+            }
+            if (!(Boolean) cond) break;
+    
+            try {
+                executeASTNode(body);
+            } catch (BreakException be) {
+                break;
+            } catch (ContinueException ce) {
+                executeASTNode(increment);
+                continue;
+            }
+    
+            executeASTNode(increment);
+        }
+    }
+
+    private void executeRepeatUntil(ASTNode node) {
+        ASTNode repeatBlock = null;
+        ASTNode condition = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            if ("BLOCK_STMT".equals(child.getType())) {
+                repeatBlock = child;
+            } else if (child.getType().matches("GT|LT|LEQ|GEQ|EQ|NEQ")) {
+                condition = child;
+            }
+        }
+    
+        if (repeatBlock == null || condition == null) {
+            throw new InterpreterException("REPEAT_UNTIL missing block or condition", getNodeLineNumber(node));
+        }
+    
+        while (true) {
+            try {
+                executeASTNode(repeatBlock);
+            } catch (BreakException be) {
+                break;
+            } catch (ContinueException ce) {
+                // skip to condition check
+            }
+    
+            Object condVal = evaluator.evaluateASTNode(condition);
+            if (!(condVal instanceof Boolean)) {
+                throw new InterpreterException("REPEAT_UNTIL condition must evaluate to boolean", getNodeLineNumber(node));
+            }
+            if ((Boolean) condVal) {
+                break;
+            }
+        }
+    }
+
+    private void executeRepeatLoop(ASTNode node) {
+        ASTNode repeatCondition = null;
+        ASTNode repeatBlock = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "LT", "GT", "LEQ", "GEQ", "EQ", "NEQ":
+                    repeatCondition = child;
+                    break;
+                case "BLOCK_STMT":
+                    repeatBlock = child;
+                    break;
+            }
+        }
+    
+        if (repeatCondition == null || repeatBlock == null) {
+            throw new InterpreterException("REPEAT_LOOP missing condition or block", getNodeLineNumber(node));
+        }
+    
+        while (true) {
+            Object conditionValue = evaluator.evaluateASTNode(repeatCondition);
+            if (!(conditionValue instanceof Boolean)) {
+                throw new InterpreterException("REPEAT_LOOP condition must evaluate to a boolean", getNodeLineNumber(node));
+            }
+    
+            if (!(Boolean) conditionValue) {
+                break; // Exit the loop if the condition is false
+            }
+    
+            try {
+                executeASTNode(repeatBlock);
+            } catch (BreakException be) {
+                break; // Handle "stop" statement
+            } catch (ContinueException ce) {
+                // Skip to the next iteration
+                continue;
+            }
+        }
+    }
+
+    private void executeFunctionDeclaration(ASTNode node) {
+        String functionName = null;
+        ASTNode functionBody = null;
+    
+        for (ASTNode child : node.getChildren()) {
+            if (child.getType().equals("IDENTIFIER")) {
+                functionName = child.getValue();
+            } else if (child.getType().equals("BLOCK_STMT")) {
+                functionBody = child;
+            }
+        }
+    
+        if (functionName != null && functionBody != null) {
+            functions.put(functionName, node);
+            System.out.println("Function declared: " + functionName);
+        } else {
+            throw new InterpreterException("Invalid function declaration", getNodeLineNumber(node));
+        }
+    }
+
+    private void executePairMapDeclaration(ASTNode node) {
+        String mapName = null;
+        Map<Object, Object> map = new HashMap<>();
+        TokenType keyType = null;
+        TokenType valueType = null;
+
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT_TYPE":
+                    if (keyType == null) {
+                        keyType = TokenType.TEXT;
+                    } else {
+                        valueType = TokenType.TEXT;
+                    }
+                    break;
+                case "NUMBER_TYPE":
+                    if (keyType == null) {
+                        keyType = TokenType.NUMBER;
+                    } else {
+                        valueType = TokenType.NUMBER;
+                    }
+                    break;
+                case "IDENTIFIER":
+                    mapName = child.getValue();
+                    break;
+                case "PAIR_MAP_VAL":
+                    List<ASTNode> pairNodes = new ArrayList<>();
+                    collectPairNodes(child, pairNodes);
+                    for (ASTNode pairNode : pairNodes) {
+                        List<ASTNode> pairChildren = pairNode.getChildren();
+                        ASTNode keyNode = null;
+                        ASTNode valueNode = null;
+                        for (ASTNode pc : pairChildren) {
+                            String t = pc.getType();
+                            if (t.equals("TEXT") || t.equals("NUMBER") || t.equals("IDENTIFIER")) {
+                                if (keyNode == null) keyNode = pc;
+                                else valueNode = pc;
+                            }
+                        }
+                        if (keyNode != null && valueNode != null) {
+                            Object key = evaluator.evaluateASTNode(keyNode);
+                            Object value = evaluator.evaluateASTNode(valueNode);
+                            map.put(key, value);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        if (mapName != null && keyType != null && valueType != null) {
+            symbolTableManager.addIdentifier(mapName, TokenType.PAIR_MAP_TYPE, map);
+            System.out.println("Assigned map " + mapName + " = " + map);
+        } else {
+            throw new InterpreterException("Invalid map declaration", getNodeLineNumber(node));
+        }
+    }
+
+    private void executeReturnStatement(ASTNode node) {
+        Object returnValue = null;
+        for (ASTNode child : node.getChildren()) {
+            returnValue = evaluator.evaluateASTNode(child);
+        }
+        throw new ReturnException(returnValue);
+    }
+
+    private void executeInputStatement(ASTNode node) {
+        String inputVarName = null;
+        TokenType inputType = null;
+        for (ASTNode child : node.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT_TYPE":
+                    inputType = TokenType.TEXT;
+                    break;
+                case "NUMBER_TYPE":
+                    inputType = TokenType.NUMBER;
+                    break;
+                case "IDENTIFIER":
+                    inputVarName = child.getValue();
+                    break;
+            }
+        }
+        if (inputVarName != null && inputType != null) {
+            System.out.print("> "); // Prompt
+            String userInput = scanner.nextLine();
+            Object value = userInput;
+            if (inputType == TokenType.NUMBER) {
+                try {
+                    value = Integer.parseInt(userInput);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number input, storing as text.");
+                }
+            }
+            symbolTableManager.addIdentifier(inputVarName, inputType, value);
+        }
+    }
+
+    private void executeChooseWhatStatement(ASTNode node) {
+        ASTNode conditionNode = node.getChildren().get(2);
+        Object conditionValue = evaluator.evaluateASTNode(conditionNode);
+    
+        List<ASTNode> pickCases = new ArrayList<>();
+        collectPickCases(node, pickCases);
+    
+        boolean caseMatched = false;
+        for (ASTNode pickCase : pickCases) {
+            ASTNode pickConditionNode = pickCase.getChildren().get(1);
+            Object pickConditionValue = evaluator.evaluateASTNode(pickConditionNode);
+    
+            if (conditionValue.equals(pickConditionValue)) {
+                ASTNode blockStmt = pickCase.getChildren().get(3);
+                executeASTNode(blockStmt);
+                caseMatched = true;
+                break;
+            }
+        }
+    
+        if (!caseMatched) {
+            System.out.println("No matching case found for choose_what condition: " + conditionValue);
+        }
+    }
+
+    public Object evaluateFunctionCall(ASTNode node) {
+        String calledFunctionName = node.getChildren().get(0).getValue();
+        ASTNode argList = node.getChildren().get(2);
+    
+        ASTNode functionNode = functions.get(calledFunctionName);
+        if (functionNode == null) {
+            throw new InterpreterException("Undefined function: " + calledFunctionName, getNodeLineNumber(node));
+        }
+    
+        ASTNode paramList = functionNode.getChildren().get(3);
+    
+        List<ASTNode> params = getParamIdentifiers(paramList);
+        List<ASTNode> args = getArgNodes(argList);
+
+        if (params.size() != args.size()) {
+            throw new InterpreterException("Argument count mismatch for function: " + calledFunctionName, getNodeLineNumber(node));
+        }
+    
+        Map<String, Object> tempSymbolTable = new HashMap<>();
+        for (int i = 0; i < params.size(); i++) {
+            String paramName = params.get(i).getValue();
+            Object argValue = evaluator.evaluateASTNode(args.get(i));
+            tempSymbolTable.put(paramName, argValue);
+        }
+    
+        SymbolTable newSymbolTable = new SymbolTable();
+        for (Map.Entry<String, Object> entry : tempSymbolTable.entrySet()) {
+            String name = entry.getKey();
+            Object value = entry.getValue();
+            TokenType type = evaluator.inferType(value);
+            symbolTableManager.addIdentifierToScope(newSymbolTable, name, type, value);
+        }
+    
+        SymbolTable oldSymbolTable = symbolTableManager.getCurrentSymbolTable();
+        symbolTableManager.setCurrentSymbolTable(newSymbolTable);
+    
+        Object returnValue = null;
+        try {
+            for (ASTNode child : functionNode.getChildren()) {
+                if (child.getType().equals("BLOCK_STMT")) {
+                    try {
+                        executeASTNode(child);
+                    } catch (ReturnException re) {
+                        returnValue = re.value;
+                        break;
+                    }
+                }
+            }
+        } finally {
+            symbolTableManager.setCurrentSymbolTable(oldSymbolTable);
+        }
+    
+        return returnValue;
+    }
+
+    private void collectListElements(ASTNode groupNode, List<Object> elements) {
+        for (ASTNode child : groupNode.getChildren()) {
+            switch (child.getType()) {
+                case "TEXT":
+                case "NUMBER":
+                    elements.add(evaluator.evaluateASTNode(child));
+                    break;
+                case "LIST_DECL_GROUP":
+                    collectListElements(child, elements);
+                    break;
+            }
+        }
+    }
+
+    private void collectPairNodes(ASTNode node, List<ASTNode> pairs) {
+        if (node.getType().equals("PAIR")) {
+            pairs.add(node);
+        } else {
+            for (ASTNode child : node.getChildren()) {
+                collectPairNodes(child, pairs);
+            }
+        }
+    }
+
+    private void collectPickCases(ASTNode node, List<ASTNode> pickCases) {
+        if (node.getType().equals("PICK_CASE")) {
+            pickCases.add(node);
+        } else {
+            for (ASTNode child : node.getChildren()) {
+                collectPickCases(child, pickCases);
+            }
+        }
+    }
+
+    private List<ASTNode> getParamIdentifiers(ASTNode paramList) {
+        List<ASTNode> params = new ArrayList<>();
+        
+        for (ASTNode child : paramList.getChildren()) {
+            if (child.getType().equals("IDENTIFIER")) {
+                params.add(child);
+            } else if (child.getType().equals("PARAM_LIST_GROUP")) {
+                params.addAll(getParamIdentifiers(child));
+            }
+        }
+        
+        return params;
+    }
+
+    private List<ASTNode> getArgNodes(ASTNode argList) {
+        List<ASTNode> args = new ArrayList<>();
+        
+        for (ASTNode child : argList.getChildren()) {
+            if (child.getType().equals("NUMBER") || 
+                child.getType().equals("TEXT") || 
+                child.getType().equals("IDENTIFIER")) {
+                args.add(child);
+            } else if (child.getType().equals("ARG_LIST_GROUP")) {
+                args.addAll(getArgNodes(child));
+            }
+        }
+        
+        return args;
+    }
+
+    private int getNodeLineNumber(ASTNode node) {
+        if (node == null) return 0;
+        return node.getLineNumber();
+    }
+}

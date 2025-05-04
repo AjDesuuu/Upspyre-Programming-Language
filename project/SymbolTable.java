@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SymbolTable {
-    private Map<String, SymbolDetails> table;
+    public Map<String, SymbolDetails> table;
+    private SymbolTable parent = null;
 
     public SymbolTable() {
         table = new HashMap<>();
@@ -31,7 +32,24 @@ public class SymbolTable {
     public boolean containsIdentifier(String lexeme) {
         return table.containsKey(lexeme);
     }
-
+    public void setParent(SymbolTable parent) {
+        this.parent = parent;
+    }
+    
+    public SymbolTable getParent() {
+        return parent;
+    }
+    
+    public boolean hasIdentifier(String lexeme) {
+        return table.containsKey(lexeme);
+    }
+    
+    public void updateIdentifier(String lexeme, Object value) {
+        SymbolDetails details = table.get(lexeme);
+        if (details != null) {
+            details.setValue(value);
+        }
+    }
     // Print the symbol table
     public void printTable() {
         System.out.printf("| %-15s | %-12s | %-15s |\n", "Lexeme", "Type", "Value");
@@ -42,36 +60,3 @@ public class SymbolTable {
     }
 }
 
-// Updated SymbolDetails class to include a value field
-class SymbolDetails {
-    private String lexeme;
-    private TokenType type;
-    private Object value;
-
-    public SymbolDetails(String lexeme, TokenType type, Object value) {
-        this.lexeme = lexeme;
-        this.type = type;
-        this.value = value;
-    }
-
-    public String getLexeme() {
-        return lexeme;
-    }
-
-    public TokenType getType() {
-        return type;
-    }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return "Identifier: " + lexeme + ", Type: " + type + ", Value: " + value;
-    }
-}

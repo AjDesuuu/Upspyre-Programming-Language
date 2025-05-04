@@ -3,16 +3,23 @@ package project.utils.parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import project.Token;
+
 public class ParseTreeNode {
     private final String symbol;       // Grammar symbol or token type
     private final String value;       // Lexeme for leaf nodes (null for non-terminals)
     private final List<ParseTreeNode> children = new ArrayList<>();
-    private final int ruleNumber;      
+    private final int ruleNumber;
+    private final Token token;
 
-    public ParseTreeNode(String symbol, String value, int ruleNumber) {
+    public ParseTreeNode(String symbol, String value, int ruleNumber, Token token) {
         this.symbol = symbol;
         this.value = value;
         this.ruleNumber = ruleNumber;
+        this.token = token;
+    }
+    public ParseTreeNode(String symbol, String value, int ruleNumber) {
+        this(symbol, value, ruleNumber, null);
     }
 
     public String getType() {
@@ -25,6 +32,10 @@ public class ParseTreeNode {
 
     public List<ParseTreeNode> getChildren() {
         return children;
+    }
+
+    public Token getToken() {
+        return token;
     }
     
     public String getSymbol() {

@@ -257,6 +257,7 @@ public class Parser {
                 token.getType().toString(),
                 token.lexeme,
                 -1 // -1 indicates terminal node
+                , token // Store the original token for error reporting
         ));
     }
 

@@ -1,4 +1,4 @@
-package project;
+package project.interpreterComponents.utils;
 
 public class ReturnException extends RuntimeException {
     public final Object value;

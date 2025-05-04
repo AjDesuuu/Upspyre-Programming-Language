@@ -5,12 +5,15 @@ import java.util.List;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import project.Token;
 
 public class ASTNode {
     private String type;
     private String value;
     private List<ASTNode> children;
     private ASTNode parent;
+    private int lineNumber;
+    
 
     public ASTNode(String type) {
         this(type, null);
@@ -20,6 +23,15 @@ public class ASTNode {
         this.type = type;
         this.value = value;
         this.children = new ArrayList<>();
+    }
+    public ASTNode(String type, String value, Token token) {
+        this.type = type;
+        this.value = value;
+        this.children = new ArrayList<>();
+        this.lineNumber = (token != null) ? token.getLine() : 0;
+    }
+    public int getLineNumber() {
+        return lineNumber;
     }
 
     public void addChild(ASTNode child) {
@@ -62,17 +74,20 @@ public class ASTNode {
                 return programNode;
 
             case "IDENTIFIER":
-                return new ASTNode("IDENTIFIER", cstNode.getValue());
+                return new ASTNode("IDENTIFIER", cstNode.getValue(), cstNode.getToken());
 
             case "NUMBER":
-                return new ASTNode("NUMBER", cstNode.getValue());
+                return new ASTNode("NUMBER", cstNode.getValue(), cstNode.getToken());
 
             case "DECIMAL":
-                return new ASTNode("DECIMAL", cstNode.getValue());
+                return new ASTNode("DECIMAL", cstNode.getValue(), cstNode.getToken());
 
             case "TRUE":
-                return new ASTNode("TRUE", cstNode.getValue());
-
+                return new ASTNode("TRUE", cstNode.getValue(), cstNode.getToken());
+            
+            case "FALSE":
+                return new ASTNode("FALSE", cstNode.getValue(), cstNode.getToken());
+            
             case "OUTPUT_STMT":
                 ASTNode outputNode = new ASTNode("OUTPUT");
                 ParseTreeNode expressionNode = cstNode.getChildren().get(2);
@@ -143,7 +158,7 @@ public class ASTNode {
                 break;
 
             case "TEXT":
-                return new ASTNode("TEXT", cstNode.getValue());
+                return new ASTNode("TEXT", cstNode.getValue(), cstNode.getToken());
 
             
                 

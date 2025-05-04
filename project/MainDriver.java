@@ -2,10 +2,11 @@ package project;
 
 import java.io.IOException;
 import project.utils.parser.ParseTreeNode; // Ensure this import matches the actual location of ParseTreeNode
+import project.interpreterComponents.InterpreterN;
 
 public class MainDriver {
     public static void main(String[] args) {
-        String fileName = "Show6.up";
+        String fileName = "Show1.up";
         String filePath = getFilePath(fileName);
         SymbolTable symbolTable = new SymbolTable();
 
@@ -32,7 +33,7 @@ public class MainDriver {
            
 
             System.out.println("\nInterpreting...");
-            Interpreter interpreter = new Interpreter(symbolTable);
+            InterpreterN interpreter = new InterpreterN(symbolTable,true);
             interpreter.interpret(parseTree);
 
             System.out.println("\nUpdated Symbol Table:");
