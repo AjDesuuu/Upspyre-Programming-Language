@@ -7,14 +7,20 @@ public class SymbolDetails {
     private Object value;
     private boolean isDeclared;
     private boolean isExplicitlyDeclared;
+    private int scopeLevel;
 
-    public SymbolDetails(String lexeme, TokenType type, Object value) {
+
+    public SymbolDetails(String lexeme, TokenType type, Object value, int scopeLevel) {
         this.lexeme = lexeme;
         this.type = type;
         this.value = value;
         //WARNINGLY: This is a temporary fix. The isDeclared field should be set based on the context of the identifier.
         this.isDeclared = (type != null);
         this.isExplicitlyDeclared = false;
+        this.scopeLevel = scopeLevel;
+    }
+    public int getScopeLevel() {
+        return scopeLevel;
     }
 
     public String getLexeme() {

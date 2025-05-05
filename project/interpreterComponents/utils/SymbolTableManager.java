@@ -14,9 +14,9 @@ public class SymbolTableManager {
     }
     
     public void pushScope() {
+        int parentLevel = currentSymbolTable != null ? currentSymbolTable.getScopeLevel() : 0;
+        SymbolTable newScope = new SymbolTable(parentLevel + 1, currentSymbolTable);
         symbolTableStack.push(currentSymbolTable);
-        SymbolTable newScope = new SymbolTable();
-        newScope.setParent(currentSymbolTable);
         currentSymbolTable = newScope;
     }
     
@@ -28,6 +28,7 @@ public class SymbolTableManager {
     }
     
     public void addIdentifier(String name, TokenType type, Object value) {
+        
         SymbolDetails existing = currentSymbolTable.getIdentifier(name);
         if (existing == null) {
             // Only add if not already present

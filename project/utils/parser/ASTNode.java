@@ -202,6 +202,16 @@ public class ASTNode {
 
             ASTNode opAST = new ASTNode(opType);
             ASTNode right = fromCST(children.get(i + 1));
+            if (opNode.getToken() != null) {
+                opAST.lineNumber = opNode.getToken().getLine();
+            } else if (left != null && left.getLineNumber() > 0) {
+                opAST.lineNumber = left.getLineNumber();
+            } else if (right != null && right.getLineNumber() > 0) {
+                opAST.lineNumber = right.getLineNumber();
+            } else {
+                opAST.lineNumber = 0;
+            }
+            
 
             opAST.addChild(left);
             opAST.addChild(right);

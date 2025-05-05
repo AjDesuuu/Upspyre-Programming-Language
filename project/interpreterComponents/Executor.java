@@ -213,7 +213,16 @@ public class Executor {
     
         // Type checking
         TokenType valueType = evaluator.inferType(value);
-        if (type != valueType) {
+        // Allow implicit conversion between number and decimal
+        if (type == TokenType.NUMBER && (valueType == TokenType.NUMBER || valueType == TokenType.DECIMAL)) {
+            if (value instanceof Double) {
+                value = ((Double) value).intValue();
+            }
+        } else if (type == TokenType.DECIMAL && (valueType == TokenType.NUMBER || valueType == TokenType.DECIMAL)) {
+            if (value instanceof Integer) {
+                value = ((Integer) value).doubleValue();
+            }
+        } else if (type != valueType) {
             throw new InterpreterException(
                 "Type mismatch: cannot assign value of type " + valueType + " to variable '" + variable + "' of type " + type,
                 getNodeLineNumber(node)
@@ -549,6 +558,7 @@ public class Executor {
     
         if (functionName != null && functionBody != null) {
             functions.put(functionName, node);
+            symbolTableManager.addIdentifier(functionName, TokenType.METHOD, node.getChildren().get(1).getValue());
             System.out.println("Function declared: " + functionName);
         } else {
             throw new InterpreterException("Invalid function declaration", getNodeLineNumber(node));

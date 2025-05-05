@@ -52,7 +52,7 @@ public class Evaluator {
             case "EXPONENT": case "MOD":
                 Object left = evaluateASTNode(node.getChildren().get(0));
                 Object right = evaluateASTNode(node.getChildren().get(1));
-                return evaluateBinaryOperation(left, node.getType(), right);
+                return evaluateBinaryOperation(left, node.getType(), right, node);
 
             case "DECIMAL":
                 return Double.parseDouble(node.getValue());
@@ -66,7 +66,7 @@ public class Evaluator {
             case "LSHIFT": case "RSHIFT":
                 left = evaluateASTNode(node.getChildren().get(0));
                 right = evaluateASTNode(node.getChildren().get(1));
-                return evaluateBinaryOperation(left, node.getType(), right);
+                return evaluateBinaryOperation(left, node.getType(), right, node);
             
             case "BITNOT_EXPR":
                 Object operand = evaluateASTNode(node.getChildren().get(1));
@@ -76,7 +76,7 @@ public class Evaluator {
             case "AND": case "OR":
                 Object leftLogic = evaluateASTNode(node.getChildren().get(0));
                 Object rightLogic = evaluateASTNode(node.getChildren().get(1));
-                return evaluateBinaryOperation(leftLogic, node.getType(), rightLogic);
+                return evaluateBinaryOperation(leftLogic, node.getType(), rightLogic, node);
             
             case "LOGICNOT_EXPR":
                 operand = evaluateASTNode(node.getChildren().get(1));
@@ -219,8 +219,8 @@ public class Evaluator {
 
     
 
-    public Object evaluateBinaryOperation(Object left, String operator, Object right) {
-        int lineNumber = 0; // In a real implementation, get actual line number
+    public Object evaluateBinaryOperation(Object left, String operator, Object right, ASTNode node) {
+        int lineNumber = getNodeLineNumber(node); // In a real implementation, get actual line number
 
         if (left == null || right == null) {
             throw new InterpreterException("Null operand in binary operation: " + left + " " + operator + " " + right, lineNumber);

@@ -6,15 +6,28 @@ import java.util.Map;
 public class SymbolTable {
     public Map<String, SymbolDetails> table;
     private SymbolTable parent = null;
+    private int scopeLevel = 0;
 
     public SymbolTable() {
         table = new HashMap<>();
+    }
+    public SymbolTable(int scopeLevel, SymbolTable parent) {
+        this.scopeLevel = scopeLevel;
+        this.parent = parent;
+        this.table = new HashMap<>(); 
+    }
+    public void setScopeLevel(int level) {
+        this.scopeLevel = level;
+    }
+
+    public int getScopeLevel() {
+        return scopeLevel;
     }
     
     // Add an identifier with type and value
     public void addIdentifier(String lexeme, TokenType type, Object value) {
         if (!table.containsKey(lexeme)) {
-            table.put(lexeme, new SymbolDetails(lexeme, type, value));
+            table.put(lexeme, new SymbolDetails(lexeme, type, value,this.scopeLevel));
             System.out.println("Added new identifier: " + lexeme + " with value: " + value + " and type: " + type);
         } else {
             // Update value AND type when explicitly declared with a type
@@ -67,6 +80,18 @@ public class SymbolTable {
         for (Map.Entry<String, SymbolDetails> entry : table.entrySet()) {
             SymbolDetails details = entry.getValue();
             System.out.printf("| %-15s | %-12s | %-15s |\n", details.getLexeme(), details.getType(), details.getValue());
+        }
+    }
+
+    public void printTableRecursive() {
+        System.out.printf("| %-15s | %-12s | %-15s | %-5s |\n", "Lexeme", "Type", "Value", "Scope");
+        for (Map.Entry<String, SymbolDetails> entry : table.entrySet()) {
+            SymbolDetails details = entry.getValue();
+            System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                details.getLexeme(), details.getType(), details.getValue(), details.getScopeLevel());
+        }
+        if (parent != null) {
+            parent.printTableRecursive();
         }
     }
 }

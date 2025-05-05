@@ -1,10 +1,15 @@
 start  
-    method square(number x) { output x * x * x; }  
-    method add(number a, number b) { output a + b; }  
+    method square(number x) {
+
+        number y= 10;
+
+        show("Multiply x and y");
+        
+        output x * x* y; }  
 
     number squared = square(5);  
-    number sum = add(3, 7);  
+    
 
     show (squared); 
-    show (sum);  
+ 
 end

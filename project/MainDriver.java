@@ -37,7 +37,7 @@ public class MainDriver {
             interpreter.interpret(parseTree);
 
             System.out.println("\nUpdated Symbol Table:");
-            symbolTable.printTable();
+            symbolTable.printTableRecursive();
 
         } catch (IOException | InterruptedException e) {
             System.err.println("File not found: " + filePath);
