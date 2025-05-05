@@ -293,7 +293,7 @@ public class Executor {
                     String varName = child.getValue();
                     SymbolDetails details = symbolTableManager.getIdentifier(varName);
     
-                    if (details == null) {
+                    if (details == null || !details.isExplicitlyDeclared()) {
                         throw new InterpreterException(
                             "Cannot show undefined variable: " + varName,
                             getNodeLineNumber(node)
