@@ -1,7 +1,8 @@
 start  
     method square(number x) {
 
-        number y= 10;
+        number y=10;
+
 
         show("Multiply x and y");
         

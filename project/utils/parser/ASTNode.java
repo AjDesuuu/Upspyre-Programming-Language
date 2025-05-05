@@ -59,6 +59,8 @@ public class ASTNode {
         return children;
     }
 
+    
+
     public static ASTNode fromCST(ParseTreeNode cstNode) {
         if (cstNode == null) return null;
     

@@ -21,7 +21,7 @@ public class InterpreterN {
 
     public InterpreterN(SymbolTable symbolTable, boolean debugMode) {
         this.scanner = new Scanner(System.in);
-        this.symbolTableManager = new SymbolTableManager(symbolTable);
+        this.symbolTableManager = new SymbolTableManager(symbolTable, debugMode);
         this.debugMode = debugMode;
         this.evaluator = new Evaluator(symbolTableManager, debugMode);
         this.executor = new Executor(symbolTableManager, evaluator, scanner, debugMode);

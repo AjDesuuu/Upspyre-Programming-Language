@@ -22,6 +22,7 @@ public class Executor {
     private final Scanner scanner;
     private final Map<String, ASTNode> functions = new HashMap<>();
     private final boolean debugMode;
+    private Object returnValue;
 
     public Executor(SymbolTableManager symbolTableManager, Evaluator evaluator, Scanner scanner, boolean debugMode) {
         this.symbolTableManager = symbolTableManager;
@@ -172,6 +173,12 @@ public class Executor {
                         value = rhsDetails.getValue();
                     }
                     break;
+                case "TRUE":
+                    value = true;
+                    break;
+                case "FALSE":
+                    value = false;
+                    break;
                 case "ASSIGN":
                     break;
                 case "FUNC_CALL":
@@ -269,36 +276,23 @@ public class Executor {
             }
         }
     
-        // Error checking for declarations
-        if (varName == null) {
+        if (varName == null || type == null) {
             throw new InterpreterException(
-                "Invalid declaration: missing variable name",
+                "Invalid declaration: missing variable name or type",
                 getNodeLineNumber(node)
             );
         }
     
-        if (type == null) {
-            throw new InterpreterException(
-                "Invalid declaration: missing type for variable '" + varName + "'",
-                getNodeLineNumber(node)
-            );
-        }
-    
-        // Check if variable is already declared
-        SymbolDetails existing = symbolTableManager.getIdentifier(varName);
+        // Check only in current scope
+        SymbolDetails existing = symbolTableManager.getCurrentSymbolTable().getIdentifierLocalScope(varName);
         if (existing != null && existing.isExplicitlyDeclared()) {
             throw new InterpreterException(
-                "Variable '" + varName + "' is already declared",
+                "Variable '" + varName + "' is already declared in current scope",
                 getNodeLineNumber(node)
             );
         }
     
-        // Add the variable with proper type but null value
         symbolTableManager.addIdentifier(varName, type, null);
-        SymbolDetails details = symbolTableManager.getIdentifier(varName);
-        if (details != null) {
-            details.setExplicitlyDeclared(true);
-        }
     }
 
     private void executeOutput(ASTNode node) {
@@ -694,6 +688,7 @@ public class Executor {
     public Object evaluateFunctionCall(ASTNode node) {
         String functionName = node.getChildren().get(0).getValue();
         ASTNode argListNode = null;
+        Object returnValue = null;
         
         // Find the ARG_LIST node
         for (ASTNode child : node.getChildren()) {
@@ -744,29 +739,28 @@ public class Executor {
  
         symbolTableManager.pushScope();
 
-        // Map arguments to parameters
-        for (int i = 0; i < params.size(); i++) {
-            String paramName = params.get(i).getValue();
-            Object argValue = evaluator.evaluateASTNode(args.get(i));
-            TokenType type = evaluator.inferType(argValue);
-            symbolTableManager.addIdentifier(paramName, type, argValue);
-        }
-    
-        // Map arguments to parameters
-        for (int i = 0; i < params.size(); i++) {
-            String paramName = params.get(i).getValue();
-            Object argValue = evaluator.evaluateASTNode(args.get(i));
-            TokenType type = evaluator.inferType(argValue);
-            symbolTableManager.addIdentifier(paramName, type, argValue);
-        }
-    
-        Object returnValue = null;
         try {
+            // Map arguments to parameters
+            for (int i = 0; i < params.size(); i++) {
+                ASTNode param = params.get(i);
+                String paramName = param.getValue();
+                Object argValue = evaluator.evaluateASTNode(args.get(i));
+                TokenType type = evaluator.inferType(argValue);
+                
+                // Add parameter to the new scope
+                symbolTableManager.addIdentifier(paramName, type, argValue);
+                SymbolDetails details = symbolTableManager.getIdentifier(paramName);
+                if (details != null) {
+                    details.setExplicitlyDeclared(true);
+                }
+            }
+
+            // Execute function body
             executeASTNode(blockStmt);
         } catch (ReturnException re) {
             returnValue = re.value;
         } finally {
-            symbolTableManager.popScope(); // Restore previous scope
+            symbolTableManager.popScope(); // Always restore previous scope
         }
     
         return returnValue;

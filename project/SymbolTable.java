@@ -38,10 +38,21 @@ public class SymbolTable {
         }
     }
 
-    // Retrieve an identifier's details
     public SymbolDetails getIdentifier(String lexeme) {
+        SymbolDetails details = table.get(lexeme);
+        if (details != null) {
+            return details;
+        }
+        // If not found in current scope and parent exists, check parent
+        if (parent != null) {
+            return parent.getIdentifier(lexeme);
+        }
+        return null;
+    }
+    public SymbolDetails getIdentifierLocalScope(String lexeme) {
         return table.get(lexeme);
     }
+
 
     // Check if an identifier exists
     public boolean containsIdentifier(String lexeme) {
@@ -83,16 +94,51 @@ public class SymbolTable {
         }
     }
 
-    public void printTableRecursive() {
+    public void printTableHierarchical() {
+        System.out.println("\nSymbol Table Hierarchy:");
+        System.out.println("Scope Level " + scopeLevel + ":");
+        System.out.println("|-----------------|--------------|-----------------|-------|");
         System.out.printf("| %-15s | %-12s | %-15s | %-5s |\n", "Lexeme", "Type", "Value", "Scope");
+        System.out.println("|-----------------|--------------|-----------------|-------|");
+        
+        // Print current scope
+        table.values().stream()
+             .sorted((a, b) -> a.getLexeme().compareTo(b.getLexeme()))
+             .forEach(details -> {
+                 System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                     details.getLexeme(),
+                     details.getType(),
+                     details.getValue(),
+                     details.getScopeLevel());
+             });
+        
+        // Print parent scope
+        // Print parent scope
+    if (parent != null) {
+        System.out.println();  // Add blank line for readability
+        parent.printTableHierarchical();  // Just call the method directly
+    }
+    }
+
+    public void printTableRecursive() {
+        System.out.println("\nSymbol Table (Scope Level " + scopeLevel + "):");
+        System.out.printf("| %-15s | %-12s | %-15s | %-5s |\n", "Lexeme", "Type", "Value", "Scope");
+        System.out.println("|-----------------|--------------|-----------------|-------|");
+        
+        // Print current scope
         for (Map.Entry<String, SymbolDetails> entry : table.entrySet()) {
             SymbolDetails details = entry.getValue();
             System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
                 details.getLexeme(), details.getType(), details.getValue(), details.getScopeLevel());
         }
+        
+        // Print parent scope with indentation
         if (parent != null) {
+            System.out.println("\nParent Scope:");
             parent.printTableRecursive();
         }
     }
+
+    
 }
 

@@ -8,7 +8,7 @@ public class MainDriver {
     public static void main(String[] args) {
         String fileName = "Show6.up";
         String filePath = getFilePath(fileName);
-        SymbolTable symbolTable = new SymbolTable();
+        SymbolTable symbolTable = new SymbolTable(0,null);
 
         try {
             Lexer lexer = new Lexer(filePath, symbolTable);
@@ -37,7 +37,7 @@ public class MainDriver {
             interpreter.interpret(parseTree);
 
             System.out.println("\nUpdated Symbol Table:");
-            symbolTable.printTableRecursive();
+            symbolTable.printTableHierarchical();
 
         } catch (IOException | InterruptedException e) {
             System.err.println("File not found: " + filePath);

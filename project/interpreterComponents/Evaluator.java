@@ -89,6 +89,12 @@ public class Evaluator {
                 if (details == null) {
                     throw new InterpreterException("Undefined variable: " + varName, getNodeLineNumber(node));
                 }
+                if (!details.isExplicitlyDeclared()) {
+                    throw new InterpreterException("Variable '" + varName + "' used before declaration", getNodeLineNumber(node));
+                }
+                if (details.getValue() == null) {
+                    throw new InterpreterException("Variable '" + varName + "' is uninitialized", getNodeLineNumber(node));
+                }
                 return details.getValue();
     
             case "LIST_VALUE":

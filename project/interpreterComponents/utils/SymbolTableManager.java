@@ -8,40 +8,37 @@ import project.TokenType;
 public class SymbolTableManager {
     private SymbolTable currentSymbolTable;
     private final Stack<SymbolTable> symbolTableStack = new Stack<>();
+    private boolean debugMode = false; // Set to true for debugging
     
-    public SymbolTableManager(SymbolTable symbolTable) {
+    public SymbolTableManager(SymbolTable symbolTable, boolean debugMode) {
         this.currentSymbolTable = symbolTable;
+        this.symbolTableStack.push(symbolTable);
+        this.debugMode = debugMode;
     }
     
     public void pushScope() {
-        int parentLevel = currentSymbolTable != null ? currentSymbolTable.getScopeLevel() : 0;
-        SymbolTable newScope = new SymbolTable(parentLevel + 1, currentSymbolTable);
-        symbolTableStack.push(currentSymbolTable);
+        int newScopeLevel = currentSymbolTable.getScopeLevel() + 1;
+        SymbolTable newScope = new SymbolTable(newScopeLevel, currentSymbolTable);
+        symbolTableStack.push(newScope);
         currentSymbolTable = newScope;
+        if (debugMode) {
+            System.out.println("[DEBUG] Pushed new scope: " + newScopeLevel);
+        }
     }
     
     public void popScope() {
-        if (symbolTableStack.isEmpty()) {
-            throw new InterpreterException("Cannot pop global scope", 0);
+        if (!symbolTableStack.isEmpty() && symbolTableStack.size() > 1) {
+            symbolTableStack.pop();
+            currentSymbolTable = symbolTableStack.peek();
+            if (debugMode) {
+                System.out.println("[DEBUG] Popped scope, current level: " + currentSymbolTable.getScopeLevel());
+            }
         }
-        currentSymbolTable = symbolTableStack.pop();
     }
+
     
     public void addIdentifier(String name, TokenType type, Object value) {
-        
-        SymbolDetails existing = currentSymbolTable.getIdentifier(name);
-        if (existing == null) {
-            // Only add if not already present
-            currentSymbolTable.addIdentifier(name, type, value);
-            SymbolDetails details = currentSymbolTable.getIdentifier(name);
-            if (details != null) {
-                details.setExplicitlyDeclared(true);
-            }
-        } else {
-            // Update both value AND type
-            currentSymbolTable.updateIdentifier(name, type, value);
-            existing.setExplicitlyDeclared(true);
-        }
+        currentSymbolTable.addIdentifier(name, type, value);
     }
     
     public void addIdentifierToScope(SymbolTable scope, String name, TokenType type, Object value) {
@@ -51,13 +48,13 @@ public class SymbolTableManager {
     public SymbolDetails getIdentifier(String name) {
         SymbolTable current = currentSymbolTable;
         while (current != null) {
-            SymbolDetails details = current.getIdentifier(name);
+            SymbolDetails details = current.getIdentifierLocalScope(name);
             if (details != null) {
                 return details;
             }
             current = current.getParent();
         }
-        return null; // Make sure this returns null for undefined variables
+        return null;
     }
     
     public void updateIdentifier(String name, Object value) {
@@ -65,22 +62,9 @@ public class SymbolTableManager {
         if (scope == null) {
             throw new InterpreterException("Undefined variable: " + name, 0);
         }
-        
-        SymbolDetails details = scope.getIdentifier(name);
-        if (details != null) {
-            // Perform type checking before updating
-            if (value instanceof Integer && details.getType() == TokenType.DECIMAL) {
-                // Auto-convert int to double if needed
-                scope.updateIdentifier(name, ((Integer) value).doubleValue());
-            } else if (value instanceof Double && details.getType() == TokenType.NUMBER) {
-                // Truncate double to int if assigned to int variable
-                scope.updateIdentifier(name, ((Double) value).intValue());
-            } else {
-                scope.updateIdentifier(name, value);
-            }
-        }
+        scope.updateIdentifier(name, value);
     }
-    
+
     private SymbolTable findScopeWithIdentifier(String name) {
         SymbolTable current = currentSymbolTable;
         while (current != null) {
@@ -91,6 +75,7 @@ public class SymbolTableManager {
         }
         return null;
     }
+    
     
     public SymbolTable getCurrentSymbolTable() {
         return currentSymbolTable;
