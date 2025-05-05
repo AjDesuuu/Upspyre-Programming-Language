@@ -279,44 +279,47 @@ public class Executor {
     }
 
     private void executeOutput(ASTNode node) {
+        StringBuilder output = new StringBuilder();
+    
         for (ASTNode child : node.getChildren()) {
-            if (child.getType().equals("IDENTIFIER")) {
-                String varName = child.getValue();
-                SymbolDetails details = symbolTableManager.getIdentifier(varName);
-            
-                
-                // First check if the variable exists at all
-                if (details == null) {
-                    throw new InterpreterException(
-                        "Cannot show undefined variable: " + varName,
-                        getNodeLineNumber(node)
-                    );
-                }
-                
-                // Then check if it has a proper type (was declared)
-                if (details.getType() == TokenType.IDENTIFIER) {
-                    throw new InterpreterException(
-                        "Cannot show undefined variable: " + varName,
-                        getNodeLineNumber(node)
-                    );
-                }
-                
-                // Finally check if it has a value (was initialized)
-                if (details.getValue() == null) {
-                    throw new InterpreterException(
-                        "Cannot show uninitialized variable: " + varName,
-                        getNodeLineNumber(node)
-                    );
-                }
-                
-                System.out.println("Output: " + details.getValue());
-            } else if (child.getType().equals("TEXT")) {
-                System.out.println("Output: " + child.getValue());
-            } else if (child.getType().equals("LIST_VALUE") || child.getType().equals("COLLECTION_METHOD")) {
-                Object result = evaluator.evaluateASTNode(child);
-                System.out.println("Output: " + result);
+            switch (child.getType()) {
+                case "TEXT":
+                    // Append text directly
+                    output.append(child.getValue());
+                    break;
+    
+                case "IDENTIFIER":
+                    // Retrieve the value of the identifier
+                    String varName = child.getValue();
+                    SymbolDetails details = symbolTableManager.getIdentifier(varName);
+    
+                    if (details == null) {
+                        throw new InterpreterException(
+                            "Cannot show undefined variable: " + varName,
+                            getNodeLineNumber(node)
+                        );
+                    }
+    
+                    if (details.getValue() == null) {
+                        throw new InterpreterException(
+                            "Cannot show uninitialized variable: " + varName,
+                            getNodeLineNumber(node)
+                        );
+                    }
+    
+                    output.append(details.getValue());
+                    break;
+    
+                default:
+                    // Evaluate expressions (e.g., PLUS nodes)
+                    Object result = evaluator.evaluateASTNode(child);
+                    output.append(result);
+                    break;
             }
         }
+    
+        // Print the final output
+        System.out.println("Output: " + output.toString());
     }
 
     private void executeConditional(ASTNode node) {
