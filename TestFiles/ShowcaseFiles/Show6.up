@@ -1,5 +1,5 @@
 start  
-    method square(number x) { output x * x; }  
+    method square(number x) { output x * x * x; }  
     method add(number a, number b) { output a + b; }  
 
     number squared = square(5);  

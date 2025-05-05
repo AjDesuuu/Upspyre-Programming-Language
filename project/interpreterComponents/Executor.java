@@ -18,7 +18,7 @@ import java.util.Scanner;
 
 public class Executor {
     private final SymbolTableManager symbolTableManager;
-    private final Evaluator evaluator;
+    private Evaluator evaluator;
     private final Scanner scanner;
     private final Map<String, ASTNode> functions = new HashMap<>();
     private final boolean debugMode;
@@ -28,6 +28,10 @@ public class Executor {
         this.evaluator = evaluator;
         this.scanner = scanner;
         this.debugMode = debugMode;
+    }
+
+    public void setEvaluator(Evaluator evaluator) {
+        this.evaluator = evaluator;
     }
 
     public void executeASTNode(ASTNode node) {
@@ -75,6 +79,13 @@ public class Executor {
 
             case "CONDITIONAL_STMT":
                 executeConditional(node);
+                break;
+            
+            case "FUNC_CALL":
+                Object returnValue = evaluateFunctionCall(node);
+                if (returnValue != null) {
+                    System.out.println("Function returned: " + returnValue);
+                }
                 break;
 
             case "LIST_DECL":
@@ -162,6 +173,9 @@ public class Executor {
                     }
                     break;
                 case "ASSIGN":
+                    break;
+                case "FUNC_CALL":
+                    value = evaluateFunctionCall(child);
                     break;
                 default:
                     value = evaluator.evaluateASTNode(child);
@@ -444,6 +458,8 @@ public class Executor {
         }
     }
 
+    
+
     private void executeRepeatUntil(ASTNode node) {
         ASTNode repeatBlock = null;
         ASTNode condition = null;
@@ -598,9 +614,14 @@ public class Executor {
 
     private void executeReturnStatement(ASTNode node) {
         Object returnValue = null;
+        
+        // Skip the OUTPUT node and directly evaluate the expression that follows it
         for (ASTNode child : node.getChildren()) {
-            returnValue = evaluator.evaluateASTNode(child);
+            if (!child.getType().equals("OUTPUT")) {
+                returnValue = evaluator.evaluateASTNode(child);
+            }
         }
+        
         throw new ReturnException(returnValue);
     }
 
@@ -661,55 +682,81 @@ public class Executor {
     }
 
     public Object evaluateFunctionCall(ASTNode node) {
-        String calledFunctionName = node.getChildren().get(0).getValue();
-        ASTNode argList = node.getChildren().get(2);
+        String functionName = node.getChildren().get(0).getValue();
+        ASTNode argListNode = null;
+        
+        // Find the ARG_LIST node
+        for (ASTNode child : node.getChildren()) {
+            if (child.getType().equals("ARG_LIST")) {
+                argListNode = child;
+                break;
+            }
+        }
+        
+        if (argListNode == null) {
+            throw new InterpreterException("Missing argument list in function call: " + functionName, getNodeLineNumber(node));
+        }
     
-        ASTNode functionNode = functions.get(calledFunctionName);
+        // Retrieve the function declaration
+        ASTNode functionNode = functions.get(functionName);
         if (functionNode == null) {
-            throw new InterpreterException("Undefined function: " + calledFunctionName, getNodeLineNumber(node));
+            throw new InterpreterException("Undefined function: " + functionName, getNodeLineNumber(node));
         }
     
-        ASTNode paramList = functionNode.getChildren().get(3);
+        // Find parameter list and block statement in function declaration
+        ASTNode paramList = null;
+        ASTNode blockStmt = null;
+        for (ASTNode child : functionNode.getChildren()) {
+            if (child.getType().equals("PARAM_LIST")) {
+                paramList = child;
+            } else if (child.getType().equals("BLOCK_STMT")) {
+                blockStmt = child;
+            }
+        }
     
+        if (paramList == null || blockStmt == null) {
+            throw new InterpreterException("Invalid function definition for: " + functionName, getNodeLineNumber(node));
+        }
+    
+        // Get parameters and arguments
         List<ASTNode> params = getParamIdentifiers(paramList);
-        List<ASTNode> args = getArgNodes(argList);
-
+        List<ASTNode> args = getArgNodes(argListNode);
+    
         if (params.size() != args.size()) {
-            throw new InterpreterException("Argument count mismatch for function: " + calledFunctionName, getNodeLineNumber(node));
+            throw new InterpreterException(
+                "Argument count mismatch for function: " + functionName + 
+                ". Expected: " + params.size() + ", Got: " + args.size(),
+                getNodeLineNumber(node)
+            );
         }
     
-        Map<String, Object> tempSymbolTable = new HashMap<>();
+        // Create a new scope for the function
+ 
+        symbolTableManager.pushScope();
+
+        // Map arguments to parameters
         for (int i = 0; i < params.size(); i++) {
             String paramName = params.get(i).getValue();
             Object argValue = evaluator.evaluateASTNode(args.get(i));
-            tempSymbolTable.put(paramName, argValue);
+            TokenType type = evaluator.inferType(argValue);
+            symbolTableManager.addIdentifier(paramName, type, argValue);
         }
     
-        SymbolTable newSymbolTable = new SymbolTable();
-        for (Map.Entry<String, Object> entry : tempSymbolTable.entrySet()) {
-            String name = entry.getKey();
-            Object value = entry.getValue();
-            TokenType type = evaluator.inferType(value);
-            symbolTableManager.addIdentifierToScope(newSymbolTable, name, type, value);
+        // Map arguments to parameters
+        for (int i = 0; i < params.size(); i++) {
+            String paramName = params.get(i).getValue();
+            Object argValue = evaluator.evaluateASTNode(args.get(i));
+            TokenType type = evaluator.inferType(argValue);
+            symbolTableManager.addIdentifier(paramName, type, argValue);
         }
-    
-        SymbolTable oldSymbolTable = symbolTableManager.getCurrentSymbolTable();
-        symbolTableManager.setCurrentSymbolTable(newSymbolTable);
     
         Object returnValue = null;
         try {
-            for (ASTNode child : functionNode.getChildren()) {
-                if (child.getType().equals("BLOCK_STMT")) {
-                    try {
-                        executeASTNode(child);
-                    } catch (ReturnException re) {
-                        returnValue = re.value;
-                        break;
-                    }
-                }
-            }
+            executeASTNode(blockStmt);
+        } catch (ReturnException re) {
+            returnValue = re.value;
         } finally {
-            symbolTableManager.setCurrentSymbolTable(oldSymbolTable);
+            symbolTableManager.popScope(); // Restore previous scope
         }
     
         return returnValue;

@@ -25,6 +25,8 @@ public class InterpreterN {
         this.debugMode = debugMode;
         this.evaluator = new Evaluator(symbolTableManager, debugMode);
         this.executor = new Executor(symbolTableManager, evaluator, scanner, debugMode);
+        this.evaluator.setExecutor(this.executor);
+        this.executor.setEvaluator(this.evaluator);
     }
 
     public void interpret(ParseTreeNode root) {

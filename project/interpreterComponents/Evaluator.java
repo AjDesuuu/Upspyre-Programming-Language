@@ -13,11 +13,15 @@ public class Evaluator {
     public final SymbolTableManager symbolTableManager;
     public final TypeChecker typeChecker;
     private final boolean debugMode;
+    private Executor executor;
 
     public Evaluator(SymbolTableManager symbolTableManager, boolean debugMode) {
         this.symbolTableManager = symbolTableManager;
         this.typeChecker = new TypeChecker();
         this.debugMode = debugMode;
+    }
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     public Object evaluateASTNode(ASTNode node) {
@@ -99,8 +103,6 @@ public class Evaluator {
             case "CONV_EXPR":
                 return evaluateConversionExpr(node);
 
-            case "FUNC_CALL":
-                return evaluateFunctionCall(node);
             
             default:
                 throw new InterpreterException("Unsupported AST node type for evaluation: " + node.getType(), getNodeLineNumber(node));
@@ -218,10 +220,7 @@ public class Evaluator {
         }
     }
 
-    private Object evaluateFunctionCall(ASTNode node) {
-        // Implementation moved to Executor class since it involves execution context
-        return null; // This should never be reached as function calls are handled in Executor
-    }
+    
 
     public Object evaluateBinaryOperation(Object left, String operator, Object right) {
         int lineNumber = 0; // In a real implementation, get actual line number
