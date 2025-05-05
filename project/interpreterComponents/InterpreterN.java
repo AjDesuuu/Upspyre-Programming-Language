@@ -27,6 +27,7 @@ public class InterpreterN {
         this.executor = new Executor(symbolTableManager, evaluator, scanner, debugMode);
         
         this.executor.setEvaluator(this.evaluator);
+        this.evaluator.setExecutor(executor);
     }
     public SymbolTableManager getSymbolTableManager() {
         return symbolTableManager;

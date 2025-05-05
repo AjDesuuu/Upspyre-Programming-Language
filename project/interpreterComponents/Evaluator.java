@@ -13,13 +13,17 @@ public class Evaluator {
     public final SymbolTableManager symbolTableManager;
     public final TypeChecker typeChecker;
     private final boolean debugMode;
+    private Executor executor;
 
     public Evaluator(SymbolTableManager symbolTableManager, boolean debugMode) {
         this.symbolTableManager = symbolTableManager;
         this.typeChecker = new TypeChecker();
         this.debugMode = debugMode;
     }
-    
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
 
     public Object evaluateASTNode(ASTNode node) {
         if (node == null) {
@@ -96,7 +100,9 @@ public class Evaluator {
                     throw new InterpreterException("Variable '" + varName + "' is uninitialized", getNodeLineNumber(node));
                 }
                 return details.getValue();
-    
+
+            case "FUNC_CALL":
+                return executor.evaluateFunctionCall(node);
             case "LIST_VALUE":
                 return evaluateListValue(node);
 
@@ -223,7 +229,7 @@ public class Evaluator {
         }
     }
 
-    
+
 
     public Object evaluateBinaryOperation(Object left, String operator, Object right, ASTNode node) {
         int lineNumber = getNodeLineNumber(node); // In a real implementation, get actual line number
