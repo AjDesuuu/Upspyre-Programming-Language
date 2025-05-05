@@ -1,7 +1,7 @@
 package project.interpreterComponents;
 
 
-import project.SymbolTable;
+
 import project.TokenType;
 import project.interpreterComponents.utils.InterpreterException;
 import project.interpreterComponents.utils.SymbolTableManager;

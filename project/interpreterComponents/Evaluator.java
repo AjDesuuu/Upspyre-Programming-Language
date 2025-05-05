@@ -13,16 +13,13 @@ public class Evaluator {
     public final SymbolTableManager symbolTableManager;
     public final TypeChecker typeChecker;
     private final boolean debugMode;
-    private Executor executor;
 
     public Evaluator(SymbolTableManager symbolTableManager, boolean debugMode) {
         this.symbolTableManager = symbolTableManager;
         this.typeChecker = new TypeChecker();
         this.debugMode = debugMode;
     }
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
+    
 
     public Object evaluateASTNode(ASTNode node) {
         if (node == null) {
