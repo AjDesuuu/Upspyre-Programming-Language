@@ -36,8 +36,11 @@ public class MainDriver {
             InterpreterN interpreter = new InterpreterN(symbolTable,true);
             interpreter.interpret(parseTree);
 
+            
             System.out.println("\nUpdated Symbol Table:");
-            symbolTable.printTableHierarchical();
+            for (SymbolTable table : interpreter.getSymbolTableManager().getAllSymbolTables()) {
+                table.printTableHierarchical();
+            }
 
         } catch (IOException | InterruptedException e) {
             System.err.println("File not found: " + filePath);

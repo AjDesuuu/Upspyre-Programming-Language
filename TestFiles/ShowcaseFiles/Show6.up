@@ -1,4 +1,7 @@
 start  
+    number y = 5;
+
+    show("value of y is: "+y + " before scope");
     method square(number x) {
 
         number y=10;

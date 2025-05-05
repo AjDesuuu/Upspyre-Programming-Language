@@ -95,7 +95,7 @@ public class SymbolTable {
     }
 
     public void printTableHierarchical() {
-        System.out.println("\nSymbol Table Hierarchy:");
+        
         System.out.println("Scope Level " + scopeLevel + ":");
         System.out.println("|-----------------|--------------|-----------------|-------|");
         System.out.printf("| %-15s | %-12s | %-15s | %-5s |\n", "Lexeme", "Type", "Value", "Scope");

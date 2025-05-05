@@ -760,6 +760,7 @@ public class Executor {
         } catch (ReturnException re) {
             returnValue = re.value;
         } finally {
+            
             symbolTableManager.popScope(); // Always restore previous scope
         }
     

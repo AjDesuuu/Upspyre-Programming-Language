@@ -28,6 +28,9 @@ public class InterpreterN {
         
         this.executor.setEvaluator(this.evaluator);
     }
+    public SymbolTableManager getSymbolTableManager() {
+        return symbolTableManager;
+    }
 
     public void interpret(ParseTreeNode root) {
         if (root == null) {

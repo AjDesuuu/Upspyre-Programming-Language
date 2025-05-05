@@ -4,11 +4,14 @@ import java.util.Stack;
 import project.SymbolTable;
 import project.SymbolDetails;
 import project.TokenType;
+import java.util.ArrayList;
+import java.util.List;  
 
 public class SymbolTableManager {
     private SymbolTable currentSymbolTable;
     private final Stack<SymbolTable> symbolTableStack = new Stack<>();
     private boolean debugMode = false; // Set to true for debugging
+    private final List<SymbolTable> allSymbolTables = new ArrayList<>(); // List to keep track of all symbol tables
     
     public SymbolTableManager(SymbolTable symbolTable, boolean debugMode) {
         this.currentSymbolTable = symbolTable;
@@ -21,9 +24,13 @@ public class SymbolTableManager {
         SymbolTable newScope = new SymbolTable(newScopeLevel, currentSymbolTable);
         symbolTableStack.push(newScope);
         currentSymbolTable = newScope;
+        allSymbolTables.add(newScope); // Track every scope ever created
         if (debugMode) {
             System.out.println("[DEBUG] Pushed new scope: " + newScopeLevel);
         }
+    }
+    public List<SymbolTable> getAllSymbolTables() {
+        return allSymbolTables;
     }
     
     public void popScope() {
