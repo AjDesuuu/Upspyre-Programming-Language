@@ -399,6 +399,19 @@ public class Executor {
             }
         }
 
+        // Enforce type consistency for all elements
+        if (listType != null) {
+            for (Object elem : elements) {
+                TokenType elemType = evaluator.inferType(elem);
+                if (elemType != listType) {
+                    throw new InterpreterException(
+                        "List elements must all be of type " + listType + ", but found " + elemType,
+                        getNodeLineNumber(node)
+                    );
+                }
+            }
+        }
+
         if (listName != null && listType != null) {
             symbolTableManager.addIdentifier(listName, listType, elements);
             System.out.println("Assigned list " + listName + " = " + elements);
@@ -443,15 +456,20 @@ public class Executor {
                 throw new InterpreterException("For-loop condition did not evaluate to a boolean", getNodeLineNumber(node));
             }
             if (!(Boolean) cond) break;
+
+            symbolTableManager.pushScope();
     
             try {
                 executeASTNode(body);
             } catch (BreakException be) {
+                symbolTableManager.popScope();
                 break;
             } catch (ContinueException ce) {
+                symbolTableManager.popScope();
                 executeASTNode(increment);
                 continue;
             }
+            symbolTableManager.popScope();
     
             executeASTNode(increment);
         }
@@ -476,13 +494,17 @@ public class Executor {
         }
     
         while (true) {
+            symbolTableManager.pushScope();
             try {
                 executeASTNode(repeatBlock);
             } catch (BreakException be) {
+                symbolTableManager.popScope();
                 break;
             } catch (ContinueException ce) {
+                symbolTableManager.popScope();
                 // skip to condition check
             }
+            symbolTableManager.popScope();
     
             Object condVal = evaluator.evaluateASTNode(condition);
             if (!(condVal instanceof Boolean)) {
@@ -522,15 +544,20 @@ public class Executor {
             if (!(Boolean) conditionValue) {
                 break; // Exit the loop if the condition is false
             }
+
+            symbolTableManager.pushScope();
     
             try {
                 executeASTNode(repeatBlock);
             } catch (BreakException be) {
+                symbolTableManager.popScope();
                 break; // Handle "stop" statement
             } catch (ContinueException ce) {
                 // Skip to the next iteration
+                symbolTableManager.popScope();
                 continue;
             }
+            symbolTableManager.popScope();
         }
     }
 
@@ -597,6 +624,23 @@ public class Executor {
                         if (keyNode != null && valueNode != null) {
                             Object key = evaluator.evaluateASTNode(keyNode);
                             Object value = evaluator.evaluateASTNode(valueNode);
+    
+                            // Enforce type consistency for key and value
+                            TokenType actualKeyType = evaluator.inferType(key);
+                            TokenType actualValueType = evaluator.inferType(value);
+                            if (keyType != null && actualKeyType != keyType) {
+                                throw new InterpreterException(
+                                    "Pair map keys must all be of type " + keyType + ", but found " + actualKeyType,
+                                    getNodeLineNumber(node)
+                                );
+                            }
+                            if (valueType != null && actualValueType != valueType) {
+                                throw new InterpreterException(
+                                    "Pair map values must all be of type " + valueType + ", but found " + actualValueType,
+                                    getNodeLineNumber(node)
+                                );
+                            }
+    
                             map.put(key, value);
                         }
                     }

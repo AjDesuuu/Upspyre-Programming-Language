@@ -177,18 +177,67 @@ public class Evaluator {
     private Object evaluateCollectionMethod(ASTNode node) {
         String methodTarget = node.getChildren().get(0).getValue();
         String methodName = node.getChildren().get(2).getType();
-
+    
         SymbolDetails targetDetails = symbolTableManager.getIdentifier(methodTarget);
         if (targetDetails == null) {
             throw new InterpreterException("Undefined variable: " + methodTarget, getNodeLineNumber(node));
         }
         Object targetValue = targetDetails.getValue();
-
-        if ("TO_TEXT".equals(methodName)) {
-            return String.valueOf(targetValue);
+    
+        switch (methodName) {
+            case "LEN":
+                if (targetValue instanceof List) {
+                    return ((List<?>) targetValue).size();
+                }
+                if (targetValue instanceof Map) {
+                    return ((Map<?, ?>) targetValue).size();
+                }
+                throw new InterpreterException("len() not supported for type", getNodeLineNumber(node));
+            case "SORT":
+                if (targetValue instanceof List list) {
+                    // Only sort if elements are Comparable
+                    if (!list.isEmpty() && !(list.get(0) instanceof Comparable)) {
+                        throw new InterpreterException("List elements are not comparable for sort()", getNodeLineNumber(node));
+                    }
+                    list.sort(null);
+                    return null;
+                }
+                throw new InterpreterException("sort() only supported for lists", getNodeLineNumber(node));
+            case "TO_TEXT":
+                if (targetValue instanceof List) {
+                    return listToText((List<?>) targetValue);
+                }
+                if (targetValue instanceof Map) {
+                    return mapToText((Map<?, ?>) targetValue);
+                }
+                return String.valueOf(targetValue);
+            default:
+                throw new InterpreterException("Unknown collection method: " + methodName, getNodeLineNumber(node));
         }
-
-        throw new InterpreterException("Unknown method: " + methodName, getNodeLineNumber(node));
+    }
+    
+    // Helper for list to text
+    private String listToText(List<?> list) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < list.size(); i++) {
+            sb.append(list.get(i));
+            if (i < list.size() - 1) sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+    
+    // Helper for map to text
+    private String mapToText(Map<?, ?> map) {
+        StringBuilder sb = new StringBuilder("{");
+        int i = 0;
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            sb.append(entry.getKey()).append(": ").append(entry.getValue());
+            if (i < map.size() - 1) sb.append(", ");
+            i++;
+        }
+        sb.append("}");
+        return sb.toString();
     }
 
     private Object evaluateConversionExpr(ASTNode node) {
@@ -200,7 +249,9 @@ public class Evaluator {
                 sourceVar = child.getValue();
             } else if (child.getType().equals("NUMBER_TYPE")) {
                 targetType = TokenType.NUMBER;
-            } else if (child.getType().equals("TEXT_TYPE")) {
+            } else if (child.getType().equals("DECIMAL_TYPE")) {
+                targetType = TokenType.DECIMAL;
+            }  else if (child.getType().equals("TEXT_TYPE")) {
                 targetType = TokenType.TEXT;
             }
         }
@@ -216,17 +267,19 @@ public class Evaluator {
         
         Object srcValue = srcDetails.getValue();
         
-        if (targetType == TokenType.NUMBER) {
-            try {
-                return Integer.parseInt(srcValue.toString());
-            } catch (NumberFormatException e) {
-                throw new InterpreterException("Cannot convert value to number: " + srcValue, getNodeLineNumber(node));
-            }
-        } else if (targetType == TokenType.TEXT) {
-            return srcValue.toString();
-        } else {
-            throw new InterpreterException("Unsupported conversion type", getNodeLineNumber(node));
+        TokenType srcType = srcDetails.getType();
+        if (srcType == targetType) {
+            return srcValue; // No conversion needed
         }
+        if ((srcType == TokenType.TEXT && (targetType == TokenType.NUMBER || targetType == TokenType.DECIMAL)) ||
+            ((srcType == TokenType.NUMBER || srcType == TokenType.DECIMAL) && targetType == TokenType.TEXT)) {
+            try {
+                return typeChecker.convertIfNeeded(srcValue, targetType);
+            } catch (Exception e) {
+                throw new InterpreterException("Conversion error: " + e.getMessage(), getNodeLineNumber(node));
+            }
+        }
+        throw new InterpreterException("Unsupported type conversion: " + srcType + " to " + targetType, getNodeLineNumber(node));
     }
 
 
