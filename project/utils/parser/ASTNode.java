@@ -225,6 +225,12 @@ public class ASTNode {
     private static ASTNode buildRightAssociativeBinaryExpressionAST(ParseTreeNode node) {
         List<ParseTreeNode> children = node.getChildren();
 
+        if (children.size() == 2 && "MINUS".equals(children.get(0).getType())) {
+            ASTNode minusNode = new ASTNode("MINUS");
+            minusNode.addChild(fromCST(children.get(1)));
+            return minusNode;
+        }
+        
         // Base case: If there's only one child, return that node as is
         if (children.size() == 1) {
             return fromCST(children.get(0));

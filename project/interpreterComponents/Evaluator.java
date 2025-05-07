@@ -54,10 +54,21 @@ public class Evaluator {
 
             case "PLUS": case "MINUS": case "MULT": case "DIV":
             case "EXPONENT": case "MOD":
-                Object left = evaluateASTNode(node.getChildren().get(0));
-                Object right = evaluateASTNode(node.getChildren().get(1));
-                return evaluateBinaryOperation(left, node.getType(), right, node);
-
+                if (node.getType().equals("MINUS") && node.getChildren().size() == 1) {
+                    // Handle unary minus
+                    Object operand = evaluateASTNode(node.getChildren().get(0));
+                    if (operand instanceof Integer) {
+                        return -((Integer) operand);
+                    } else if (operand instanceof Double) {
+                        return -((Double) operand);
+                    } else {
+                        throw new InterpreterException("Unary minus requires a numeric operand", getNodeLineNumber(node));
+                    }
+                } else {
+                    Object left = evaluateASTNode(node.getChildren().get(0));
+                    Object right = evaluateASTNode(node.getChildren().get(1));
+                    return evaluateBinaryOperation(left, node.getType(), right, node);
+                }
             case "DECIMAL":
                 return Double.parseDouble(node.getValue());
             
@@ -68,8 +79,8 @@ public class Evaluator {
             
             case "BITWISE_AND": case "BITWISE_OR": case "BITWISE_XOR":
             case "LSHIFT": case "RSHIFT":
-                left = evaluateASTNode(node.getChildren().get(0));
-                right = evaluateASTNode(node.getChildren().get(1));
+                Object left = evaluateASTNode(node.getChildren().get(0));
+                Object right = evaluateASTNode(node.getChildren().get(1));
                 return evaluateBinaryOperation(left, node.getType(), right, node);
             
             case "BITNOT_EXPR":
@@ -313,6 +324,16 @@ public class Evaluator {
                 break;
                 
             case "MINUS", "-":
+                if (node.getChildren().size() == 1) {
+                    Object operand = evaluateASTNode(node.getChildren().get(0));
+                    if (operand instanceof Integer) {
+                        return -((Integer) operand);
+                    } else if (operand instanceof Double) {
+                        return -((Double) operand);
+                    } else {
+                        throw new InterpreterException("Unary minus requires a numeric operand", getNodeLineNumber(node));
+                    }
+                }
                 if (left instanceof Double && right instanceof Double) {
                     return (Double) left - (Double) right;
                 }
