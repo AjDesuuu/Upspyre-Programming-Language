@@ -47,7 +47,8 @@ public class Evaluator {
     
             case "TEXT":
                 return node.getValue();
-
+            case "NONE":
+                return null;
             case "GT": case "LT": case "GTE": case "LTE": 
             case "EQ": case "GEQ": case "LEQ": case "NEQ":
                 return evaluateRelationalExpr(node);

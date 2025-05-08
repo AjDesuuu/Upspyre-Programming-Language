@@ -198,10 +198,17 @@ public class Executor {
         }
     
         if (value == null) {
-            throw new InterpreterException(
-                "Assignment to variable '" + variable + "' failed: right-hand side is null or undefined.",
-                getNodeLineNumber(node)
-            );
+            // Optionally: print a warning for number types
+            System.out.println("Warning: Assigned 'none' to variable '" + variable + "' of type " + type);
+            // Allow assignment of 'none' (null) to any type
+            symbolTableManager.addIdentifier(variable, type, null);
+            SymbolDetails details = symbolTableManager.getIdentifier(variable);
+            if (details != null) {
+                details.setExplicitlyDeclared(true);
+            }
+            symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(variable);
+            System.out.println("Assigned " + variable + " = none");
+            return;
         }
     
         // Get or verify type
