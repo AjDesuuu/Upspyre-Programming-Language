@@ -286,6 +286,15 @@ public class Executor {
             if (idx < 0 || idx >= list.size()) {
                 throw new InterpreterException("List index out of bounds: " + idx, getNodeLineNumber(node));
             }
+            // Type check the value
+            TokenType listType = listDetails.getType();
+            TokenType valueType = evaluator.inferType(value);
+            if (listType != valueType) {
+                throw new InterpreterException(
+                    "Type mismatch: cannot assign value of type " + valueType + " to list of type " + listType,
+                    getNodeLineNumber(node)
+                );
+            }
             list.set(idx, value);
             return;
         }
@@ -459,11 +468,15 @@ public class Executor {
                 case "NUMBER_TYPE":
                     listType = TokenType.NUMBER;
                     break;
+                case "DECIMAL_TYPE":
+                    listType = TokenType.DECIMAL;
+                    break;
                 case "IDENTIFIER":
                     listName = child.getValue();
                     break;
                 case "TEXT":
                 case "NUMBER":
+                case "DECIMAL":
                     elements.add(evaluator.evaluateASTNode(child));
                     break;
                 case "LIST_DECL_GROUP":
@@ -890,6 +903,7 @@ public class Executor {
             switch (child.getType()) {
                 case "TEXT":
                 case "NUMBER":
+                case "DECIMAL":
                     elements.add(evaluator.evaluateASTNode(child));
                     break;
                 case "LIST_DECL_GROUP":
