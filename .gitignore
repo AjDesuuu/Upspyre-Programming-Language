@@ -48,3 +48,6 @@ GrammarProgrammer/format.txt
 GrammarProgrammer/output_conflicts.txt
 GrammarProgrammer/output.csv
 GrammarProgrammer/GrammarOut.csv
+ast.png
+parse_tree.dot
+*.png

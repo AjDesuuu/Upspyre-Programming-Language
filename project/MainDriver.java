@@ -29,11 +29,12 @@ public class MainDriver {
                 return;
             }
             parser.generateParseTreeImage(filePath + ".png");
+            
 
            
 
             System.out.println("\nInterpreting...");
-            InterpreterN interpreter = new InterpreterN(symbolTable,true);
+            InterpreterN interpreter = new InterpreterN(symbolTable,false);
             interpreter.interpret(parseTree);
 
             

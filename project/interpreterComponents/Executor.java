@@ -367,9 +367,19 @@ public class Executor {
         boolean conditionResult = (boolean) evaluator.evaluateASTNode(conditionNode);
     
         if (conditionResult) {
-            executeASTNode(ifBlock);
+            symbolTableManager.pushScope();
+            try {
+                executeASTNode(ifBlock);
+            } finally {
+                symbolTableManager.popScope();
+            }
         } else if (otherwiseBlock != null) {
-            executeASTNode(otherwiseBlock);
+            symbolTableManager.pushScope();
+            try {
+                executeASTNode(otherwiseBlock);
+            } finally {
+                symbolTableManager.popScope();
+            }
         }
     }
 

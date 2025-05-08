@@ -17,6 +17,7 @@ public class SymbolTableManager {
         this.currentSymbolTable = symbolTable;
         this.symbolTableStack.push(symbolTable);
         this.debugMode = debugMode;
+        allSymbolTables.add(symbolTable);
     }
     
     public void pushScope() {
