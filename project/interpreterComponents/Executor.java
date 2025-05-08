@@ -290,6 +290,10 @@ public class Executor {
         }
     
         symbolTableManager.addIdentifier(varName, type, null);
+        SymbolDetails details = symbolTableManager.getIdentifier(varName);
+        if (details != null) {
+            details.setExplicitlyDeclared(true);
+        }
     }
 
     private void executeOutput(ASTNode node) {
@@ -706,7 +710,18 @@ public class Executor {
                     System.out.println("Invalid number input, storing as text.");
                 }
             }
-            symbolTableManager.addIdentifier(inputVarName, inputType, value);
+            SymbolDetails details = symbolTableManager.getIdentifier(inputVarName);
+            if (details != null) {
+                // Variable already declared: just update its value
+                symbolTableManager.updateIdentifier(inputVarName, value);
+            } else {
+                // Not declared yet: declare and set explicitlyDeclared
+                symbolTableManager.addIdentifier(inputVarName, inputType, value);
+                details = symbolTableManager.getIdentifier(inputVarName);
+                if (details != null) {
+                    details.setExplicitlyDeclared(true);
+                }
+            }
         }
     }
 
