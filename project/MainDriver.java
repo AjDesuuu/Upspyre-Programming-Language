@@ -1,10 +1,6 @@
 package project;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import project.utils.parser.ParseTreeNode; // Ensure this import matches the actual location of ParseTreeNode
 import project.interpreterComponents.InterpreterN;
@@ -13,17 +9,18 @@ public class MainDriver {
     public static void main(String[] args) {
         String fileName = "Show1.up";
         String filePath = getFilePath(fileName);
+        SymbolTable lexicalSymbolTable = new SymbolTable();
         SymbolTable symbolTable = new SymbolTable(0,null);
 
         try {
-            Lexer lexer = new Lexer(filePath, symbolTable);
+            Lexer lexer = new Lexer(filePath, lexicalSymbolTable);
             Parser parser = new Parser(lexer);
 
             System.out.println("\nLexer Tokens:");
             parser.printTokens();
 
-            System.out.println("\nSymbol Table:");
-            symbolTable.printTable();
+            System.out.println("\nSymbol Table(lexer phase):");
+            lexicalSymbolTable.printTable();
 
             System.out.println("\nParsing...");
             parser.parse();
