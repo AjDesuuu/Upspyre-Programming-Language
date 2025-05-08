@@ -1,6 +1,6 @@
 start
   number x = 2;   
-if (x >= 5) {
+  if (x >= 5) {    
     show ("x is greater than 5");
   } otherwise {
     show ("x is less than  5");

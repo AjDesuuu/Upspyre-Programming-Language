@@ -548,8 +548,17 @@ public class Executor {
                 if (!(Boolean) conditionValue) {
                     break; // Exit the loop if the condition is false
                 }
-    
-                executeASTNode(repeatBlock);
+                
+                try {
+                    executeASTNode(repeatBlock);
+                } catch (ContinueException ce) {
+                    // Just continue to the next iteration
+                    continue;
+                } catch (BreakException be) {
+                    // Break out of the loop
+                    break;
+                }
+               
             }
         } finally {
             symbolTableManager.popScope();
