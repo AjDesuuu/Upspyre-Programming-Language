@@ -61,7 +61,7 @@ public class SymbolTable {
     }
 
     public SymbolDetails getIdentifier(String lexeme) {
-        System.out.println("Searching for identifier: " + lexeme);
+        
         SymbolDetails details = table.get(lexeme);
         
         if (details != null) {

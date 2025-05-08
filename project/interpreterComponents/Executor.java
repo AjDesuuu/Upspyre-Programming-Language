@@ -130,7 +130,9 @@ public class Executor {
             case "CHOOSE_WHAT_STMT":
                 executeChooseWhatStatement(node);
                 break;
-
+            case "COLLECTION_ASSIGN":
+                executeCollectionAssignment(node);
+                break;
             default:
                 // Process other nodes
                 for (ASTNode child : node.getChildren()) {
@@ -255,6 +257,40 @@ public class Executor {
 
         System.out.println("Assigned " + variable + " = " + value);
     }
+
+    private void executeCollectionAssignment(ASTNode node) {
+        // node: COLLECTION_ASSIGN -> [LIST_VALUE, ASSIGN, value]
+        ASTNode listValueNode = node.getChildren().get(0);
+        ASTNode valueNode = node.getChildren().get(2);
+    
+        // Evaluate the list and index
+        String listName = listValueNode.getChildren().get(0).getValue();
+        Object index = evaluator.evaluateASTNode(listValueNode.getChildren().get(2));
+        Object value = evaluator.evaluateASTNode(valueNode);
+    
+        // Check if the list exists
+        SymbolDetails listDetails = symbolTableManager.getIdentifier(listName);
+        if (listDetails == null) {
+            throw new InterpreterException("Undefined variable: " + listName, getNodeLineNumber(node));
+        }
+        Object listObj = listDetails.getValue();
+    
+        // Only support List for now
+        if (listObj instanceof List) {
+            // Ensure index is an Integer
+            if (!(index instanceof Integer)) {
+                throw new InterpreterException("List index must be a number, got: " + (index == null ? "null" : index.getClass().getSimpleName()), getNodeLineNumber(node));
+            }
+            List<Object> list = (List<Object>) listObj;
+            int idx = (Integer) index;
+            if (idx < 0 || idx >= list.size()) {
+                throw new InterpreterException("List index out of bounds: " + idx, getNodeLineNumber(node));
+            }
+            list.set(idx, value);
+            return;
+        }
+        throw new InterpreterException("Variable is not a list: " + listName, getNodeLineNumber(node));
+    }
     
     private void executeDeclaration(ASTNode node) {
         String varName = null;
@@ -349,7 +385,7 @@ public class Executor {
     
         for (ASTNode child : node.getChildren()) {
             switch (child.getType()) {
-                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR":
+                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR","TRUE","FALSE":
                     conditionNode = child;
                     break;
                 case "BLOCK_STMT":
