@@ -159,11 +159,22 @@ public class SymbolTable {
         table.values().stream()
              .sorted((a, b) -> a.getLexeme().compareTo(b.getLexeme()))
              .forEach(details -> {
-                 System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
-                     details.getLexeme(),
-                     details.getType(),
-                     details.getValue(),
-                     this.getScopeLevel());
+                 if (details.getType() == TokenType.METHOD && details.getValue() instanceof List) {
+                     List<?> overloads = (List<?>) details.getValue();
+                     for (Object sig : overloads) {
+                         System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                             details.getLexeme(),
+                             details.getType(),
+                             "[" + sig.toString().replaceAll(",$", "") + "]",
+                             this.getScopeLevel());
+                     }
+                 } else {
+                     System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                         details.getLexeme(),
+                         details.getType(),
+                         details.getValue(),
+                         this.getScopeLevel());
+                 }
              });
     
         // Recursively print inherited variables from all parent scopes
@@ -175,11 +186,22 @@ public class SymbolTable {
                 .filter(details -> isVariableUsed(details.getLexeme()))
                 .sorted((a, b) -> a.getLexeme().compareTo(b.getLexeme()))
                 .forEach(details -> {
-                    System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
-                        details.getLexeme(),
-                        details.getType(),
-                        details.getValue(),
-                        currentScope.getScopeLevel()); // Show originating scope level
+                    if (details.getType() == TokenType.METHOD && details.getValue() instanceof List) {
+                        List<?> overloads = (List<?>) details.getValue();
+                        for (Object sig : overloads) {
+                            System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                                details.getLexeme(),
+                                details.getType(),
+                                "[" + sig.toString().replaceAll(",$", "") + "]",
+                                currentScope.getScopeLevel());
+                        }
+                    } else {
+                        System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                            details.getLexeme(),
+                            details.getType(),
+                            details.getValue(),
+                            currentScope.getScopeLevel());
+                    }
                 });
             parentScope = parentScope.getParent(); // Move to the next parent
         }

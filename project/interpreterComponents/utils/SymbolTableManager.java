@@ -89,7 +89,26 @@ public class SymbolTableManager {
     }
     
     public void addIdentifier(String name, TokenType type, Object value) {
-        currentSymbolTable.addIdentifier(name, type, value);
+        SymbolDetails existing = currentSymbolTable.getIdentifierLocalScope(name);
+        if (type == TokenType.METHOD) {
+            List<String> overloads;
+            if (existing != null && existing.getValue() instanceof List) {
+                overloads = (List<String>) existing.getValue();
+            } else {
+                overloads = new ArrayList<>();
+            }
+            String signature = (String) value;
+            if (overloads.contains(signature)) {
+                throw new InterpreterException(
+                    "Function '" + name + "' with the same parameter types is already defined",
+                    0
+                );
+            }
+            overloads.add(signature);
+            currentSymbolTable.addIdentifier(name, type, overloads);
+        } else {
+            currentSymbolTable.addIdentifier(name, type, value);
+        }
     }
     
     public void addIdentifierToScope(SymbolTable scope, String name, TokenType type, Object value) {

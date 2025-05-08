@@ -9,6 +9,7 @@ import project.interpreterComponents.utils.BreakException;
 import project.interpreterComponents.utils.ContinueException;
 import project.interpreterComponents.utils.ReturnException;
 import project.SymbolDetails;
+import project.SymbolTable;
 import project.utils.parser.ASTNode;
 import java.util.List;
 import java.util.Map;
@@ -145,6 +146,7 @@ public class Executor {
         String variable = null;
         Object value = null;
         TokenType type = null;
+        boolean isForLoopInit = node.getParent() != null && node.getParent().getType().equals("FOR_LOOP");
     
         // Extract information from children
         for (ASTNode child : node.getChildren()) {
@@ -256,10 +258,17 @@ public class Executor {
             // Check for redeclaration in current scope
             // Check all visible scopes for redeclaration
             //TODO DECIDE IF WE WANT RESHADOWING
-            SymbolDetails existing = symbolTableManager.getIdentifier(variable);
+            SymbolDetails existing;
+            if (isForLoopInit) {
+                // For for-loop variable declarations, check all visible scopes (Java behavior)
+                existing = symbolTableManager.getIdentifier(variable);
+            } else {
+                // For other declarations, only check current scope (allow shadowing)
+                existing = symbolTableManager.getCurrentSymbolTable().getIdentifierLocalScope(variable);
+            }
             if (existing != null && existing.isExplicitlyDeclared()) {
                 throw new InterpreterException(
-                    "Variable '" + variable + "' is already declared in an outer or current scope",
+                    "Variable '" + variable + "' is already declared in this or an outer scope",
                     getNodeLineNumber(node)
                 );
             }
@@ -415,7 +424,7 @@ public class Executor {
     
         for (ASTNode child : node.getChildren()) {
             switch (child.getType()) {
-                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR","TRUE","FALSE":
+                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR","TRUE","FALSE","IDENTIFIER":
                     conditionNode = child;
                     break;
                 case "BLOCK_STMT":
@@ -589,7 +598,11 @@ public class Executor {
         for (ASTNode child : node.getChildren()) {
             if ("BLOCK_STMT".equals(child.getType())) {
                 repeatBlock = child;
-            } else if (child.getType().matches("GT|LT|LEQ|GEQ|EQ|NEQ")) {
+            } else if (!"REPEAT".equals(child.getType()) && 
+                       !"UNTIL".equals(child.getType()) && 
+                       !"LPAREN".equals(child.getType()) && 
+                       !"RPAREN".equals(child.getType())) {
+                // Accept any non-keyword, non-block node as the condition
                 condition = child;
             }
         }
@@ -597,17 +610,33 @@ public class Executor {
         if (repeatBlock == null || condition == null) {
             throw new InterpreterException("REPEAT_UNTIL missing block or condition", getNodeLineNumber(node));
         }
+        // Evaluate the condition before entering the loop
+        Object condVal = evaluator.evaluateASTNode(condition);
+        if (!(condVal instanceof Boolean)) {
+            throw new InterpreterException("REPEAT_UNTIL condition must evaluate to binary", getNodeLineNumber(node));
+        }
+        if ((Boolean) condVal) {
+            System.out.println("Warning: repeat-until loop will not execute because the condition is already true.");
+            return;
+        }
     
         symbolTableManager.pushScope("REPEAT_UNTIL");
+        int maxIterations = 10; // or any reasonable limit
+        int iterations = 0;
         try {
             while (true) {
                 executeASTNode(repeatBlock);
     
-                Object condVal = evaluator.evaluateASTNode(condition);
+                condVal = evaluator.evaluateASTNode(condition);
                 if (!(condVal instanceof Boolean)) {
-                    throw new InterpreterException("REPEAT_UNTIL condition must evaluate to boolean", getNodeLineNumber(node));
+                    throw new InterpreterException("REPEAT_UNTIL condition must evaluate to binary", getNodeLineNumber(node));
                 }
                 if ((Boolean) condVal) {
+                    break;
+                }
+                iterations++;
+                if (iterations > maxIterations) {
+                    System.out.println("Warning: repeat-until loop exceeded maximum iterations (" + maxIterations + "). Possible infinite loop.");
                     break;
                 }
             }
@@ -621,26 +650,39 @@ public class Executor {
         ASTNode repeatBlock = null;
     
         for (ASTNode child : node.getChildren()) {
-            switch (child.getType()) {
-                case "LT": case "GT": case "LEQ": case "GEQ": case "EQ": case "NEQ":
-                    repeatCondition = child;
-                    break;
-                case "BLOCK_STMT":
-                    repeatBlock = child;
-                    break;
+            if ("BLOCK_STMT".equals(child.getType())) {
+                repeatBlock = child;
+            } else if (!"REPEAT".equals(child.getType()) &&
+                       !"LPAREN".equals(child.getType()) &&
+                       !"RPAREN".equals(child.getType())) {
+                // Accept any non-keyword, non-block node as the condition
+                repeatCondition = child;
             }
         }
     
         if (repeatCondition == null || repeatBlock == null) {
             throw new InterpreterException("REPEAT_LOOP missing condition or block", getNodeLineNumber(node));
         }
+        // Evaluate the condition before entering the loop
+        Object conditionValue = evaluator.evaluateASTNode(repeatCondition);
+        if (!(conditionValue instanceof Boolean)) {
+            throw new InterpreterException("REPEAT_LOOP condition must evaluate to a binary", getNodeLineNumber(node));
+        }
+        if (!(Boolean) conditionValue) {
+            System.out.println("Warning: repeat loop will not execute because the condition is initially false.");
+            return;
+        }
+
+        
     
         symbolTableManager.pushScope("REPEAT_LOOP");
+        int maxIterations = 10; // safeguard
+        int iterations = 0;
         try {
             while (true) {
-                Object conditionValue = evaluator.evaluateASTNode(repeatCondition);
+                conditionValue = evaluator.evaluateASTNode(repeatCondition);
                 if (!(conditionValue instanceof Boolean)) {
-                    throw new InterpreterException("REPEAT_LOOP condition must evaluate to a boolean", getNodeLineNumber(node));
+                    throw new InterpreterException("REPEAT_LOOP condition must evaluate to a binary", getNodeLineNumber(node));
                 }
     
                 if (!(Boolean) conditionValue) {
@@ -656,6 +698,11 @@ public class Executor {
                     // Break out of the loop
                     break;
                 }
+                iterations++;
+                if (iterations > maxIterations) {
+                    System.out.println("Warning: repeat loop exceeded maximum iterations (" + maxIterations + "). Possible infinite loop.");
+                    break;
+                }
                
             }
         } finally {
@@ -663,25 +710,52 @@ public class Executor {
         }
     }
 
+    
+
     private void executeFunctionDeclaration(ASTNode node) {
         String functionName = null;
+        ASTNode paramList = null;
         ASTNode functionBody = null;
-    
+
         for (ASTNode child : node.getChildren()) {
             if (child.getType().equals("IDENTIFIER")) {
                 functionName = child.getValue();
+            } else if (child.getType().equals("PARAM_LIST")) {
+                paramList = child;
             } else if (child.getType().equals("BLOCK_STMT")) {
                 functionBody = child;
             }
         }
-    
-        if (functionName != null && functionBody != null) {
-            functions.put(functionName, node);
-            symbolTableManager.addIdentifier(functionName, TokenType.METHOD, node.getChildren().get(1).getValue());
-            System.out.println("Function declared: " + functionName);
-        } else {
+
+        if (functionName == null || paramList == null || functionBody == null) {
             throw new InterpreterException("Invalid function declaration", getNodeLineNumber(node));
         }
+
+        // Build parameter signature string (e.g., "TEXT_TYPE," or "TEXT_TYPE,COMMA,TEXT_TYPE,")
+        List<ASTNode> params = getParamIdentifiers(paramList);
+        StringBuilder signatureBuilder = new StringBuilder();
+        for (ASTNode param : params) {
+            ASTNode typeNode = param.getParent().getChildren().get(0); // assumes type is first child
+            String typeString = null;
+            switch (typeNode.getType()) {
+                case "NUMBER_TYPE": typeString = "NUMBER"; break;
+                case "TEXT_TYPE": typeString = "TEXT"; break;
+                case "DECIMAL_TYPE": typeString = "DECIMAL"; break;
+                // add other types as needed
+                default: typeString = typeNode.getType();
+            }
+            signatureBuilder.append(typeString).append(",");
+        }
+        String paramSignature = signatureBuilder.toString();
+
+        symbolTableManager.addIdentifier(functionName, TokenType.METHOD, paramSignature);
+
+        String compositeKey = functionName + "|" + paramSignature;
+
+        // Store function with composite key
+        functions.put(compositeKey, node);
+        
+        System.out.println("Function declared: " + functionName + " with signature: " + paramSignature);
     }
 
     private void executePairMapDeclaration(ASTNode node) {
@@ -855,8 +929,20 @@ public class Executor {
             throw new InterpreterException("Missing argument list in function call: " + functionName, getNodeLineNumber(node));
         }
 
-        // Retrieve the function declaration
-        ASTNode functionNode = functions.get(functionName);
+        // Build argument signature string
+        List<ASTNode> args = getArgNodes(argListNode);
+        StringBuilder argSignatureBuilder = new StringBuilder();
+        for (ASTNode arg : args) {
+            // Infer type for each argument
+            Object argValue = evaluator.evaluateASTNode(arg);
+            TokenType argType = evaluator.inferType(argValue);
+            argSignatureBuilder.append(argType.toString()).append(",");
+        }
+        String argSignature = argSignatureBuilder.toString();
+
+        // Lookup function using composite key
+        String compositeKey = functionName + "|" + argSignature;
+        ASTNode functionNode = functions.get(compositeKey);
         if (functionNode == null) {
             throw new InterpreterException("Undefined function: " + functionName, getNodeLineNumber(node));
         }
@@ -878,7 +964,7 @@ public class Executor {
 
         // Get parameters and arguments
         List<ASTNode> params = getParamIdentifiers(paramList);
-        List<ASTNode> args = getArgNodes(argListNode);
+        args = getArgNodes(argListNode);
 
         if (params.size() != args.size()) {
             throw new InterpreterException(
