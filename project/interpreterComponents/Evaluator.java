@@ -110,6 +110,7 @@ public class Evaluator {
                 if (details.getValue() == null) {
                     throw new InterpreterException("Variable '" + varName + "' is uninitialized", getNodeLineNumber(node));
                 }
+                symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(varName);
                 return details.getValue();
 
             case "FUNC_CALL":

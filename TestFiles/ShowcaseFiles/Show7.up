@@ -3,6 +3,6 @@ start
     show (fruits[1]);
 
 
-  pair_map (text:text) studentAges = [("Mark":20), ("AJ":22)];
+  pair_map (text:number) studentAges = [("Mark":20), ("AJ":22)];
     show (studentAges["Mark"]);
 end

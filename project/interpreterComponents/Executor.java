@@ -251,7 +251,8 @@ public class Executor {
         } else {
             symbolTableManager.updateIdentifier(variable, value);
         }
-    
+        symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(variable);
+
         System.out.println("Assigned " + variable + " = " + value);
     }
     
@@ -290,7 +291,7 @@ public class Executor {
         }
     
         symbolTableManager.addIdentifier(varName, type, null);
-        SymbolDetails details = symbolTableManager.getIdentifier(varName);
+        SymbolDetails details = symbolTableManager.getCurrentSymbolTable().getIdentifier(varName);
         if (details != null) {
             details.setExplicitlyDeclared(true);
         }
@@ -309,7 +310,7 @@ public class Executor {
                 case "IDENTIFIER":
                     // Retrieve the value of the identifier
                     String varName = child.getValue();
-                    SymbolDetails details = symbolTableManager.getIdentifier(varName);
+                    SymbolDetails details = symbolTableManager.getCurrentSymbolTable().getIdentifier(varName);
     
                     if (details == null || !details.isExplicitlyDeclared()) {
                         throw new InterpreterException(
@@ -324,6 +325,8 @@ public class Executor {
                             getNodeLineNumber(node)
                         );
                     }
+
+                    symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(varName);
     
                     output.append(details.getValue());
                     break;
@@ -371,15 +374,35 @@ public class Executor {
         boolean conditionResult = (boolean) evaluator.evaluateASTNode(conditionNode);
     
         if (conditionResult) {
-            symbolTableManager.pushScope();
+            symbolTableManager.pushScope("IF_BLOCK");
             try {
+                // Access variables in the IF_BLOCK
+                ifBlock.getChildren().forEach(child -> {
+                    if (child.getType().equals("IDENTIFIER")) {
+                        String varName = child.getValue();
+                        SymbolDetails details = symbolTableManager.getIdentifier(varName);
+                        if (details != null) {
+                            symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(varName);
+                        }
+                    }
+                });
                 executeASTNode(ifBlock);
             } finally {
                 symbolTableManager.popScope();
             }
         } else if (otherwiseBlock != null) {
-            symbolTableManager.pushScope();
+            symbolTableManager.pushScope("OTHERWISE_BLOCK");
             try {
+                // Access variables in the OTHERWISE_BLOCK
+                otherwiseBlock.getChildren().forEach(child -> {
+                    if (child.getType().equals("IDENTIFIER")) {
+                        String varName = child.getValue();
+                        SymbolDetails details = symbolTableManager.getIdentifier(varName);
+                        if (details != null) {
+                            symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(varName);
+                        }
+                    }
+                });
                 executeASTNode(otherwiseBlock);
             } finally {
                 symbolTableManager.popScope();
@@ -463,9 +486,12 @@ public class Executor {
         }
     
         // Only push one scope for the loop variable and body
-        symbolTableManager.pushScope();
+        symbolTableManager.pushScope("FOR_LOOP");
         try {
             executeASTNode(init);  // Declare loop variable in this scope
+
+            String loopVariable = init.getChildren().get(0).getValue();
+            symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(loopVariable);
     
             while (true) {
                 Object cond = evaluator.evaluateASTNode(condition);
@@ -477,6 +503,8 @@ public class Executor {
                 executeASTNode(body); // No extra pushScope here!
     
                 executeASTNode(increment);
+
+                symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(loopVariable);
             }
         } finally {
             symbolTableManager.popScope(); // Pop the loop variable's scope
@@ -500,7 +528,7 @@ public class Executor {
             throw new InterpreterException("REPEAT_UNTIL missing block or condition", getNodeLineNumber(node));
         }
     
-        symbolTableManager.pushScope();
+        symbolTableManager.pushScope("REPEAT_UNTIL");
         try {
             while (true) {
                 executeASTNode(repeatBlock);
@@ -537,7 +565,7 @@ public class Executor {
             throw new InterpreterException("REPEAT_LOOP missing condition or block", getNodeLineNumber(node));
         }
     
-        symbolTableManager.pushScope();
+        symbolTableManager.pushScope("REPEAT_LOOP");
         try {
             while (true) {
                 Object conditionValue = evaluator.evaluateASTNode(repeatCondition);
@@ -792,7 +820,7 @@ public class Executor {
 
         // Create a new scope for the function
 
-        symbolTableManager.pushScope();
+        symbolTableManager.pushScope("FUNCTION_CALL");
 
         try {
             // Map arguments to parameters

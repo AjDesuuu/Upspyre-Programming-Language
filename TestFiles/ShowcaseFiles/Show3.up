@@ -17,6 +17,7 @@ start
   repeat (counter < 10) {
     counter = counter + 1;
     if (counter == 5) {
+      show("Skipping"+counter);
       continue;  
     }
     show(counter);

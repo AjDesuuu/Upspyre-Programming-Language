@@ -5,7 +5,8 @@ import project.SymbolTable;
 import project.SymbolDetails;
 import project.TokenType;
 import java.util.ArrayList;
-import java.util.List;  
+import java.util.List;
+import java.util.UUID;
 
 public class SymbolTableManager {
     private SymbolTable currentSymbolTable;
@@ -20,20 +21,61 @@ public class SymbolTableManager {
         allSymbolTables.add(symbolTable);
     }
     
-    public void pushScope() {
+    /**
+     * Push a new scope onto the stack
+     * @param blockType Optional - the type of block (if, for, while, etc.)
+     */
+    public void pushScope(String blockType) {
         int newScopeLevel = currentSymbolTable.getScopeLevel() + 1;
+        // Generate unique ID for this scope
+        String scopeId = UUID.randomUUID().toString();
+        
         SymbolTable newScope = new SymbolTable(newScopeLevel, currentSymbolTable);
+        // Set block type and ID for better debugging
+        newScope.setScopeType(blockType != null ? blockType : "generic");
+        newScope.setScopeId(scopeId);
+        
         symbolTableStack.push(newScope);
         currentSymbolTable = newScope;
-        // Replace or add the scope for this level
-        allSymbolTables.removeIf(table -> table.getScopeLevel() == newScopeLevel);
+        
+        // Add this as a new scope, don't replace existing ones
         allSymbolTables.add(newScope);
+        
         if (debugMode) {
-            System.out.println("[DEBUG] Pushed new scope: " + newScopeLevel);
+            System.out.println("[DEBUG] Pushed new scope: " + newScopeLevel + 
+                " (Type: " + newScope.getScopeType() + ", ID: " + scopeId + ")");
         }
     }
+    
+    // Overloaded method for backward compatibility
+    public void pushScope() {
+        pushScope(null);
+    }
+    
     public List<SymbolTable> getAllSymbolTables() {
         return allSymbolTables;
+    }
+    
+    // Get only the non-empty symbol tables
+    public List<SymbolTable> getNonEmptySymbolTables() {
+        List<SymbolTable> nonEmpty = new ArrayList<>();
+        for (SymbolTable table : allSymbolTables) {
+            if (!table.isEmpty()) {
+                nonEmpty.add(table);
+            }
+        }
+        return nonEmpty;
+    }
+    
+    // Get only symbol tables of a specific type
+    public List<SymbolTable> getSymbolTablesByType(String blockType) {
+        List<SymbolTable> result = new ArrayList<>();
+        for (SymbolTable table : allSymbolTables) {
+            if (blockType.equals(table.getScopeType())) {
+                result.add(table);
+            }
+        }
+        return result;
     }
     
     public void popScope() {
@@ -45,7 +87,6 @@ public class SymbolTableManager {
             }
         }
     }
-
     
     public void addIdentifier(String name, TokenType type, Object value) {
         currentSymbolTable.addIdentifier(name, type, value);
@@ -56,15 +97,11 @@ public class SymbolTableManager {
     }
     
     public SymbolDetails getIdentifier(String name) {
-        SymbolTable current = currentSymbolTable;
-        while (current != null) {
-            SymbolDetails details = current.getIdentifierLocalScope(name);
-            if (details != null) {
-                return details;
-            }
-            current = current.getParent();
+        if (currentSymbolTable == null) {
+            throw new InterpreterException("No active scope to search for identifier: " + name, 0);
         }
-        return null;
+        // Use SymbolTable's getIdentifier to traverse parent scopes
+        return currentSymbolTable.getIdentifier(name);
     }
     
     public void updateIdentifier(String name, Object value) {
@@ -86,12 +123,35 @@ public class SymbolTableManager {
         return null;
     }
     
-    
     public SymbolTable getCurrentSymbolTable() {
         return currentSymbolTable;
     }
     
     public void setCurrentSymbolTable(SymbolTable symbolTable) {
         this.currentSymbolTable = symbolTable;
+    }
+    
+    /**
+     * Print a summary of all symbol tables organized by scope type
+     */
+    public void printSymbolTableSummary() {
+        System.out.println("\nSymbol Table Summary:");
+        System.out.println("=====================");
+        
+        // Group by scope type
+    for (SymbolTable table : allSymbolTables) {
+        if (!table.isEmpty()) {
+            String scopeId = table.getScopeId();
+            String scopeIdDisplay = (scopeId != null && scopeId.length() >= 8) 
+                ? scopeId.substring(0, 8) 
+                : scopeId; // Use the full ID if it's shorter than 8 characters
+
+            System.out.println("Scope Level " + table.getScopeLevel() + 
+                            " (" + table.getScopeType() + " - ID: " + 
+                            scopeIdDisplay + "):");
+            table.printTable();
+            System.out.println();
+        }
+    }
     }
 }

@@ -1,12 +1,19 @@
 package project;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SymbolTable {
     public Map<String, SymbolDetails> table;
     private SymbolTable parent = null;
     private int scopeLevel = 0;
+    private String scopeType = "generic";
+    private String scopeId = "";
+    private final Set<String> usedVariables = new HashSet<>();
+    
 
     public SymbolTable() {
         table = new HashMap<>();
@@ -22,6 +29,21 @@ public class SymbolTable {
 
     public int getScopeLevel() {
         return scopeLevel;
+    }
+
+    // Mark a variable as used
+    public void markVariableAsUsed(String lexeme) {
+        usedVariables.add(lexeme);
+    }
+
+    // Check if a variable is used in the current scope
+    public boolean isVariableUsed(String lexeme) {
+        return usedVariables.contains(lexeme);
+    }
+
+    // Get the set of used variables
+    public Set<String> getUsedVariables() {
+        return usedVariables;
     }
     
     // Add an identifier with type and value
@@ -39,20 +61,47 @@ public class SymbolTable {
     }
 
     public SymbolDetails getIdentifier(String lexeme) {
+        System.out.println("Searching for identifier: " + lexeme);
         SymbolDetails details = table.get(lexeme);
+        
         if (details != null) {
+            // Variable found in the current scope
+            markVariableAsUsed(lexeme);
             return details;
         }
-        // If not found in current scope and parent exists, check parent
+        // If not found in current scope, check parent scope
         if (parent != null) {
-            return parent.getIdentifier(lexeme);
+            SymbolDetails parentDetails = parent.getIdentifier(lexeme);
+            if (parentDetails != null) {
+                // Mark the variable as used in the current scope
+                markVariableAsUsed(lexeme);
+            }
+            return parentDetails;
         }
-        return null;
+        
+        return null; // Variable not found
     }
     public SymbolDetails getIdentifierLocalScope(String lexeme) {
         return table.get(lexeme);
     }
 
+    public String getScopeType() {
+        return scopeType;
+    }
+    
+    public void setScopeType(String scopeType) {
+        this.scopeType = scopeType;
+    }
+    
+    public String getScopeId() {
+        return scopeId;
+    }
+    
+    public void setScopeId(String scopeId) {
+        this.scopeId = scopeId;
+    }
+    
+    
 
     // Check if an identifier exists
     public boolean containsIdentifier(String lexeme) {
@@ -84,6 +133,12 @@ public class SymbolTable {
             details.setType(type);
         }
     }
+    public boolean isEmpty() {
+        return getTable().isEmpty();
+    }
+    public Map<String, SymbolDetails> getTable() {
+        return table;
+    }
     
     // Print the symbol table
     public void printTable() {
@@ -95,13 +150,12 @@ public class SymbolTable {
     }
 
     public void printTableHierarchical() {
-        
-        System.out.println("Scope Level " + scopeLevel + ":");
+        System.out.println("Scope Level " + this.getScopeLevel() + " (" + this.getScopeType() + "):");
         System.out.println("|-----------------|--------------|-----------------|-------|");
         System.out.printf("| %-15s | %-12s | %-15s | %-5s |\n", "Lexeme", "Type", "Value", "Scope");
         System.out.println("|-----------------|--------------|-----------------|-------|");
-        
-        // Print current scope
+    
+        // Print current scope variables
         table.values().stream()
              .sorted((a, b) -> a.getLexeme().compareTo(b.getLexeme()))
              .forEach(details -> {
@@ -109,10 +163,26 @@ public class SymbolTable {
                      details.getLexeme(),
                      details.getType(),
                      details.getValue(),
-                     details.getScopeLevel());
+                     this.getScopeLevel());
              });
-        
-        
+    
+        // Recursively print inherited variables from all parent scopes
+        SymbolTable parentScope = this.getParent();
+        while (parentScope != null) {
+            final SymbolTable currentScope = parentScope; // Make effectively final
+            currentScope.getTable().values().stream()
+                .filter(details -> !table.containsKey(details.getLexeme())) // Only inherited variables
+                .filter(details -> isVariableUsed(details.getLexeme()))
+                .sorted((a, b) -> a.getLexeme().compareTo(b.getLexeme()))
+                .forEach(details -> {
+                    System.out.printf("| %-15s | %-12s | %-15s | %-5d |\n",
+                        details.getLexeme(),
+                        details.getType(),
+                        details.getValue(),
+                        currentScope.getScopeLevel()); // Show originating scope level
+                });
+            parentScope = parentScope.getParent(); // Move to the next parent
+        }
     }
 
     public void printTableRecursive() {
