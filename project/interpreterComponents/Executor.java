@@ -462,33 +462,26 @@ public class Executor {
             throw new InterpreterException("Incomplete FOR loop structure", getNodeLineNumber(node));
         }
     
-        executeASTNode(init);  // Run initialization once
+        // Only push one scope for the loop variable and body
+        symbolTableManager.pushScope();
+        try {
+            executeASTNode(init);  // Declare loop variable in this scope
     
-        while (true) {
-            Object cond = evaluator.evaluateASTNode(condition);
-            if (!(cond instanceof Boolean)) {
-                throw new InterpreterException("For-loop condition did not evaluate to a boolean", getNodeLineNumber(node));
-            }
-            if (!(Boolean) cond) break;
-
-            symbolTableManager.pushScope();
+            while (true) {
+                Object cond = evaluator.evaluateASTNode(condition);
+                if (!(cond instanceof Boolean)) {
+                    throw new InterpreterException("For-loop condition did not evaluate to a boolean", getNodeLineNumber(node));
+                }
+                if (!(Boolean) cond) break;
     
-            try {
-                executeASTNode(body);
-            } catch (BreakException be) {
-                symbolTableManager.popScope();
-                break;
-            } catch (ContinueException ce) {
-                symbolTableManager.popScope();
+                executeASTNode(body); // No extra pushScope here!
+    
                 executeASTNode(increment);
-                continue;
             }
-            symbolTableManager.popScope();
-    
-            executeASTNode(increment);
+        } finally {
+            symbolTableManager.popScope(); // Pop the loop variable's scope
         }
     }
-
     
 
     private void executeRepeatUntil(ASTNode node) {
@@ -507,26 +500,21 @@ public class Executor {
             throw new InterpreterException("REPEAT_UNTIL missing block or condition", getNodeLineNumber(node));
         }
     
-        while (true) {
-            symbolTableManager.pushScope();
-            try {
+        symbolTableManager.pushScope();
+        try {
+            while (true) {
                 executeASTNode(repeatBlock);
-            } catch (BreakException be) {
-                symbolTableManager.popScope();
-                break;
-            } catch (ContinueException ce) {
-                symbolTableManager.popScope();
-                // skip to condition check
-            }
-            symbolTableManager.popScope();
     
-            Object condVal = evaluator.evaluateASTNode(condition);
-            if (!(condVal instanceof Boolean)) {
-                throw new InterpreterException("REPEAT_UNTIL condition must evaluate to boolean", getNodeLineNumber(node));
+                Object condVal = evaluator.evaluateASTNode(condition);
+                if (!(condVal instanceof Boolean)) {
+                    throw new InterpreterException("REPEAT_UNTIL condition must evaluate to boolean", getNodeLineNumber(node));
+                }
+                if ((Boolean) condVal) {
+                    break;
+                }
             }
-            if ((Boolean) condVal) {
-                break;
-            }
+        } finally {
+            symbolTableManager.popScope();
         }
     }
 
@@ -536,7 +524,7 @@ public class Executor {
     
         for (ASTNode child : node.getChildren()) {
             switch (child.getType()) {
-                case "LT", "GT", "LEQ", "GEQ", "EQ", "NEQ":
+                case "LT": case "GT": case "LEQ": case "GEQ": case "EQ": case "NEQ":
                     repeatCondition = child;
                     break;
                 case "BLOCK_STMT":
@@ -549,28 +537,21 @@ public class Executor {
             throw new InterpreterException("REPEAT_LOOP missing condition or block", getNodeLineNumber(node));
         }
     
-        while (true) {
-            Object conditionValue = evaluator.evaluateASTNode(repeatCondition);
-            if (!(conditionValue instanceof Boolean)) {
-                throw new InterpreterException("REPEAT_LOOP condition must evaluate to a boolean", getNodeLineNumber(node));
-            }
+        symbolTableManager.pushScope();
+        try {
+            while (true) {
+                Object conditionValue = evaluator.evaluateASTNode(repeatCondition);
+                if (!(conditionValue instanceof Boolean)) {
+                    throw new InterpreterException("REPEAT_LOOP condition must evaluate to a boolean", getNodeLineNumber(node));
+                }
     
-            if (!(Boolean) conditionValue) {
-                break; // Exit the loop if the condition is false
-            }
-
-            symbolTableManager.pushScope();
+                if (!(Boolean) conditionValue) {
+                    break; // Exit the loop if the condition is false
+                }
     
-            try {
                 executeASTNode(repeatBlock);
-            } catch (BreakException be) {
-                symbolTableManager.popScope();
-                break; // Handle "stop" statement
-            } catch (ContinueException ce) {
-                // Skip to the next iteration
-                symbolTableManager.popScope();
-                continue;
             }
+        } finally {
             symbolTableManager.popScope();
         }
     }

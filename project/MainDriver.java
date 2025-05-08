@@ -1,6 +1,11 @@
 package project;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import project.utils.parser.ParseTreeNode; // Ensure this import matches the actual location of ParseTreeNode
 import project.interpreterComponents.InterpreterN;
 
@@ -39,9 +44,8 @@ public class MainDriver {
 
             
             System.out.println("\nUpdated Symbol Table:");
-            for (SymbolTable table : interpreter.getSymbolTableManager().getAllSymbolTables()) {
-                table.printTableHierarchical();
-            }
+            interpreter.printUpdatedSymbolTable();
+            
 
         } catch (IOException | InterruptedException e) {
             System.err.println("File not found: " + filePath);

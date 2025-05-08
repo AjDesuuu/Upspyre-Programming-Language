@@ -25,7 +25,9 @@ public class SymbolTableManager {
         SymbolTable newScope = new SymbolTable(newScopeLevel, currentSymbolTable);
         symbolTableStack.push(newScope);
         currentSymbolTable = newScope;
-        allSymbolTables.add(newScope); // Track every scope ever created
+        // Replace or add the scope for this level
+        allSymbolTables.removeIf(table -> table.getScopeLevel() == newScopeLevel);
+        allSymbolTables.add(newScope);
         if (debugMode) {
             System.out.println("[DEBUG] Pushed new scope: " + newScopeLevel);
         }

@@ -6,6 +6,11 @@ import project.SymbolTable;
 import project.interpreterComponents.utils.SymbolTableManager;
 import project.utils.parser.ASTNode;
 import project.utils.parser.ParseTreeNode;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class InterpreterN {
@@ -31,6 +36,18 @@ public class InterpreterN {
     }
     public SymbolTableManager getSymbolTableManager() {
         return symbolTableManager;
+    }
+
+    public void printUpdatedSymbolTable() {
+        
+        List<SymbolTable> tables = new ArrayList<>(symbolTableManager.getAllSymbolTables());
+        Map<Integer, SymbolTable> lastScopes = new LinkedHashMap<>();
+        for (SymbolTable table : tables) {
+            lastScopes.put(table.getScopeLevel(), table);
+        }
+        lastScopes.values().stream()
+            .sorted((a, b) -> a.getScopeLevel() - b.getScopeLevel())
+            .forEach(SymbolTable::printTableHierarchical);
     }
 
     public void interpret(ParseTreeNode root) {

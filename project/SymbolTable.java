@@ -112,12 +112,7 @@ public class SymbolTable {
                      details.getScopeLevel());
              });
         
-        // Print parent scope
-        // Print parent scope
-    if (parent != null) {
-        System.out.println();  // Add blank line for readability
-        parent.printTableHierarchical();  // Just call the method directly
-    }
+        
     }
 
     public void printTableRecursive() {
