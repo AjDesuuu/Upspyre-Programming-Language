@@ -110,6 +110,28 @@ public class SymbolTableManager {
             currentSymbolTable.addIdentifier(name, type, value);
         }
     }
+    public void addIdentifier(String name, TokenType type, Object value, int lineNumber) {
+        SymbolDetails existing = currentSymbolTable.getIdentifierLocalScope(name);
+        if (type == TokenType.METHOD) {
+            List<String> overloads;
+            if (existing != null && existing.getValue() instanceof List) {
+                overloads = (List<String>) existing.getValue();
+            } else {
+                overloads = new ArrayList<>();
+            }
+            String signature = (String) value;
+            if (overloads.contains(signature)) {
+                throw new InterpreterException(
+                    "Function '" + name + "' with the same parameter types is already defined",
+                    lineNumber // <-- Use the correct line number!
+                );
+            }
+            overloads.add(signature);
+            currentSymbolTable.addIdentifier(name, type, overloads);
+        } else {
+            currentSymbolTable.addIdentifier(name, type, value);
+        }
+    }
     
     public void addIdentifierToScope(SymbolTable scope, String name, TokenType type, Object value) {
         scope.addIdentifier(name, type, value);

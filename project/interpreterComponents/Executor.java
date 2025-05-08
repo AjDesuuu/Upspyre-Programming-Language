@@ -748,7 +748,7 @@ public class Executor {
         }
         String paramSignature = signatureBuilder.toString();
 
-        symbolTableManager.addIdentifier(functionName, TokenType.METHOD, paramSignature);
+        symbolTableManager.addIdentifier(functionName, TokenType.METHOD, paramSignature, getNodeLineNumber(node));
 
         String compositeKey = functionName + "|" + paramSignature;
 
