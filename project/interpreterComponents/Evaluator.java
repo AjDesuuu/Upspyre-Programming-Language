@@ -165,7 +165,12 @@ public class Evaluator {
     
         // Handle list access
         if (collection instanceof List) {
-            typeChecker.checkType(indexOrKey, Integer.class, "List index must be an integer");
+            if (!(indexOrKey instanceof Integer)) {
+                throw new InterpreterException(
+                    "TypeError: Index must be a 'number', got '" + inferType(indexOrKey) + "'",
+                    getNodeLineNumber(node)
+                );
+            }
             List<?> list = (List<?>) collection;
             int index = (Integer) indexOrKey;
     
@@ -429,7 +434,11 @@ public class Evaluator {
                 return (Boolean) left || (Boolean) right;
         }
 
-        throw new InterpreterException("Unsupported operator or type mismatch: " + operator + " (" + left.getClass() + ", " + right.getClass() + ")", lineNumber);
+        throw new InterpreterException(
+            "Unsupported operator or type mismatch: " + operator +
+            " (" + inferType(left) + ", " + inferType(right) + ")",
+            lineNumber
+        );
     }
 
     private int getNodeLineNumber(ASTNode node) {

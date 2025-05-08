@@ -252,6 +252,19 @@ public class Executor {
     
         // Update or declare the variable
         if (node.getChildren().stream().anyMatch(c -> c.getType().endsWith("_TYPE"))) {
+
+            // Check for redeclaration in current scope
+            // Check all visible scopes for redeclaration
+            //TODO DECIDE IF WE WANT RESHADOWING
+            SymbolDetails existing = symbolTableManager.getIdentifier(variable);
+            if (existing != null && existing.isExplicitlyDeclared()) {
+                throw new InterpreterException(
+                    "Variable '" + variable + "' is already declared in an outer or current scope",
+                    getNodeLineNumber(node)
+                );
+            }
+
+
             symbolTableManager.addIdentifier(variable, type, value);
             SymbolDetails details = symbolTableManager.getIdentifier(variable);
             if (details != null) {
@@ -306,6 +319,7 @@ public class Executor {
             return;
         }
         throw new InterpreterException("Variable is not a list: " + listName, getNodeLineNumber(node));
+
     }
     
     private void executeDeclaration(ASTNode node) {
