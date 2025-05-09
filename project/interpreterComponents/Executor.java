@@ -735,19 +735,32 @@ public class Executor {
         List<ASTNode> params = getParamIdentifiers(paramList);
         StringBuilder signatureBuilder = new StringBuilder();
         for (ASTNode param : params) {
-            ASTNode typeNode = param.getParent().getChildren().get(0); // assumes type is first child
+            ASTNode parent = param.getParent();
+            List<ASTNode> siblings = parent.getChildren();
+            int idx = siblings.indexOf(param);
+            ASTNode typeNode = null;
+            // Look backwards for the nearest type node
+            for (int i = idx - 1; i >= 0; i--) {
+                String t = siblings.get(i).getType();
+                if (t.equals("NUMBER_TYPE") || t.equals("TEXT_TYPE") || t.equals("DECIMAL_TYPE")) {
+                    typeNode = siblings.get(i);
+                    break;
+                }
+            }
             String typeString = null;
-            switch (typeNode.getType()) {
-                case "NUMBER_TYPE": typeString = "NUMBER"; break;
-                case "TEXT_TYPE": typeString = "TEXT"; break;
-                case "DECIMAL_TYPE": typeString = "DECIMAL"; break;
-                // add other types as needed
-                default: typeString = typeNode.getType();
+            if (typeNode != null) {
+                switch (typeNode.getType()) {
+                    case "NUMBER_TYPE": typeString = "NUMBER"; break;
+                    case "TEXT_TYPE": typeString = "TEXT"; break;
+                    case "DECIMAL_TYPE": typeString = "DECIMAL"; break;
+                    default: typeString = typeNode.getType();
+                }
+            } else {
+                typeString = "UNKNOWN";
             }
             signatureBuilder.append(typeString).append(",");
         }
         String paramSignature = signatureBuilder.toString();
-
         symbolTableManager.addIdentifier(functionName, TokenType.METHOD, paramSignature, getNodeLineNumber(node));
 
         String compositeKey = functionName + "|" + paramSignature;
