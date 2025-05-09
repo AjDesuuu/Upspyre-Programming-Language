@@ -24,6 +24,7 @@ public class Executor {
     private final Map<String, ASTNode> functions = new HashMap<>();
     private final boolean debugMode;
     private Object returnValue;
+    private int loopDepth = 0;
 
     public Executor(SymbolTableManager symbolTableManager, Evaluator evaluator, Scanner scanner, boolean debugMode) {
         this.symbolTableManager = symbolTableManager;
@@ -95,7 +96,11 @@ public class Executor {
                 break;
 
             case "STOP":
-                throw new BreakException();
+                if (loopDepth > 0) {
+                    throw new BreakException();
+                } else {
+                    throw new InterpreterException("'stop' statement not allowed outside of a breakable block", getNodeLineNumber(node));
+                }
             
             case "CONTINUE":
                 throw new ContinueException();
@@ -450,6 +455,7 @@ public class Executor {
     
         if (conditionResult) {
             symbolTableManager.pushScope("IF_BLOCK");
+            loopDepth++;
             try {
                 // Access variables in the IF_BLOCK
                 ifBlock.getChildren().forEach(child -> {
@@ -463,10 +469,12 @@ public class Executor {
                 });
                 executeASTNode(ifBlock);
             } finally {
+                loopDepth--;
                 symbolTableManager.popScope();
             }
         } else if (otherwiseBlock != null) {
             symbolTableManager.pushScope("OTHERWISE_BLOCK");
+            loopDepth++;
             try {
                 // Access variables in the OTHERWISE_BLOCK
                 otherwiseBlock.getChildren().forEach(child -> {
@@ -480,6 +488,7 @@ public class Executor {
                 });
                 executeASTNode(otherwiseBlock);
             } finally {
+                loopDepth--;
                 symbolTableManager.popScope();
             }
         }
@@ -566,6 +575,7 @@ public class Executor {
     
         // Only push one scope for the loop variable and body
         symbolTableManager.pushScope("FOR_LOOP");
+        loopDepth++;
         try {
             executeASTNode(init);  // Declare loop variable in this scope
 
@@ -586,6 +596,7 @@ public class Executor {
                 symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(loopVariable);
             }
         } finally {
+            loopDepth--;
             symbolTableManager.popScope(); // Pop the loop variable's scope
         }
     }
@@ -621,6 +632,7 @@ public class Executor {
         }
     
         symbolTableManager.pushScope("REPEAT_UNTIL");
+        loopDepth++;
         int maxIterations = 10; // or any reasonable limit
         int iterations = 0;
         try {
@@ -641,6 +653,7 @@ public class Executor {
                 }
             }
         } finally {
+            loopDepth--;
             symbolTableManager.popScope();
         }
     }
@@ -676,6 +689,7 @@ public class Executor {
         
     
         symbolTableManager.pushScope("REPEAT_LOOP");
+        loopDepth++;
         int maxIterations = 10; // safeguard
         int iterations = 0;
         try {
@@ -706,6 +720,7 @@ public class Executor {
                
             }
         } finally {
+            loopDepth--;
             symbolTableManager.popScope();
         }
     }
