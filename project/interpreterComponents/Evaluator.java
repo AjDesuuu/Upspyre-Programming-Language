@@ -210,7 +210,14 @@ public class Evaluator {
                 if (targetValue instanceof Map) {
                     return ((Map<?, ?>) targetValue).size();
                 }
-                throw new InterpreterException("len() not supported for type", getNodeLineNumber(node));
+                if(targetValue instanceof String) {
+                    return ((String) targetValue).length();
+                }
+                throw new InterpreterException(
+                    "TypeError: len() not supported for type '" +
+                    (targetValue == null ? "null" : inferType(targetValue).name().toLowerCase().replace("_type", "")) + "'",
+                    getNodeLineNumber(node)
+                );
             case "SORT":
                 if (targetValue instanceof List list) {
                     // Only sort if elements are Comparable
