@@ -727,12 +727,12 @@ public class Executor {
             }
         }
 
-        if (functionName == null || paramList == null || functionBody == null) {
+        if (functionName == null || functionBody == null) {
             throw new InterpreterException("Invalid function declaration", getNodeLineNumber(node));
         }
 
         // Build parameter signature string (e.g., "TEXT_TYPE," or "TEXT_TYPE,COMMA,TEXT_TYPE,")
-        List<ASTNode> params = getParamIdentifiers(paramList);
+        List<ASTNode> params = paramList != null ? getParamIdentifiers(paramList) : new ArrayList<>();
         StringBuilder signatureBuilder = new StringBuilder();
         for (ASTNode param : params) {
             ASTNode parent = param.getParent();
@@ -938,12 +938,13 @@ public class Executor {
             }
         }
 
-        if (argListNode == null) {
-            throw new InterpreterException("Missing argument list in function call: " + functionName, getNodeLineNumber(node));
+        // If no ARG_LIST node, treat as empty argument list
+        List<ASTNode> args = new ArrayList<>();
+        if (argListNode != null) {
+            args = getArgNodes(argListNode);
         }
-
         // Build argument signature string
-        List<ASTNode> args = getArgNodes(argListNode);
+        
         StringBuilder argSignatureBuilder = new StringBuilder();
         for (ASTNode arg : args) {
             // Infer type for each argument
@@ -971,13 +972,13 @@ public class Executor {
             }
         }
 
-        if (paramList == null || blockStmt == null) {
+        if (blockStmt == null) {
             throw new InterpreterException("Invalid function definition for: " + functionName, getNodeLineNumber(node));
         }
 
         // Get parameters and arguments
-        List<ASTNode> params = getParamIdentifiers(paramList);
-        args = getArgNodes(argListNode);
+        List<ASTNode> params = paramList != null ? getParamIdentifiers(paramList) : new ArrayList<>();
+        args = argListNode != null ? getArgNodes(argListNode) : new ArrayList<>();
 
         if (params.size() != args.size()) {
             throw new InterpreterException(
