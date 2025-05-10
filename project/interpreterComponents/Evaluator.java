@@ -8,6 +8,7 @@ import project.SymbolDetails;
 import project.utils.parser.ASTNode;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 public class Evaluator {
     public final SymbolTableManager symbolTableManager;
@@ -117,6 +118,8 @@ public class Evaluator {
             case "FUNC_CALL":
                 return executor.evaluateFunctionCall(node);
             case "LIST_VALUE":
+            case "PAIR_MAP_VALUE":
+            case "PAIR_MAP_KEY":
                 return evaluateListValue(node);
 
             case "COLLECTION_METHOD":
@@ -154,42 +157,73 @@ public class Evaluator {
 
     private Object evaluateListValue(ASTNode node) {
         String collectionName = node.getChildren().get(0).getValue();
-        Object indexOrKey = evaluateASTNode(node.getChildren().get(2));
-    
+        Object indexOrKey;
+
+
         SymbolDetails collectionDetails = symbolTableManager.getIdentifier(collectionName);
         if (collectionDetails == null) {
             throw new InterpreterException("Undefined variable: " + collectionName, getNodeLineNumber(node));
         }
-    
+
         Object collection = collectionDetails.getValue();
-    
+
         // Handle list access
         if (collection instanceof List) {
+            indexOrKey = evaluateASTNode(node.getChildren().get(2));;
             if (!(indexOrKey instanceof Integer)) {
                 throw new InterpreterException(
-                    "TypeError: Index must be a 'number', got '" + inferType(indexOrKey) + "'",
-                    getNodeLineNumber(node)
+                        "TypeError: Index must be a 'number', got '" + inferType(indexOrKey) + "'",
+                        getNodeLineNumber(node)
                 );
             }
             List<?> list = (List<?>) collection;
             int index = (Integer) indexOrKey;
-    
+
             if (index < 0 || index >= list.size()) {
                 throw new InterpreterException("List index out of bounds: " + index, getNodeLineNumber(node));
             }
             return list.get(index);
-        }
-    
-        // Handle map access
-        if (collection instanceof Map) {
+        } else if (collection instanceof Map) {
+            indexOrKey = evaluateASTNode(node.getChildren().get(4));;
             Map<?, ?> map = (Map<?, ?>) collection;
-            if (!map.containsKey(indexOrKey)) {
-                throw new InterpreterException("Map key not found: " + indexOrKey, getNodeLineNumber(node));
+            // Handle cases where the key is an integer
+            if (node.getType().equals("PAIR_MAP_KEY")) {
+                if (!(indexOrKey instanceof Integer)) {
+                    throw new InterpreterException(
+                            "Map key index must be an integer, got: " + (indexOrKey == null ? "null" : indexOrKey.getClass().getSimpleName()),
+                            getNodeLineNumber(node)
+                    );
+                }
+
+                int index = (Integer) indexOrKey;
+
+                // Convert the map's key set to a list to access by index
+                List<?> keys = new ArrayList<>(map.keySet());
+
+                if (index < 0 || index >= keys.size()) {
+                    throw new InterpreterException(
+                            "Map key index out of bounds: " + index,
+                            getNodeLineNumber(node)
+                    );
+                }
+
+                // Return the key at the specified index
+                return keys.get(index);
             }
-            return map.get(indexOrKey);
+
+            // Handle cases where the value is requested
+            if (node.getType().equals("PAIR_MAP_VALUE")) {
+                if (!map.containsKey(indexOrKey)) {
+                    throw new InterpreterException("Map key not found: " + indexOrKey, getNodeLineNumber(node));
+                }
+                // Return the value associated with the key
+                return map.get(indexOrKey);
+            }
+
+            throw new InterpreterException("Unsupported map operation for: " + node.getType(), getNodeLineNumber(node));
         }
-    
-        throw new InterpreterException("Variable is neither a list nor a map: " + collectionName, getNodeLineNumber(node));
+
+        throw new InterpreterException("Unsupported collection type for: " + collectionName, getNodeLineNumber(node));
     }
 
     private Object evaluateCollectionMethod(ASTNode node) {

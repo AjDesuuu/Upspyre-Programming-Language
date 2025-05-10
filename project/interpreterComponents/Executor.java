@@ -294,23 +294,24 @@ public class Executor {
 
     private void executeCollectionAssignment(ASTNode node) {
         // node: COLLECTION_ASSIGN -> [LIST_VALUE, ASSIGN, value]
-        ASTNode listValueNode = node.getChildren().get(0);
+        ASTNode collectionValueNode = node.getChildren().get(0);
         ASTNode valueNode = node.getChildren().get(2);
-    
+
         // Evaluate the list and index
-        String listName = listValueNode.getChildren().get(0).getValue();
-        Object index = evaluator.evaluateASTNode(listValueNode.getChildren().get(2));
+        String listName = collectionValueNode.getChildren().get(0).getValue();
+        Object index;
         Object value = evaluator.evaluateASTNode(valueNode);
-    
+
         // Check if the list exists
         SymbolDetails listDetails = symbolTableManager.getIdentifier(listName);
         if (listDetails == null) {
             throw new InterpreterException("Undefined variable: " + listName, getNodeLineNumber(node));
         }
         Object listObj = listDetails.getValue();
-    
+
         // Only support List for now
         if (listObj instanceof List) {
+            index = evaluator.evaluateASTNode(collectionValueNode.getChildren().get(2));
             // Ensure index is an Integer
             if (!(index instanceof Integer)) {
                 throw new InterpreterException("List index must be a number, got: " + (index == null ? "null" : index.getClass().getSimpleName()), getNodeLineNumber(node));
@@ -331,9 +332,28 @@ public class Executor {
             }
             list.set(idx, value);
             return;
-        }
-        throw new InterpreterException("Variable is not a list: " + listName, getNodeLineNumber(node));
+        } else if (listObj instanceof Map) {
+            index = evaluator.evaluateASTNode(collectionValueNode.getChildren().get(4));
+            // Evaluate the key for the map
+            index = evaluator.evaluateASTNode(collectionValueNode.getChildren().get(4));
+            Map<Object, Object> map = (Map<Object, Object>) listObj;
 
+            // Handle PAIR_MAP_VALUE
+            if (collectionValueNode.getType().equals("PAIR_MAP_VALUE")) {
+                map.put(index, value);
+                return;
+            }
+
+            // Handle PAIR_MAP_KEY (not typically allowed, but included for completeness)
+            if (collectionValueNode.getType().equals("PAIR_MAP_KEY")) {
+                throw new InterpreterException("Cannot assign to a map key directly: " + listObj, getNodeLineNumber(node));
+            }
+
+            throw new InterpreterException("Unsupported map operation for assignment: " + listName, getNodeLineNumber(node));
+        }
+
+
+        throw new InterpreterException("Variable is not a list: " + listName, getNodeLineNumber(node));
     }
     
     private void executeDeclaration(ASTNode node) {
@@ -1027,7 +1047,6 @@ public class Executor {
         } catch (ReturnException re) {
             returnValue = re.value;
         } finally {
-            
             symbolTableManager.popScope(); // Always restore previous scope
         }
 
