@@ -334,8 +334,6 @@ public class Executor {
             return;
         } else if (listObj instanceof Map) {
             index = evaluator.evaluateASTNode(collectionValueNode.getChildren().get(4));
-            // Evaluate the key for the map
-            index = evaluator.evaluateASTNode(collectionValueNode.getChildren().get(4));
             Map<Object, Object> map = (Map<Object, Object>) listObj;
 
             // Handle PAIR_MAP_VALUE
@@ -909,10 +907,35 @@ public class Executor {
                     break;
             }
         }
+
+        // Ensure both variable name and type are defined
         if (inputVarName != null && inputType != null) {
-            System.out.print("> "); // Prompt
+            SymbolDetails details = symbolTableManager.getIdentifier(inputVarName);
+
+            // Check if variable is already declared
+            if (details != null) {
+                // Ensure the types match
+                if (details.getType() != inputType) {
+                    throw new InterpreterException(
+                            "Type mismatch: cannot assign value of type " + inputVarName + " to variable '" + details.getType() + "' of type " + inputType,
+                            getNodeLineNumber(node)
+                    );
+                }
+            } else {
+                // Declare the variable if not already declared
+                symbolTableManager.addIdentifier(inputVarName, inputType, null);
+                details = symbolTableManager.getIdentifier(inputVarName);
+                if (details != null) {
+                    details.setExplicitlyDeclared(true);
+                }
+            }
+
+            // Prompt the user for input
+            System.out.print("> ");
             String userInput = scanner.nextLine();
             Object value = userInput;
+
+            // Parse input value if the required type is NUMBER
             if (inputType == TokenType.NUMBER) {
                 try {
                     value = Integer.parseInt(userInput);
@@ -920,18 +943,9 @@ public class Executor {
                     System.out.println("Invalid number input, storing as text.");
                 }
             }
-            SymbolDetails details = symbolTableManager.getIdentifier(inputVarName);
-            if (details != null) {
-                // Variable already declared: just update its value
-                symbolTableManager.updateIdentifier(inputVarName, value);
-            } else {
-                // Not declared yet: declare and set explicitlyDeclared
-                symbolTableManager.addIdentifier(inputVarName, inputType, value);
-                details = symbolTableManager.getIdentifier(inputVarName);
-                if (details != null) {
-                    details.setExplicitlyDeclared(true);
-                }
-            }
+
+            // Update the variable with the new value
+            symbolTableManager.updateIdentifier(inputVarName, value);
         }
     }
 
