@@ -35,6 +35,7 @@ public class LR1Generator {
                 "NUMBER_TYPE", "DECIMAL_TYPE", "TEXT_TYPE", "BINARY_TYPE", "LIST_TYPE", "PAIR_MAP_TYPE", "PICK",
                 "TRUE", "FALSE", "NONE",
                 "LEN", "SORT", "KEY", "VALUE", "TO_TEXT",
+                "REMOVE", "ADD", "CONTAINS", "CLEAR", "KEYS", "VALUES",
                 "IDENTIFIER", "NUMBER", "DECIMAL", "TEXT",
                 "ASSIGN", "PLUS", "MINUS", "MULT", "DIV", "EXPONENT", "MOD", "FLOOR_DIV", "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN",
                 "AND", "OR", "NOT", "EQ", "NEQ", "LT", "GT", "LEQ", "GEQ",
@@ -53,8 +54,8 @@ public class LR1Generator {
                 "<FUNC_DECL_OPT>", "<PARAM_LIST>", "<PARAM_LIST_GROUP>", "<FUNC_CALL>", "<FUNC_CALL_OPT>", 
                 "<ARG_LIST>", "<ARG_LIST_GROUP>", "<CHOOSE_WHAT_STMT>", "<CHOOSE_WHAT_STMT_KLEENE>", 
                 "<PICK_CASE>", "<COLLECTION_STMT>", "<LIST_DECL>", "<LIST_DECL_GROUP>", "<PAIR_MAP_DECL>", 
-                "<PAIR_MAP_VAL>", "<PAIR_MAP_VAL_GROUP>", "<PAIR>", "<COLLECTION_ASSIGN>", "<COLLECTION_EXPR>", 
-                "<LIST_VALUE>", "<PAIR_MAP_VALUE>", "<PAIR_MAP_KEY>", "<COLLECTION_METHOD>", "<DATA_TYPE>", 
+                "<PAIR_MAP_VAL>", "<PAIR_MAP_VAL_GROUP>","<LIST_ELEMENTS>", "<PAIR>", "<COLLECTION_ASSIGN>", "<COLLECTION_EXPR>", 
+                "<LIST_VALUE>","<LIST_ELEMENTS_OPT>",  "<PAIR_MAP_VALUE>", "<PAIR_MAP_KEY>", "<COLLECTION_METHOD>", "<DATA_TYPE>", 
                 "<RELATIONAL_OP>", "<ADD_OP>", "<MULTI_OP>", "<EXP_OP>", "<ASSIGN_OP>", "<SHIFT_OP>", "<BINARY>","<CONDITIONAL_STMT_GROUP>",
                 "<BLOCK_STMT_KLEENE>", "<CONTINUE_STMT>", "<STOP_STMT>"
         ));

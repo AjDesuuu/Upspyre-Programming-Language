@@ -1,0 +1,29 @@
+start
+    // Declare a pair map with string keys and number values
+    pair_map(text:number) grades = [
+        ("Alice": 95),
+        ("Bob": 88),
+        ("Carol": 100)
+    ];
+
+    // Show the entire map as text
+    show(grades.toText());      // Should output: {Alice: 95, Bob: 88, Carol: 100}
+
+    // Show all keys
+    show(grades.keys());        // Should output: [Alice, Bob, Carol]
+
+    // Show all values
+    show(grades.values());      // Should output: [95, 88, 100]
+
+    // Check if a key exists
+    show(grades.contains("Bob"));   // Should output: true
+
+    // Remove a key
+    grades.remove("Bob");
+    show(grades.toText());      // Should output: {Alice: 95, Carol: 100}
+
+    // Clear the map
+    grades.clear();
+    show(grades.toText());      // Should output: {}
+
+end

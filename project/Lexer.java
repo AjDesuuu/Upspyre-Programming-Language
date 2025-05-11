@@ -26,7 +26,13 @@ public class Lexer {
             Map.entry("key", TokenType.KEY), Map.entry("value", TokenType.VALUE),
             Map.entry("toText", TokenType.TO_TEXT), Map.entry("pick", TokenType.PICK),
             Map.entry("AND", TokenType.AND),
-            Map.entry("OR", TokenType.OR), Map.entry("NOT", TokenType.NOT)
+            Map.entry("OR", TokenType.OR), Map.entry("NOT", TokenType.NOT),
+            Map.entry("remove", TokenType.REMOVE),
+            Map.entry("add", TokenType.ADD),
+            Map.entry("contains", TokenType.CONTAINS),
+            Map.entry("clear", TokenType.CLEAR),
+            Map.entry("keys", TokenType.KEYS),
+            Map.entry("values", TokenType.VALUES)
     );
 
     private static final Map<String, TokenType> OPERATORS = Map.ofEntries(

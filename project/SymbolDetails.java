@@ -8,6 +8,7 @@ public class SymbolDetails {
     private boolean isDeclared;
     private boolean isExplicitlyDeclared;
     private int scopeLevel;
+    private TokenType elementType;
 
 
     public SymbolDetails(String lexeme, TokenType type, Object value, int scopeLevel) {
@@ -18,6 +19,13 @@ public class SymbolDetails {
         this.isDeclared = (type != null);
         this.isExplicitlyDeclared = false;
         this.scopeLevel = scopeLevel;
+    }
+
+    public TokenType getElementType() {
+        return elementType;
+    }
+    public void setElementType(TokenType elementType) {
+        this.elementType = elementType;
     }
     public int getScopeLevel() {
         return scopeLevel;

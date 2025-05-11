@@ -136,7 +136,9 @@ public class Executor {
             case "INPUT_STMT":
                 executeInputStatement(node);
                 break;
-            
+            case "COLLECTION_METHOD":
+                evaluator.evaluateASTNode(node);
+                break;
             case "CHOOSE_WHAT_STMT":
                 executeChooseWhatStatement(node);
                 break;
@@ -560,7 +562,12 @@ public class Executor {
         }
 
         if (listName != null && listType != null) {
-            symbolTableManager.addIdentifier(listName, listType, elements);
+            symbolTableManager.addIdentifier(listName, TokenType.LIST_TYPE, elements);
+            SymbolDetails details = symbolTableManager.getIdentifier(listName);
+            if (details != null) {
+                details.setExplicitlyDeclared(true);
+                details.setElementType(listType); // If you have this method/field
+            }
             System.out.println("Assigned list " + listName + " = " + elements);
         }
     }

@@ -237,6 +237,57 @@ public class Evaluator {
         Object targetValue = targetDetails.getValue();
     
         switch (methodName) {
+            case "ADD":
+                if (targetValue instanceof List<?> l) {
+                    @SuppressWarnings("unchecked")
+                    List<Object> list = (List<Object>) l;
+                    Object value = this.evaluateASTNode(node.getChildren().get(4));
+                    list.add(value);
+
+                    return null;
+                }
+                throw new InterpreterException("add() only supported for lists", getNodeLineNumber(node));
+            case "REMOVE":
+                if (targetValue instanceof List<?> list) {
+                    Object idx = this.evaluateASTNode(node.getChildren().get(4));
+                    if (!(idx instanceof Integer))
+                        throw new InterpreterException("remove() index must be a number", getNodeLineNumber(node));
+                    return list.remove((int) idx);
+                }
+                if (targetValue instanceof Map<?, ?> map) {
+                    Object key = this.evaluateASTNode(node.getChildren().get(4));
+                    return map.remove(key);
+                }
+                throw new InterpreterException("remove() only supported for lists and maps", getNodeLineNumber(node));
+            case "CONTAINS":
+                Object arg = this.evaluateASTNode(node.getChildren().get(4));
+                if (targetValue instanceof List<?> list) {
+                    return list.contains(arg);
+                }
+                if (targetValue instanceof Map<?, ?> map) {
+                    return map.containsKey(arg);
+                }
+                throw new InterpreterException("contains() only supported for lists and maps", getNodeLineNumber(node));
+            case "CLEAR":
+                if (targetValue instanceof List<?> list) {
+                    list.clear();
+                    return null;
+                }
+                if (targetValue instanceof Map<?, ?> map) {
+                    map.clear();
+                    return null;
+                }
+                throw new InterpreterException("clear() only supported for lists and maps", getNodeLineNumber(node));
+            case "KEYS":
+                if (targetValue instanceof Map<?, ?> map) {
+                    return new ArrayList<>(map.keySet());
+                }
+                throw new InterpreterException("keys() only supported for maps", getNodeLineNumber(node));
+            case "VALUES":
+                if (targetValue instanceof Map<?, ?> map) {
+                    return new ArrayList<>(map.values());
+                }
+                throw new InterpreterException("values() only supported for maps", getNodeLineNumber(node));
             case "LEN":
                 if (targetValue instanceof List) {
                     return ((List<?>) targetValue).size();

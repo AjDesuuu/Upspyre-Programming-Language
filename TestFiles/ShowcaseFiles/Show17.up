@@ -1,0 +1,17 @@
+// TestCollections.up
+start
+    // Test list methods
+    list_of number numbers = [];
+    numbers.add(10);
+    numbers.add(20);
+
+    show(numbers.toText());           // Should show [10, 20, 30]
+    numbers.remove(1);
+    show(numbers.toText());           // Should show [10, 30]
+    show(numbers.contains(10)); // Should show true
+    numbers.clear();
+    show(numbers.toText());           // Should show []
+
+    
+
+end
