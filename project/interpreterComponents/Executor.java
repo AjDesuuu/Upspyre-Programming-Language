@@ -103,7 +103,11 @@ public class Executor {
                 }
             
             case "CONTINUE":
-                throw new ContinueException();
+                if (loopDepth > 0) {
+                    throw new ContinueException();
+                } else {
+                    throw new InterpreterException("'continue' statement not allowed outside of a loop", getNodeLineNumber(node));
+                }
             
             case "FOR_LOOP":
                 executeForLoop(node);
@@ -473,7 +477,7 @@ public class Executor {
     
         if (conditionResult) {
             symbolTableManager.pushScope("IF_BLOCK");
-            loopDepth++;
+            
             try {
                 // Access variables in the IF_BLOCK
                 ifBlock.getChildren().forEach(child -> {
@@ -487,12 +491,12 @@ public class Executor {
                 });
                 executeASTNode(ifBlock);
             } finally {
-                loopDepth--;
+                
                 symbolTableManager.popScope();
             }
         } else if (otherwiseBlock != null) {
             symbolTableManager.pushScope("OTHERWISE_BLOCK");
-            loopDepth++;
+            
             try {
                 // Access variables in the OTHERWISE_BLOCK
                 otherwiseBlock.getChildren().forEach(child -> {
@@ -506,7 +510,7 @@ public class Executor {
                 });
                 executeASTNode(otherwiseBlock);
             } finally {
-                loopDepth--;
+                
                 symbolTableManager.popScope();
             }
         }
@@ -607,8 +611,16 @@ public class Executor {
                 }
                 if (!(Boolean) cond) break;
     
-                executeASTNode(body); // No extra pushScope here!
-    
+                try {
+                    executeASTNode(body);
+                } catch (ContinueException ce) {
+                    // skip increment, go to next iteration
+                    executeASTNode(increment);
+                    symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(loopVariable);
+                    continue;
+                } catch (BreakException be) {
+                    break;
+                }
                 executeASTNode(increment);
 
                 symbolTableManager.getCurrentSymbolTable().markVariableAsUsed(loopVariable);
@@ -655,7 +667,15 @@ public class Executor {
         int iterations = 0;
         try {
             while (true) {
-                executeASTNode(repeatBlock);
+                try {
+                    executeASTNode(repeatBlock);
+                } catch (ContinueException ce) {
+                    // continue to next iteration
+                    continue;
+                } catch (BreakException be) {
+                    // break out of the loop
+                    break;
+                }
     
                 condVal = evaluator.evaluateASTNode(condition);
                 if (!(condVal instanceof Boolean)) {
