@@ -7,7 +7,7 @@ import project.interpreterComponents.InterpreterN;
 
 public class MainDriver {
     public static void main(String[] args) {
-        String fileName = "Show18.up";
+        String fileName = "Show1.up";
         String filePath = getFilePath(fileName);
         SymbolTable lexicalSymbolTable = new SymbolTable();
         SymbolTable symbolTable = new SymbolTable(0,null);
@@ -36,7 +36,7 @@ public class MainDriver {
            
 
             System.out.println("\nInterpreting...");
-            InterpreterN interpreter = new InterpreterN(symbolTable,true);
+            InterpreterN interpreter = new InterpreterN(symbolTable,false);
             interpreter.interpret(parseTree);
 
             

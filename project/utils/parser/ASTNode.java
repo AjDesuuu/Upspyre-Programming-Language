@@ -286,17 +286,18 @@ public class ASTNode {
     public String toDot() {
         StringBuilder sb = new StringBuilder();
         String nodeId = "n" + System.identityHashCode(this);
-
+    
+        // Node label: type and value (if present)
         String label = type;
         if (value != null) label += "\\n" + value;
-
+    
         sb.append(String.format("  %s [label=\"%s\"];\n", nodeId, label));
-
+    
         for (ASTNode child : children) {
             sb.append(child.toDot());
             sb.append(String.format("  %s -> %s;\n", nodeId, "n" + System.identityHashCode(child)));
         }
-
+    
         return sb.toString();
     }
 
@@ -304,22 +305,25 @@ public class ASTNode {
         try {
             File dotFile = File.createTempFile("ast", ".dot");
             try (FileWriter writer = new FileWriter(dotFile)) {
+                // Match the parse tree's DOT header
                 writer.write("digraph AST {\n");
-                writer.write(toDot());
+                writer.write("  node [shape=box, fontname=\"Courier\"];\n");
+                writer.write("  edge [arrowhead=vee];\n");
+                writer.write(this.toDot());
                 writer.write("}\n");
             }
-
+    
             String command = String.format("dot -Tpng %s -o %s", dotFile.getAbsolutePath(), outputFilePath);
             Process process = Runtime.getRuntime().exec(command);
             int exitCode = process.waitFor();
-
+    
             if (exitCode != 0) {
                 throw new RuntimeException("Graphviz failed to generate the image. Ensure Graphviz is installed and available in PATH.");
             }
-
+    
             System.out.println("AST image generated: " + outputFilePath);
             dotFile.delete();
-
+    
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Failed to generate AST image: " + e.getMessage(), e);
         }
