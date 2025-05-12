@@ -39,14 +39,12 @@ public class InterpreterN {
     }
 
     public void printUpdatedSymbolTable() {
-
-        
-        List<SymbolTable> tables = symbolTableManager.getAllSymbolTables();
-    
+        List<SymbolTable> tables = symbolTableManager.getLastScopesByLevelAndType();
+        //List<SymbolTable> tables = symbolTableManager.getAllSymbolTables();
         for (SymbolTable table : tables) {
-            table.printTableHierarchical(); // Use the hierarchical print method
+            table.printTableHierarchical();
+            System.out.println();
         }
-    
     }
 
     public void interpret(ParseTreeNode root) {

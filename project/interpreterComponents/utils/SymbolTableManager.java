@@ -7,6 +7,8 @@ import project.TokenType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class SymbolTableManager {
     private SymbolTable currentSymbolTable;
@@ -170,6 +172,15 @@ public class SymbolTableManager {
     
     public void setCurrentSymbolTable(SymbolTable symbolTable) {
         this.currentSymbolTable = symbolTable;
+    }
+
+    public List<SymbolTable> getLastScopesByLevelAndType() {
+        Map<String, SymbolTable> lastScopes = new LinkedHashMap<>();
+        for (SymbolTable table : allSymbolTables) {
+            String key = table.getScopeLevel() + "|" + table.getScopeType();
+            lastScopes.put(key, table); // Overwrites previous, keeps last for each (level, type)
+        }
+        return new ArrayList<>(lastScopes.values());
     }
     
     /**
