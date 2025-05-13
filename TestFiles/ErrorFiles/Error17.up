@@ -1,0 +1,4 @@
+start
+  text t = "abc";
+  number n = t.convertTo(number); // Error: Cannot convert non-numeric text to number
+end

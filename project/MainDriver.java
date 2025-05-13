@@ -36,7 +36,7 @@ public class MainDriver {
            
 
             System.out.println("\nInterpreting...");
-            InterpreterN interpreter = new InterpreterN(symbolTable,false);
+            InterpreterN interpreter = new InterpreterN(symbolTable,true);
             interpreter.interpret(parseTree);
 
             

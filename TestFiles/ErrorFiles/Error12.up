@@ -1,0 +1,5 @@
+start
+  number x = "hello"; // Error: Assigning text to number
+  decimal y = true;   // Error: Assigning binary to decimal
+  text t = 123;       // Error: Assigning number to text
+end

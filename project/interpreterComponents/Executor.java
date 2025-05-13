@@ -542,7 +542,7 @@ public class Executor {
                 case "DECIMAL":
                     elements.add(evaluator.evaluateASTNode(child));
                     break;
-                case "LIST_DECL_GROUP":
+                case "LIST_ELEMENTS":
                     collectListElements(child, elements);
                     break;
             }

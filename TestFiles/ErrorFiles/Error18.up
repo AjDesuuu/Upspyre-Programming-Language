@@ -1,0 +1,7 @@
+start
+  list_of number nums = [1, 2, 3];
+  nums.add("hello"); // Error: Adding text to number list
+
+  pair_map(text:number) grades = [("Alice": 90)];
+  grades["Bob"] = "A+"; // Error: Assigning text to number value in pair_map
+end

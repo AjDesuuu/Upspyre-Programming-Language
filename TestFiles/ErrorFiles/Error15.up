@@ -1,0 +1,5 @@
+start
+  list_of number nums = [1, 2, 3];
+  show(nums[5]); // Error: Index out of bounds
+  nums.remove(10); // Error: Index out of bounds
+end
