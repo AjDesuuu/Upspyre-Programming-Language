@@ -1,7 +1,7 @@
 start
-  method add(number a, number b) {
+  method adder(number a, number b) {
     output a + b;
   }
-  number result = add(5); // Error: Wrong number of arguments
-  number result2 = add("hello", 2); // Error: Wrong argument type
+  number result = adder(5); // Error: Wrong number of arguments
+  number result2 = adder("hello", 2); // Error: Wrong argument type
 end

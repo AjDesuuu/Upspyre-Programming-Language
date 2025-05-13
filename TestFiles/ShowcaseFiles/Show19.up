@@ -1,0 +1,25 @@
+start
+  number a = 2 + 3 * 4;           // 14
+  number b = (2 + 3) * 4;         // 20
+  number c = 2 + 3 * 4 ** 2;      // 50
+  number d = 2 ** 3 ** 2;         // 512
+  number e = 10 - 4 - 2;          // 4
+  number f = 20 / 2 * 5;          // 50
+  binary g = 7 + 3 > 8 AND 2 < 5; // true
+  binary h = 1 + 2 * 3 == 7 OR 4 < 2; // true
+  number i = 5 & 3 | 8 ^ 2;       // 11
+  binary j = NOT false OR false;  // true
+  binary k = 3 > 2 AND 1 == 1;    // true
+
+  show(a);
+  show(b);
+  show(c);
+  show(d);
+  show(e);
+  show(f);
+  show(g);
+  show(h);
+  show(i);
+  show(j);
+  show(k);
+end

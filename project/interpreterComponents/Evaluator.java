@@ -260,8 +260,20 @@ public class Evaluator {
                     @SuppressWarnings("unchecked")
                     List<Object> list = (List<Object>) l;
                     Object value = this.evaluateASTNode(node.getChildren().get(4));
-                    list.add(value);
 
+                    // Type check: get element type from symbol table
+                    SymbolDetails details = symbolTableManager.getIdentifier(methodTarget);
+                    TokenType elementType = details != null ? details.getElementType() : null;
+                    TokenType valueType = inferType(value);
+
+                    if (elementType != null && valueType != elementType) {
+                        throw new InterpreterException(
+                            "Type mismatch: cannot add value of type " + valueType + " to list of type " + elementType,
+                            getNodeLineNumber(node)
+                        );
+                    }
+
+                    list.add(value);
                     return null;
                 }
                 throw new InterpreterException("add() only supported for lists", getNodeLineNumber(node));

@@ -496,7 +496,12 @@ public class Executor {
             throw new InterpreterException("Missing or invalid condition in IF statement", getNodeLineNumber(node));
         }
     
-        boolean conditionResult = (boolean) evaluator.evaluateASTNode(conditionNode);
+        Object condResult = evaluator.evaluateASTNode(conditionNode);
+        if (!(condResult instanceof Boolean)) {
+            throw new InterpreterException("Condition in IF statement must be binary (true/false), got: " +
+                (condResult == null ? "null" : condResult.getClass().getSimpleName()), getNodeLineNumber(node));
+        }
+        boolean conditionResult = (Boolean) condResult;
     
         if (conditionResult) {
             symbolTableManager.pushScope("IF_BLOCK");
