@@ -66,12 +66,15 @@ public class Executor {
                 for (ASTNode child : node.getChildren()) {
                     try {
                         executeASTNode(child);
+                    } catch (ContinueException | BreakException ce) {
+                        // These are for control flow, not errors—rethrow so loops handle them
+                        throw ce;
                     } catch (InterpreterException e) {
                         errorCollector.addError("Interpreter error at line " + e.getLineNumber() + ": " + e.getMessage());
-                        // Continue to next statement
                     } catch (Exception e) {
-                        errorCollector.addError("Unexpected error: " + e.getMessage());
-                        // Continue to next statement
+                        String msg = e.getMessage();
+                        if (msg == null || msg.trim().isEmpty()) msg = e.getClass().getSimpleName();
+                        errorCollector.addError("Unexpected error: " + msg);
                     }
                 }
                 break;

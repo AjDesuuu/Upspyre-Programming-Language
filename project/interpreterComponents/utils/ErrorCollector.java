@@ -8,6 +8,7 @@ public class ErrorCollector {
     private static final int LINE_WIDTH = 120;
 
     public void addError(String message) {
+        if (message == null || message.trim().isEmpty()) return;
         errors.add(message);
     }
 
