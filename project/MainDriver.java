@@ -7,7 +7,7 @@ import project.interpreterComponents.InterpreterN;
 
 public class MainDriver {
     public static void main(String[] args) {
-        String fileName = "Show7.up";
+        String fileName = "Show9.up";
         String filePath = getFilePath(fileName);
         SymbolTable lexicalSymbolTable = new SymbolTable();
         SymbolTable symbolTable = new SymbolTable(0,null);

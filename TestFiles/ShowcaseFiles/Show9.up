@@ -2,6 +2,6 @@ start
   number result = 5 ** 2 + 4 * 2 / (1 - 5) ** 2;  
   show(result);
 
-  decimal result = 5 ** 2 + 4 * 2 / (1 - 5) ** 2;  
+  decimal resultd = 5 ** 2 + 4 * 2 / (1 - 5) ** 2;  
   show(result);
 end 
