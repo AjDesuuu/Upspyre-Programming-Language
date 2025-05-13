@@ -1,0 +1,4 @@
+start
+  pair_map(text:number) grades = [("Alice": 90)];
+  grades["Bob"] = "A+"; // Error: Assigning text to number value in pair_map
+end

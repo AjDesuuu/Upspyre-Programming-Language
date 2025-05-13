@@ -1,0 +1,6 @@
+start
+  method add(number x, number y){
+    number z = x + y;
+  }
+  number ans = add(1,2); // Error: Missing return value
+end

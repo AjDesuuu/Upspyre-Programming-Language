@@ -1,0 +1,4 @@
+start
+  number x = 10;
+  number x = 20; // Error: Variable 'x' already declared in this scope
+end

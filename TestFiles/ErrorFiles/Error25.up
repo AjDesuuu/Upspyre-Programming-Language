@@ -1,0 +1,3 @@
+start
+  get number age(); // Error: 'age' is not declared before input
+end

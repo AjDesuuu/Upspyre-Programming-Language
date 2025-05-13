@@ -1,0 +1,6 @@
+start
+  text condition = "hello";
+  if (condition) { // Error: Condition must be binary
+    show("Invalid condition type");
+  }
+end

@@ -1,0 +1,5 @@
+start
+  decimal pi = 3.14;
+  decimal zero = 0.0;
+  decimal result = pi / zero; // Error: Division by zero
+end

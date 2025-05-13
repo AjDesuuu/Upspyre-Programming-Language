@@ -1,0 +1,4 @@
+start
+  number x = 42;
+  x = "forty-two"; // Error: Variable 'x' inferred as 'number'
+end

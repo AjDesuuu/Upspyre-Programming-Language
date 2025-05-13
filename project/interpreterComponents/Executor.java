@@ -7,7 +7,9 @@ import project.interpreterComponents.utils.InterpreterException;
 import project.interpreterComponents.utils.SymbolTableManager;
 import project.interpreterComponents.utils.BreakException;
 import project.interpreterComponents.utils.ContinueException;
+import project.interpreterComponents.utils.ErrorCollector;
 import project.interpreterComponents.utils.ReturnException;
+import project.interpreterComponents.utils.ErrorCollector;
 import project.SymbolDetails;
 import project.SymbolTable;
 import project.utils.parser.ASTNode;
@@ -23,6 +25,7 @@ public class Executor {
     private final Scanner scanner;
     private final Map<String, ASTNode> functions = new HashMap<>();
     private final boolean debugMode;
+    private final ErrorCollector errorCollector;
     private Object returnValue;
     private int loopDepth = 0;
 
@@ -31,8 +34,13 @@ public class Executor {
         this.evaluator = evaluator;
         this.scanner = scanner;
         this.debugMode = debugMode;
+        this.errorCollector = new ErrorCollector();
     }
 
+    public ErrorCollector getErrorCollector() {
+        return errorCollector;
+    }
+    
     public void setEvaluator(Evaluator evaluator) {
         this.evaluator = evaluator;
     }
@@ -55,12 +63,19 @@ public class Executor {
             case "STMT":
             case "START":
             case "END":
-                // Process structural nodes
                 for (ASTNode child : node.getChildren()) {
-                    executeASTNode(child);
+                    try {
+                        executeASTNode(child);
+                    } catch (InterpreterException e) {
+                        errorCollector.addError("Interpreter error at line " + e.getLineNumber() + ": " + e.getMessage());
+                        // Continue to next statement
+                    } catch (Exception e) {
+                        errorCollector.addError("Unexpected error: " + e.getMessage());
+                        // Continue to next statement
+                    }
                 }
                 break;
-    
+                
             case "ASSIGNMENT_STMT":
                 executeAssignment(node);
                 break;

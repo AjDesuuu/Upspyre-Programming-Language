@@ -62,16 +62,11 @@ public class InterpreterN {
         astRoot.generateImage("ast.png");
 
         System.out.println("\nStarting interpretation...");
-        try {
-            
-            executor.executeASTNode(astRoot);
-        } catch (InterpreterException e) {
-            System.err.println("Interpreter error at line " + e.getLineNumber() + ": " + e.getMessage());
-            return;
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
-            e.printStackTrace();
-            return;
-        }
+            // Remove try-catch so all errors are collected by Executor's ErrorCollector
+        executor.executeASTNode(astRoot);
+
+        // Print all collected errors at the end
+        executor.getErrorCollector().printErrors();
+        
     }
 }
