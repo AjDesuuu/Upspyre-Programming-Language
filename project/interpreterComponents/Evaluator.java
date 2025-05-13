@@ -169,10 +169,13 @@ public class Evaluator {
         TokenType collectionType = collectionDetails.getType();
 
         if (collectionType == TokenType.PAIR_MAP_TYPE && node.getType().equals("LIST_VALUE")) {
-            throw new InterpreterException(
-                "Cannot access pair_map '" + collectionName + "' using list syntax. Use '" + collectionName + ".value[key]' instead.",
-                getNodeLineNumber(node)
-            );
+            // Evaluate the key (should be TEXT or NUMBER)
+            Object key = evaluateASTNode(node.getChildren().get(2));
+            Map<?, ?> map = (Map<?, ?>) collection;
+            if (!map.containsKey(key)) {
+                throw new InterpreterException("Map key not found: " + key, getNodeLineNumber(node));
+            }
+            return map.get(key);
         }
         // If the collection is a list but accessed as a pair_map, throw an error
         if (collectionType == TokenType.LIST_TYPE && node.getType().equals("PAIR_MAP_VALUE")) {
