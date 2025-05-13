@@ -67,9 +67,10 @@ public class Executor {
                     try {
                         executeASTNode(child);
                     } catch (ContinueException | BreakException ce) {
-                        // These are for control flow, not errors—rethrow so loops handle them
                         throw ce;
-                    } catch (InterpreterException e) {
+                    } catch (ReturnException re) {
+                        throw re;   
+                    }catch (InterpreterException e) {
                         errorCollector.addError("Interpreter error at line " + e.getLineNumber() + ": " + e.getMessage());
                     } catch (Exception e) {
                         String msg = e.getMessage();
@@ -421,6 +422,7 @@ public class Executor {
 
     private void executeOutput(ASTNode node) {
         StringBuilder output = new StringBuilder();
+        
     
         for (ASTNode child : node.getChildren()) {
             switch (child.getType()) {
@@ -456,6 +458,7 @@ public class Executor {
                     // Evaluate expressions (e.g., PLUS nodes)
                     Object result = evaluator.evaluateASTNode(child);
                     output.append(result);
+                  
                     break;
             }
         }
