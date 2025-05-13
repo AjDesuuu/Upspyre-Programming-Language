@@ -471,7 +471,7 @@ public class Executor {
     
         for (ASTNode child : node.getChildren()) {
             switch (child.getType()) {
-                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR","TRUE","FALSE","IDENTIFIER":
+                case "GT", "LT", "GTE", "LTE", "GEQ", "LEQ", "EQ", "NEQ", "RELATIONAL_EXPR","TRUE","FALSE","IDENTIFIER", "AND", "OR", "NOT":
                     conditionNode = child;
                     break;
                 case "BLOCK_STMT":
