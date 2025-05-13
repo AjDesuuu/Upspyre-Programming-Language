@@ -111,6 +111,10 @@ public class ASTNode {
                         programNode.addChild(childAST);
                     }
                 }
+
+                if (programNode.getLineNumber() == 0) {
+                    programNode.lineNumber = findFirstNonZeroLine(cstNode);
+                }
                 return programNode;
     
             case "OUTPUT_STMT":
@@ -118,6 +122,9 @@ public class ASTNode {
                 if (cstNode.getChildren().size() >= 3) {
                     ASTNode exprAST = fromCST(cstNode.getChildren().get(2));
                     if (exprAST != null) outputNode.addChild(exprAST);
+                }
+                if (outputNode.getLineNumber() == 0) {
+                    outputNode.lineNumber = findFirstNonZeroLine(cstNode);
                 }
                 return outputNode;
     
@@ -135,6 +142,10 @@ public class ASTNode {
                     if (cstNode.getChildren().size() > 4) {
                         ASTNode otherwiseBlockAST = fromCST(cstNode.getChildren().get(4));
                         if (otherwiseBlockAST != null) ifNode.addChild(otherwiseBlockAST);
+                    }
+                    if (ifNode.getLineNumber() == 0) {
+                        ifNode.lineNumber = findFirstNonZeroLine(cstNode);
+                        
                     }
                 }
                 return ifNode;
@@ -184,11 +195,24 @@ public class ASTNode {
                             defaultNode.addChild(childAST);
                         }
                     }
+                    if (defaultNode.getLineNumber() == 0) {
+                        defaultNode.lineNumber = findFirstNonZeroLine(cstNode);
+                    }
                     return defaultNode;
                 }
         }
     
         return null;
+    }
+    private static int findFirstNonZeroLine(ParseTreeNode node) {
+        if (node.getToken() != null && node.getToken().getLine() > 0) {
+            return node.getToken().getLine();
+        }
+        for (ParseTreeNode child : node.getChildren()) {
+            int line = findFirstNonZeroLine(child);
+            if (line > 0) return line;
+        }
+        return 0;
     }
     // Helper: Build left-associative binary operator AST for BIT_BASE, TERM, FACTOR
     private static ASTNode buildLeftAssociativeBinaryExpressionAST(ParseTreeNode node) {

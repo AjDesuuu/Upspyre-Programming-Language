@@ -102,56 +102,38 @@ public class Lexer {
         while (Character.isWhitespace(peek())) advance();
     }
 
+    //MADE BY: NGAN
     private Token scanIdentifierOrKeyword() {
         int startPos = position;
         int startIdx = index;
-
-        // Try to match the longest keyword at the current position
-        String remaining = input.substring(index);
-        String matchedKeyword = null;
-        int matchedLen = 0;
-        TokenType matchedType = null;
-
-        for (String keyword : KEYWORDS.keySet()) {
-            if (remaining.startsWith(keyword)) {
-                int len = keyword.length();
-                // Allow keywords even if followed by a letter/digit/underscore
-                if (len > matchedLen) {
-                    matchedKeyword = keyword;
-                    matchedLen = len;
-                    matchedType = KEYWORDS.get(keyword);
-                }
-            }
-        }
-
-        // If the identifier starts with a keyword, split it
-        if (matchedKeyword != null && matchedLen > 0) {
-            // If the keyword is at the start, emit the keyword token and leave the rest for the next scan
-            index += matchedLen;
-            position += matchedLen;
-            return new Token(matchedType, matchedKeyword, line, startPos);
-        }
-
-        // Otherwise, scan as identifier
         char firstChar = peek();
+
+        // S1: Check if the first character is not a letter or an underscore
         if (!(Character.isLetter(firstChar) || firstChar == '_')) {
             advance();
             String lexeme = input.substring(startIdx, index);
-            return new Token(TokenType.ERROR, "Invalid token: " + lexeme, line, startPos);
+            return new Token(TokenType.ERROR, "Invalid token: "+lexeme, line, startPos);
         }
 
+        // S2: Continue scanning if the first character is valid
         advance();
         while (Character.isLetterOrDigit(peek()) || peek() == '_') {
             advance();
         }
 
         String lexeme = input.substring(startIdx, index);
-        TokenType type = TokenType.IDENTIFIER;
-        if (!symbolTable.containsIdentifier(lexeme)) {
-            symbolTable.addIdentifier(lexeme, type, null);
+
+        // S3: Check if the lexeme is a keyword, otherwise classify it as an identifier
+        TokenType type = KEYWORDS.getOrDefault(lexeme, TokenType.IDENTIFIER);
+
+        // Add identifier to symbol table if it's not a keyword
+        if (type == TokenType.IDENTIFIER && !symbolTable.containsIdentifier(lexeme)) {
+            symbolTable.addIdentifier(lexeme, type,null);
         }
+
         return new Token(type, lexeme, line, startPos);
     }
+
     //Assigned to Ansel | EDITED BY: NGAN
     private Token scanNumber() {
         int startPos = position;
@@ -182,7 +164,14 @@ public class Lexer {
             }
         }
     
-       
+        // Check for invalid characters after the number
+        if (Character.isLetter(peek())) {
+            while (!Character.isWhitespace(peek()) && peek() != '\0') {
+                advance();
+            }
+            String lexeme = input.substring(startIdx, index);
+            return new Token(TokenType.ERROR, "Invalid token: " + lexeme, line, startPos);
+        }
     
         // Handle cases like ".123" and "1."
         if (isDecimal) {

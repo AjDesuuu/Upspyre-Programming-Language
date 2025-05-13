@@ -17,7 +17,6 @@ start
     // Arithmetic + Bitwise + Relational
     binary mix = ((a * b) | 1) == 19;         // true (6*3=18, 18|1=19)
 
-    // Mixed arithmetic, bitwise, and logical
-    binary test10 = ((a + b) > (d << 2)) AND (a != b); // true ((10+5) > (3<<2)) AND true
+    
 
 end
