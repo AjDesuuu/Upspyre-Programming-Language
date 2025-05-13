@@ -166,6 +166,21 @@ public class Evaluator {
         }
 
         Object collection = collectionDetails.getValue();
+        TokenType collectionType = collectionDetails.getType();
+
+        if (collectionType == TokenType.PAIR_MAP_TYPE && node.getType().equals("LIST_VALUE")) {
+            throw new InterpreterException(
+                "Cannot access pair_map '" + collectionName + "' using list syntax. Use '" + collectionName + ".value[key]' instead.",
+                getNodeLineNumber(node)
+            );
+        }
+        // If the collection is a list but accessed as a pair_map, throw an error
+        if (collectionType == TokenType.LIST_TYPE && node.getType().equals("PAIR_MAP_VALUE")) {
+            throw new InterpreterException(
+                "Cannot access list '" + collectionName + "' using pair_map syntax. Use '" + collectionName + "[index]' instead.",
+                getNodeLineNumber(node)
+            );
+        }
 
         // Handle list access
         if (collection instanceof List) {
