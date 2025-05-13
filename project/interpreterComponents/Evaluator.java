@@ -270,10 +270,17 @@ public class Evaluator {
                     Object idx = this.evaluateASTNode(node.getChildren().get(4));
                     if (!(idx instanceof Integer))
                         throw new InterpreterException("remove() index must be a number", getNodeLineNumber(node));
-                    return list.remove((int) idx);
+                    int index = (int) idx;
+                    if (index < 0 || index >= list.size()) {
+                        throw new InterpreterException("remove() index out of bounds: " + index, getNodeLineNumber(node));
+                    }
+                    return list.remove(index);
                 }
                 if (targetValue instanceof Map<?, ?> map) {
                     Object key = this.evaluateASTNode(node.getChildren().get(4));
+                    if (!map.containsKey(key)) {
+                        throw new InterpreterException("remove() key not found in map: " + key, getNodeLineNumber(node));
+                    }
                     return map.remove(key);
                 }
                 throw new InterpreterException("remove() only supported for lists and maps", getNodeLineNumber(node));
